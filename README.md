@@ -106,47 +106,124 @@ python view_tree.py example_01_basic.log
 
 ## Output Format
 
-The viewer displays structured logs with colors, separators, and hierarchy:
+The viewer displays **colorized** structured logs with emojis, Unicode tree characters, and smart color coding:
+
+### Live Terminal Output (with ANSI colors)
+
+When viewed in a terminal, logs display with **full ANSI colors**:
 
 ```
 ──────────────────────────────────────────────────────────────────────
-🌲 Log Tree: example_01_basic.log
+🌲 Log Tree: example_06_deep_nesting.log
 ──────────────────────────────────────────────────────────────────────
 
-Total entries: 6
+Total entries: 102
 
-56ffc3bf-08f7-4e9c-9227-23522eeeb274          ← Task UUID (magenta)
-└── ⚡ app:startup/1 14:13:58                   ← Action (emoji + type + level + time)
-    ├── version: 1.0.0                         ← Key-value pairs
-    └── environment: production
-
-62090edf-048a-4c6b-97d3-5c1275cdbadc
-└── 🔐 user:login/1 14:13:58                   ← Emoji based on action type
-    ├── user_id: 123                           ← Numbers in cyan
-    ├── username: alice                        ← Strings in white
-    └── ip: 192.168.1.100
-
-bdc3ff49-4766-4796-aac0-4e72a8df4651
-└── 💾 database:connect/1 14:13:58             ← Database emoji
-    ├── host: localhost
-    ├── port: 5432                             ← Numbers colored
-    └── status: connected
-
-──────────────────────────────────────────────────────────────────────  ← Footer separator
+🟣92769c9b-d4e9c-4f71-8065-b91db2d54e1c
+├── 🖥️ level_1:server/1 ⇒ 🔵 ▶️ started 14:14:30
+│   └── depth: 🔣7
+├── 🖥️ server:incoming_connection/2 14:14:30
+│   ├── ip: 🔣192.168.1.100
+│   └── port: 🔣8080
+├── 🖥️ server:assign_worker/3 14:14:30
+│   ├── worker_id: worker_05
+│   ├── 🔌 level_2:http_handler/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   └── depth: 🔣2
+│   ├── 🔌 http:received/4/2 14:14:30
+│   │   ├── method: POST
+│   │   └── path: /api/users/123
+│   ├── 🔌 http:parse/4/3 14:14:30
+│   │   ├── content_length: 🔣1024
+│   │   ├── ⚡ level_3:validation/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   │   └── depth: 🔣3
+│   │   ├── ⚡ validation:headers/4/4/2 14:14:30
+│   │   │   └── count: 🔣12
+│   │   ├── ⚡ validation:body/4/4/3 14:14:30
+│   │   │   ├── content_type: application/json
+│   │   │   ├── size: 🔣1024
+│   │   │   ├── 🔐 level_4:auth/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   │   │   └── depth: 🔣4
+│   │   │   ├── 🔐 auth:validate_token/4/4/4/2 14:14:30
+│   │   │   │   └── token_id: tok_abc123
+│   │   │   ├── 🔐 auth:check_permissions/4/4/4/3 14:14:30
+│   │   │   │   ├── user_id: user_123
+│   │   │   │   ├── ⚡ level_5:cache/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   │   │   │   └── depth: 🔣5
+│   │   │   │   ├── ⚡ cache:lookup/4/4/4/4/2 14:14:30
+│   │   │   │   │   └── key: user:data:123
+│   │   │   │   ├── ⚡ cache:miss/4/4/4/4/3 14:14:30
+│   │   │   │   │   ├── reason: expired
+│   │   │   │   │   ├── 💾 level_6:database/4/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   │   │   │   ┆   └── depth: 🔣6
+│   │   │   │   │   ├── 💾 db:connect/4/4/4/4/4/2 14:14:30
+│   │   │   │   │   ┆   └── connection: postgres://localhost
+│   │   │   │   │   ├── 💾 db:query/4/4/4/4/4/3 14:14:30
+│   │   │   │   │   ┆   ├── sql: SELECT * FROM records
+│   │   │   │   │   ┆   ├── ⚡ level_7:operation/4/4/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
+│   │   │   │   │   ┆   ┆   └── depth: 🔣7
+│   │   │   │   │   ┆   ├── ⚡ level_7:start/4/4/4/4/4/4/2 14:14:30
+│   │   │   │   │   ┆   ┆   └── info: 🟢 Deepest level reached
+│   │   │   │   │   ┆   ├── ⚡ level_7:processing/4/4/4/4/4/4/3 14:14:30
+│   │   │   │   │   ┆   ┆   └── data: Final computation
+│   │   │   │   │   ┆   ├── ⚡ level_7:complete/4/4/4/4/4/4/4 14:14:30
+│   │   │   │   │   ┆   ┆   └── result: 🟢 SUCCESS
+│   │   │   │   │   ┆   └── ⚡ level_7:operation/4/4/4/4/4/4/5 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   │   ├── 💾 db:result/4/4/4/4/4/5 14:14:30
+│   │   │   │   │   ┆   └── rows: 🔣42
+│   │   │   │   │   └── 💾 level_6:database/4/4/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   ├── ⚡ cache:update/4/4/4/4/5 14:14:30
+│   │   │   │   │   ├── key: user:data:123
+│   │   │   │   │   └── ttl: 🔣3600
+│   │   │   │   └── ⚡ level_5:cache/4/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   ├── 🔐 auth:success/4/4/4/5 14:14:30
+│   │   │   │   ├── user: alice
+│   │   │   │   └── roles: [🟣admin, 🟣user]
+│   │   │   └── 🔐 level_4:auth/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   ├── ⚡ validation:complete/4/4/5 14:14:30
+│   │   │   └── status: 🟢 valid
+│   │   └── ⚡ level_3:validation/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   ├── 🔌 http:response/4/5 14:14:30
+│   │   ├── status: 🔣200
+│   │   └── duration_ms: 🔣150
+│   └── 🔌 level_2:http_handler/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+├── 🖥️ server:connection_closed/5 14:14:30
+│   └── duration_ms: 🔣200
+└── 🖥️ level_1:server/6 ⇒ 🟢 ✔️ succeeded 14:14:30
 ```
+
+### Color Legend
+
+| Element | ANSI Color | Example |
+|---------|------------|---------|
+| 🔣 **Numbers** | Cyan (`\033[36m`) | `42`, `3.14`, `8080` |
+| 🟣 **Booleans** | Magenta (`\033[35m`) | `True`, `False` |
+| 🔵 **Field Keys** | Bright Blue (`\033[94m`) | `user_id:`, `status:` |
+| 🔴 **Error strings** | Bright Red (`\033[91m`) | `"Failed"`, `"error"` |
+| 🟢 **Success strings** | Bright Green (`\033[92m`) | `"completed"`, `"SUCCESS"` |
+| ⚪ **Regular strings** | White (`\033[37m`) | `"alice"`, `"GET"` |
+| ⚫ **Timestamps** | Dim Gray (`\033[90m`) | `14:14:30` |
+| 🟪 **Task UUIDs** | Bright Magenta (`\033[95m`) | `92769c9b-...` |
+| 🔵 **Started** | Bright Blue (`\033[94m`) | `▶️ started` |
+| 🟢 **Succeeded** | Bright Green (`\033[92m`) | `✔️ succeeded` |
+| 🔴 **Failed** | Bright Red (`\033[91m`) | `✖️ failed` |
 
 ### Color Coding
 
-| Type | Color | Example |
-|------|-------|---------|
-| Numbers | Cyan | `42`, `3.14`, `1000` |
-| Booleans | Magenta | `True`, `False` |
-| Keys | Bright Blue | `user_id:`, `status:` |
-| Error strings | Bright Red | `error_message: "Failed"` |
-| Success strings | Bright Green | `status: "completed"` |
-| Regular strings | White | `"hello"`, `"active"` |
-| Timestamps | Dim Gray | `14:13:58` |
-| Task UUIDs | Bright Magenta | `56ffc3bf-08f7-...` |
+The viewer uses **8 ANSI colors** for smart value highlighting:
+
+| Type | ANSI Code | Color | Example |
+|------|-----------|-------|---------|
+| **Numbers** | `\033[36m` | 🔵 Cyan | `42`, `3.14`, `1000` |
+| **Booleans** | `\033[35m` | 🟣 Magenta | `True`, `False` |
+| **Field Keys** | `\033[94m` | 🔵 Bright Blue | `user_id:`, `status:` |
+| **Error strings** | `\033[91m` | 🔴 Bright Red | `"Failed"`, `"error"` |
+| **Success strings** | `\033[92m` | 🟢 Bright Green | `"completed"`, `"SUCCESS"` |
+| **Regular strings** | `\033[37m` | ⚪ White | `"hello"`, `"active"` |
+| **Timestamps** | `\033[90m` | ⚫ Dim Gray | `14:13:58` |
+| **Task UUIDs** | `\033[95m` | 🟪 Bright Magenta | `56ffc3bf-08f7-...` |
+| **Status: Started** | `\033[94m` | 🔵 Bright Blue | `▶️ started` |
+| **Status: Succeeded** | `\033[92m` | 🟢 Bright Green | `✔️ succeeded` |
+| **Status: Failed** | `\033[91m` | 🔴 Bright Red | `✖️ failed` |
 
 ## Examples
 
@@ -160,31 +237,38 @@ to_file(open("demo.log", "w"))
 with start_action(action_type="http:request", method="POST", path="/api/users"):
     with start_action(action_type="auth:verify", user_id=123):
         Message.log(message_type="auth:check", valid=True)
-    
+
     with start_action(action_type="database:query", table="users"):
         Message.log(message_type="database:result", rows=10, duration_ms=45)
 ```
 
-**Output:**
+**Terminal Output (with ANSI colors):**
 
 ```
-a1b2c3d4-e5f6-7890-abcd-ef1234567890
-├── 🔌 http:request/1 ⇒ ▶️ started 14:30:00           ← Action start
+🟣a1b2c3d4-e5f6-7890-abcd-ef1234567890
+├── 🔌 http:request/1 ⇒ 🔵 ▶️ started 14:30:00
 │   ├── method: POST
-│   ├── path: /api/users
-│   ├── 🔐 auth:verify/2/1 ⇒ ▶️ started 14:30:00      ← Nested action
-│   │   ├── user_id: 123
-│   │   ├── 🔐 auth:check/2/2 14:30:00                ← Message within action
-│   │   │   └── valid: True                           ← Boolean (magenta)
-│   │   └── 🔐 auth:verify/2/3 ⇒ ✔️ succeeded 14:30:00 ← Action end
-│   ├── 💾 database:query/3/1 ⇒ ▶️ started 14:30:00
-│   │   ├── table: users
-│   │   ├── 💾 database:result/3/2 14:30:01
-│   │   │   ├── rows: 10                              ← Number (cyan)
-│   │   │   └── duration_ms: 45
-│   │   └── 💾 database:query/3/3 ⇒ ✔️ succeeded 14:30:01 ⏱️45ms  ← Duration
-│   └── 🔌 http:request/4 ⇒ ✔️ succeeded 14:30:01 ⏱️1.2s
+│   └── path: /api/users
+├── 🔐 auth:verify/2/1 ⇒ 🔵 ▶️ started 14:30:00
+│   ├── user_id: 🔣123
+│   ├── 🔐 auth:check/2/2 14:30:00
+│   │   └── valid: 🟣True
+│   └── 🔐 auth:verify/2/3 ⇒ 🟢 ✔️ succeeded 14:30:00
+├── 💾 database:query/3/1 ⇒ 🔵 ▶️ started 14:30:00
+│   ├── table: users
+│   ├── 💾 database:result/3/2 14:30:01
+│   │   ├── rows: 🔣10
+│   │   └── duration_ms: 🔣45
+│   └── 💾 database:query/3/3 ⇒ 🟢 ✔️ succeeded 14:30:01
+└── 🔌 http:request/4 ⇒ 🟢 ✔️ succeeded 14:30:01
 ```
+
+**Color coding:**
+- 🔣 = Cyan (numbers)
+- 🟣 = Magenta (booleans, UUIDs)
+- 🔵 = Bright Blue (started status, keys)
+- 🟢 = Bright Green (succeeded status, success strings)
+- 🔴 = Bright Red (failed status, error strings)
 
 ### Task Level Format
 
