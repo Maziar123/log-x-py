@@ -1,0 +1,73 @@
+# markdownlint Configuration for log-x-py project
+# https://github.com/DavidAnson/markdownlint-cli2
+
+# Relaxed rules for documentation with badges, emojis, tables, and tree chars
+
+default: true
+
+# Disabled rules (project style preferences)
+MD001: false   # Heading increment (presentation slides use custom levels)
+MD004: false   # Unordered list style (allow dash/asterisk)
+MD007: false   # List indentation (flexible)
+MD009: false   # Trailing spaces
+MD013: false   # Line length (long URLs/badges)
+MD019: false   # Multiple spaces after hash (presentations)
+MD022: false   # Headings surrounded by blank lines
+MD024: false   # Duplicate headings (VISUAL_GUIDE.md)
+MD026: false   # Trailing punctuation in headings
+MD031: false   # Blanks around fences
+MD032: false   # Blanks around lists
+MD034: false   # Bare URLs
+MD036: false   # Emphasis as heading
+MD038: false   # Spaces inside code spans (tree chars need spaces)
+MD040: false   # Fenced code language
+MD047: false   # Single trailing newline
+MD049: false   # Emphasis style
+MD050: false   # Strong style
+MD051: false   # Link fragments
+MD058: false   # Blanks around tables
+MD060: false   # Table column style
+MD025: false   # Single H1
+MD041: false   # First line heading
+
+# Active rules
+MD003:
+  style: "atx"
+MD012:
+  maximum: 2
+MD014: false
+MD018: true
+MD023: true
+MD027: true
+MD028: true
+MD029:
+  style: "one_or_ordered"
+MD030:
+  ul_single: 1
+  ol_single: 1
+  ul_multi: 1
+  ol_multi: 1
+MD033: false
+MD035:
+  style: "---"
+MD037: true
+MD039: true
+MD042: true
+MD043: false
+MD044: false
+MD045: true
+MD046:
+  style: "fenced"
+MD048:
+  style: "backtick"
+MD052: true
+MD053: true
+MD054:
+  autolink: true
+  inline: true
+  full: true
+  collapsed: true
+  shortcut: true
+  url_inline: true
+MD055: false
+MD056: true

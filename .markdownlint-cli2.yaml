@@ -1,0 +1,21 @@
+# markdownlint-cli2 specific options
+# https://github.com/DavidAnson/markdownlint-cli2
+
+# File globs
+globs:
+  - "**/*.md"
+
+# Exclude patterns
+ignores:
+  - "**/node_modules/**"
+  - "**/.venv/**"
+  - "**/__pycache__/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/logs/**"
+  - "**/.git/**"
+  - "**/.ruff_cache/**"
+  - "**/.mypy_cache/**"
+
+# Don't auto-fix by default
+fix: false
