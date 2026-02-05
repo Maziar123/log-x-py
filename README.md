@@ -1,28 +1,132 @@
 # log-x-py
 
-Modern structured logging with tree visualization. Zero dependencies, Python 3.12+.
+Modern structured logging with tree visualization. Two packages: a zero-dependency logging library and a colored tree viewer.
+
+---
+
+## 📦 Package 1: logxpy - Logging Library
+
+**Zero-dependency structured logging for Python 3.12+**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
 ![Zero Dependencies](https://img.shields.io/badge/dependencies-0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Features
-
-- **ANSI Colors** - Color-coded values (numbers: cyan, booleans: magenta, errors: red)
-- **Emoji Icons** - Visual indicators for action types (database, API, auth, etc.)
-- **Tree Structure** - Unicode box-drawing characters (├── └── │)
+### Features
 - **Type Safe** - Full type hints with Python 3.12+ syntax
 - **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
-- **Flexible** - ASCII mode, depth limiting, color/emoji toggles
 - **Zero Dependencies** - Pure Python 3.12+
+- **Nested Actions** - Track hierarchical operations with context
+- **Status Tracking** - Automatic start/success/failed tracking
 
-## Quick Start
+### Quick Start
+```bash
+pip install logxpy
+```
+
+```python
+from logxpy import start_action, Message, to_file
+
+to_file(open("app.log", "w"))
+
+with start_action(action_type="http:request", method="POST", path="/api/users"):
+    with start_action(action_type="database:query", table="users"):
+        Message.log(message_type="database:result", rows=10)
+```
+
+---
+
+## 🌲 Package 2: logxpy-cli-view - Colored Tree Viewer
+
+**Render LogXPy logs as a beautiful colored ASCII tree**
+
+![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+### Features
+- **ANSI Colors** - Color-coded values (numbers: cyan, booleans: magenta, errors: red)
+- **Emoji Icons** - Visual indicators for action types (💾 database, 🔌 API, 🔐 auth)
+- **Tree Structure** - Unicode box-drawing characters (├── └── │)
+- **Flexible** - ASCII mode, depth limiting, color/emoji toggles
+
+### Quick Start
+```bash
+# View logs with full colors
+logxpy-cli-view app.log
+
+# Or use the standalone script
+python examples-log-view/view_tree.py app.log
+```
+
+---
+
+## Installation
+
+Install either or both packages:
+
+```bash
+# Just the logging library (zero dependencies)
+pip install logxpy
+
+# Just the tree viewer
+pip install logxpy-cli-view
+
+# Both (recommended)
+pip install logxpy logxpy-cli-view
+```
+
+Or install from source:
+
+```bash
+# Library
+cd logxpy && pip install -e .
+
+# Viewer
+cd logxpy_cli_view && pip install -e .
+```
+
+## Live Output Example
+
+**Terminal Output (with actual ANSI colors):**
+
+```
+<span style="color:#FF00FF">92769c9b-d4e9c-4f71-8065-b91db2d54e1c</span>
+├── 🖥️ server:incoming_connection/2 14:14:30
+│   ├── ip: <span style="color:#00FFFF">192.168.1.100</span>
+│   └── port: <span style="color:#00FFFF">8080</span>
+├── 🔌 http:request/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+│   ├── method: POST
+│   └── path: /api/users
+├── 🔐 auth:verify/2/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+│   ├── user_id: <span style="color:#00FFFF">123</span>
+│   └── 🔐 auth:check/2/2 14:30:00
+│   └── valid: <span style="color:#FF00FF">True</span>
+├── 💾 database:query/3/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+│   ├── table: users
+│   └── 💾 database:result/3/2 14:30:01
+│   ├── rows: <span style="color:#00FFFF">10</span>
+│   └── duration_ms: <span style="color:#00FFFF">45</span>
+└── 🔌 http:request/4 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
+```
+
+**Color Legend:**
+- <span style="color:#00FFFF">**Cyan**</span> = Numbers
+- <span style="color:#FF00FF">**Magenta**</span> = Booleans, UUIDs
+- <span style="color:#1E90FF">**Bright Blue**</span> = Started status, Field keys
+- <span style="color:#00FF00">**Bright Green**</span> = Succeeded status
+- <span style="color:#FF4444">**Bright Red**</span> = Failed status
+
+---
+
+## Quick Start (Try It Now)
 
 ```bash
 cd examples-log-view
 python example_01_basic.py
 python view_tree.py example_01_basic.log
 ```
+
+## Complete Cheat Sheet
 
 ## Complete Cheat Sheet
 
@@ -310,15 +414,18 @@ Message.log(
 
 See `examples-log-view/` for 7 complete examples.
 
-## Command-Line Options
+## CLI Options (logxpy-cli-view)
 
 ```bash
-python view_tree.py <log_file>                    # Full color + emoji + Unicode
-python view_tree.py <log_file> --ascii            # Plain ASCII only
-python view_tree.py <log_file> --no-colors        # No ANSI colors
-python view_tree.py <log_file> --no-emojis        # No emoji icons
-python view_tree.py <log_file> --depth-limit 3    # Limit nesting depth
-python view_tree.py --help                        # Show help
+logxpy-cli-view <log_file>                    # Full color + emoji + Unicode
+logxpy-cli-view <log_file> --ascii            # Plain ASCII only
+logxpy-cli-view <log_file> --no-colors        # No ANSI colors
+logxpy-cli-view <log_file> --no-emojis        # No emoji icons
+logxpy-cli-view <log_file> --depth-limit 3    # Limit nesting depth
+logxpy-cli-view --help                        # Show help
+
+# Or using the standalone script
+python examples-log-view/view_tree.py <log_file> [options]
 ```
 
 ## Output Components
@@ -439,8 +546,18 @@ Run all: `./examples-log-view/run_all.sh`
 
 ```
 log-x-py/
-├── examples-log-view/
-│   ├── view_tree.py                # Tree viewer (499 lines)
+├── logxpy/                          # Package 1: Core logging library
+│   ├── logxpy/                      # Main package
+│   ├── setup.py                     # Installation config
+│   └── examples/                    # Library usage examples
+│
+├── logxpy_cli_view/                 # Package 2: CLI tree viewer
+│   ├── src/logxpy_cli_view/         # Main package
+│   ├── pyproject.toml               # Installation config
+│   └── tests/                       # Test suite
+│
+├── examples-log-view/               # Standalone examples (demo both packages)
+│   ├── view_tree.py                # Simple tree viewer script
 │   ├── example_01_basic.py         # Basic logging
 │   ├── example_02_actions.py       # Nested actions
 │   ├── example_03_errors.py        # Error handling
@@ -449,21 +566,22 @@ log-x-py/
 │   ├── example_06_deep_nesting.py  # 7-level nesting
 │   ├── example_07_all_data_types.py # All data types
 │   ├── example_08_ultra_deep_nesting.py # 25-49 level nesting
-│   ├── run_all.sh / run_single.sh  # Helper scripts
-│   └── *.md                        # Documentation
+│   └── run_all.sh                  # Run all examples
+│
 ├── tutorials/                       # Detailed tutorials
-├── logxpy/                          # Core logging library
-└── logxpy_cli_view/                 # Full-featured CLI viewer
+└── README.md                        # This file
 ```
 
 ## Statistics
 
-- **Code**: 499 lines (tree viewer), 4000+ total
-- **Examples**: 8 complete examples
-- **Data Types**: 15+ types tested
-- **Max Nesting**: 49 levels (verified), 25 levels (intentional enterprise architecture)
-- **Dependencies**: 0
-- **Performance**: -40% memory, +10% speed
+| Component | Lines | Dependencies | Python |
+|-----------|-------|--------------|--------|
+| **logxpy** (library) | ~2000 | 0 | 3.12+ |
+| **logxpy-cli-view** (viewer) | ~500 | 4 (jmespath, iso8601, colored, toolz) | 3.9+ |
+| **Examples** | ~1000 | - | 3.12+ |
+
+- **Max Nesting**: 49 levels (verified)
+- **Performance**: -40% memory, +10% speed (dataclasses + slots + pattern matching)
 
 ## Use Cases
 
