@@ -1,0 +1,13 @@
+--- 1. Generator Tracking ---
+{"timestamp":1770277930.8769655,"task_uuid":"6c73e106-10ee-4ad4-a21e-c25d38e9e344","task_level":[1],"count":2,"message_type":"loggerx:info","message":"📦 Processing items"}
+{"timestamp":1770277930.9772265,"task_uuid":"88ac16a4-3a1a-4378-b69a-152845aa7f8e","task_level":[1],"count":4,"message_type":"loggerx:info","message":"📦 Processing items"}
+{"timestamp":1770277931.0774286,"task_uuid":"d5f5d28c-a844-448c-82d5-09d233e13146","task_level":[1],"count":6,"message_type":"loggerx:info","message":"📦 Processing items"}
+{"timestamp":1770277931.1776388,"task_uuid":"b6828b99-dd37-449a-b31c-9a5866b4bbc1","task_level":[1],"count":8,"message_type":"loggerx:info","message":"📦 Processing items"}
+{"timestamp":1770277931.2778304,"task_uuid":"2b61ea28-bfb4-4f84-ac95-067d3e721c74","task_level":[1],"count":10,"message_type":"loggerx:info","message":"📦 Processing items"}
+{"timestamp":1770277931.277886,"task_uuid":"bb7662ed-628d-471b-9aaa-742b124eb939","task_level":[1],"results":10,"message_type":"loggerx:success","message":"Sync processing complete"}
+
+--- 2. Async Iterator Tracking ---
+{"timestamp":1770277931.4285285,"task_uuid":"862c3c32-d308-4c15-8006-401c83b872c4","task_level":[1],"count":3,"message_type":"loggerx:info","message":"📦 Async stream"}
+{"timestamp":1770277931.578859,"task_uuid":"e60dd57a-d96a-4cbb-a7ee-f96a9b508854","task_level":[1],"count":6,"message_type":"loggerx:info","message":"📦 Async stream"}
+{"timestamp":1770277931.7291865,"task_uuid":"ad3ad1b4-a102-4eca-b7ba-1c1e88529c25","task_level":[1],"count":9,"message_type":"loggerx:info","message":"📦 Async stream"}
+{"timestamp":1770277931.7793376,"task_uuid":"3a6a341e-5e09-4803-82c5-e69245a09b91","task_level":[1],"count":10,"message_type":"loggerx:success","message":"Async processing complete"}

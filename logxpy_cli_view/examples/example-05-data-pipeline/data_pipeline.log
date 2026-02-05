@@ -1,0 +1,8 @@
+{"task_uuid": "pipeline-001-uuid", "action_type": "data_pipeline", "action_status": "started", "timestamp": 1705312200.0, "task_level": [1], "pipeline_name": "daily_import"}
+{"task_uuid": "pipeline-001-uuid", "action_type": "extract_data", "action_status": "started", "timestamp": 1705312200.5, "task_level": [1, 1], "source": "s3://data-bucket/raw/"}
+{"task_uuid": "pipeline-001-uuid", "action_type": "extract_data", "action_status": "succeeded", "timestamp": 1705312202.0, "task_level": [1, 2], "records_read": 10000}
+{"task_uuid": "pipeline-001-uuid", "action_type": "transform_data", "action_status": "started", "timestamp": 1705312202.5, "task_level": [1, 1]}
+{"task_uuid": "pipeline-001-uuid", "action_type": "transform_data", "action_status": "succeeded", "timestamp": 1705312205.0, "task_level": [1, 2], "records_transformed": 10000}
+{"task_uuid": "pipeline-001-uuid", "action_type": "load_data", "action_status": "started", "timestamp": 1705312205.5, "task_level": [1, 1], "destination": "warehouse"}
+{"task_uuid": "pipeline-001-uuid", "action_type": "load_data", "action_status": "succeeded", "timestamp": 1705312208.0, "task_level": [1, 2], "records_loaded": 10000}
+{"task_uuid": "pipeline-001-uuid", "action_type": "data_pipeline", "action_status": "succeeded", "timestamp": 1705312208.5, "task_level": [2], "duration": 8.5}

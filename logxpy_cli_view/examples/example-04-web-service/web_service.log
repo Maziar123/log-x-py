@@ -1,0 +1,6 @@
+{"task_uuid": "req-001-uuid", "action_type": "http_request", "action_status": "started", "timestamp": 1705312200.0, "task_level": [1], "method": "GET", "path": "/api/users/123"}
+{"task_uuid": "req-001-uuid", "action_type": "authenticate", "action_status": "started", "timestamp": 1705312200.1, "task_level": [1, 1], "user_id": "user-456"}
+{"task_uuid": "req-001-uuid", "action_type": "authenticate", "action_status": "succeeded", "timestamp": 1705312200.2, "task_level": [1, 2]}
+{"task_uuid": "req-001-uuid", "action_type": "database_query", "action_status": "started", "timestamp": 1705312200.3, "task_level": [1, 1], "query": "SELECT * FROM users WHERE id = 123"}
+{"task_uuid": "req-001-uuid", "action_type": "database_query", "action_status": "succeeded", "timestamp": 1705312200.5, "task_level": [1, 2], "rows_returned": 1}
+{"task_uuid": "req-001-uuid", "action_type": "http_request", "action_status": "succeeded", "timestamp": 1705312201.0, "task_level": [2], "status_code": 200}

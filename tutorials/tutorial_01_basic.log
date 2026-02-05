@@ -1,0 +1,21 @@
+{"timestamp":1770283176.8510642,"task_uuid":"4b76cc57-4bc4-4dc3-94ff-a03993cf5418","task_level":[1],"version":"1.0.0","environment":"development","message_type":"loggerx:info","message":"Application started"}
+{"timestamp":1770283176.851138,"task_uuid":"d978056b-d083-40f6-b8ff-606501db2be2","task_level":[1],"memory_usage":"45MB","cpu_usage":"12%","message_type":"loggerx:debug","message":"Debug information"}
+{"timestamp":1770283176.8511708,"task_uuid":"49d44087-07e8-4427-b270-8095d20fe4bc","task_level":[1],"config_file":"app.config","message_type":"loggerx:success","message":"Configuration loaded successfully"}
+{"timestamp":1770283176.851191,"task_uuid":"91f782d4-c516-4af5-ab20-c0e3e0eafab8","task_level":[1],"threshold":"80%","current":"92%","message_type":"loggerx:warning","message":"High memory usage detected"}
+{"timestamp":1770283176.8512104,"task_uuid":"9812fe20-1c2d-4fd5-937f-d71757f411c1","task_level":[1],"host":"localhost","port":5432,"retry_count":3,"message_type":"loggerx:error","message":"Failed to connect to database"}
+{"timestamp":1770283176.8512285,"task_uuid":"84f9a42d-e4bc-4122-bc34-c47b7c6d2403","task_level":[1],"available_memory":"0MB","message_type":"loggerx:critical","message":"System is out of memory!"}
+{"timestamp":1770283176.851247,"task_uuid":"da7f07f5-93b4-4168-a139-23e47883d83b","task_level":[1],"user_id":"alice123","ip_address":"192.168.1.100","user_agent":"Mozilla/5.0","message_type":"loggerx:info","message":"User login attempt"}
+{"timestamp":1770283176.8512638,"task_uuid":"65fd6fa0-081d-44b4-9a91-342f97752e46","task_level":[1],"user_id":"alice123","session_id":"sess_abc123","roles":["admin","user"],"message_type":"loggerx:success","message":"User authenticated successfully"}
+{"timestamp":1770283176.8512793,"task_uuid":"505604d9-4202-4ae5-9a62-8ec795facf16","task_level":[1],"filename":"document.pdf","size_bytes":1024000,"content_type":"application/pdf","message_type":"loggerx:info","message":"Processing file upload"}
+{"timestamp":1770283176.8512943,"task_uuid":"4c8582cc-7588-4b1a-bde0-faf34a478f56","task_level":[1],"filename":"document.pdf","storage_path":"/uploads/2026/02/document.pdf","processing_time_ms":234,"message_type":"loggerx:success","message":"File uploaded successfully"}
+{"timestamp":1770283176.8513112,"task_uuid":"e0bb1eb7-775e-4d29-83ca-e7ac56388ee2","task_level":[1],"message_type":"loggerx:info","message":"Starting data pipeline"}
+{"timestamp":1770283176.851328,"task_uuid":"c6de98dd-08bb-4f68-a117-e1852833ebee","task_level":[1],"message_type":"loggerx:info","message":"📍 Loading data from source"}
+{"timestamp":1770283176.851348,"task_uuid":"9765b470-c42b-4891-b84c-54c067c6f2b1","task_level":[1],"message_type":"loggerx:info","message":"📍 Transforming data"}
+{"timestamp":1770283176.8513649,"task_uuid":"00aa5543-d227-4736-be50-cac610834558","task_level":[1],"message_type":"loggerx:info","message":"📍 Validating data"}
+{"timestamp":1770283176.8513806,"task_uuid":"76669aaa-760f-49f3-b6f7-655a573fbb28","task_level":[1],"message_type":"loggerx:success","message":"Pipeline completed successfully"}
+{"timestamp":1770283176.8513951,"task_uuid":"3d8ee4f7-71a3-4cc5-af02-002e74656bda","task_level":[1],"order_id":"ORD-12345","message_type":"loggerx:info","message":"Order processing started"}
+{"timestamp":1770283176.85141,"task_uuid":"6a4d8add-aec4-4e1a-8ba6-6b8ade07e32d","task_level":[1],"message_type":"loggerx:info","message":"📍 Payment verified"}
+{"timestamp":1770283176.8514252,"task_uuid":"24b25425-825f-4638-a0db-31f326d96d8c","task_level":[1],"message_type":"loggerx:info","message":"📍 Inventory checked"}
+{"timestamp":1770283176.85144,"task_uuid":"ffb8544f-7489-4572-8cea-a9b6c020c4b6","task_level":[1],"message_type":"loggerx:info","message":"📍 Shipping label created"}
+{"timestamp":1770283176.8514557,"task_uuid":"ac38c9ac-96da-4fae-a441-f63241919fbd","task_level":[1],"tracking_number":"TRK-98765","message_type":"loggerx:success","message":"Order shipped"}
+{"timestamp":1770283176.8514712,"task_uuid":"b94f3ba7-4b9e-4953-9575-4c7f4e5668e1","task_level":[1],"tutorial":"01_basic_logging","message_type":"loggerx:success","message":"Tutorial completed!"}

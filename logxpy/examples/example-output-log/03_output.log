@@ -1,0 +1,15 @@
+--- 1. Basic Scope ---
+{"timestamp":1770277929.7249885,"task_uuid":"f87be61d-8bd9-4901-8d0e-e1e8e57be15d","task_level":[1],"request_id":"req-123","user":"alice","message_type":"loggerx:info","message":"Start request"}
+{"timestamp":1770277929.725075,"task_uuid":"e68128d2-0e9e-49d4-a486-234567d101ec","task_level":[1],"request_id":"req-123","user":"alice","item_id":1,"message_type":"loggerx:info","message":"Processing item"}
+{"timestamp":1770277929.7251103,"task_uuid":"d3525b12-f53c-4c4e-a6d0-b7f19e7a05da","task_level":[1],"request_id":"req-123","user":"alice","item_id":2,"message_type":"loggerx:info","message":"Processing item"}
+{"timestamp":1770277929.7251308,"task_uuid":"bc9b9a67-81f1-4d47-95fe-dc95c856befa","task_level":[1],"request_id":"req-123","user":"alice","message_type":"loggerx:success","message":"End request"}
+
+--- 2. Nested Scopes ---
+{"timestamp":1770277929.7251587,"task_uuid":"d6190b86-f679-4f5e-8ffb-c3d64c573281","task_level":[1],"service":"payment","message_type":"loggerx:info","message":"Service init"}
+{"timestamp":1770277929.7251809,"task_uuid":"3820737d-3734-4734-a933-8520c0587d13","task_level":[1],"service":"payment","transaction_id":"tx-999","message_type":"loggerx:info","message":"Validating"}
+{"timestamp":1770277929.7251976,"task_uuid":"8399f278-c008-4e90-b88d-a762f73ddcf3","task_level":[1],"service":"payment","transaction_id":"tx-999","message_type":"loggerx:success","message":"Authorized"}
+{"timestamp":1770277929.7252145,"task_uuid":"65905e9b-8968-4b1c-86c6-c08e9d5d9802","task_level":[1],"service":"payment","message_type":"loggerx:info","message":"Service finish"}
+
+--- 3. Fluent Context Builder ---
+{"timestamp":1770277929.725237,"task_uuid":"f55b4079-7baa-4a7b-be6a-f14584361d3f","task_level":[1],"component":"user_service","version":"1.0","message_type":"loggerx:info","message":"User service ready"}
+{"timestamp":1770277929.725254,"task_uuid":"abb7c091-eb76-4add-ad5a-1751bfa5e70a","task_level":[1],"component":"user_service","version":"1.0","message_type":"loggerx:debug","message":"Cache warmed up"}

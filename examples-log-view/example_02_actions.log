@@ -1,0 +1,15 @@
+{"order_id":"ORD-001","action_status":"started","timestamp":1770290061.6035125,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"order:process","task_level":[1]}
+{"items":3,"total":99.99,"timestamp":1770290061.6037269,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","task_level":[2],"message_type":"order:validate"}
+{"amount":99.99,"action_status":"started","timestamp":1770290061.6538262,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"payment:charge","task_level":[3,1]}
+{"gateway":"stripe","timestamp":1770290061.653876,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","task_level":[3,2],"message_type":"payment:gateway"}
+{"transaction_id":"txn_123","timestamp":1770290061.7339652,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","task_level":[3,3],"message_type":"payment:success"}
+{"action_status":"succeeded","timestamp":1770290061.7339876,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"payment:charge","task_level":[3,4]}
+{"carrier":"FedEx","action_status":"started","timestamp":1770290061.7340016,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"shipping:prepare","task_level":[4,1]}
+{"tracking":"1Z999AA10123456784","timestamp":1770290061.7340326,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","task_level":[4,2],"message_type":"shipping:label"}
+{"action_status":"succeeded","timestamp":1770290061.7941046,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"shipping:prepare","task_level":[4,3]}
+{"order_id":"ORD-001","timestamp":1770290061.7941413,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","task_level":[5],"message_type":"order:complete"}
+{"action_status":"succeeded","timestamp":1770290061.7941568,"task_uuid":"42c52471-943f-4500-b6cf-d0859ab48abc","action_type":"order:process","task_level":[6]}
+{"order_id":"ORD-002","action_status":"started","timestamp":1770290061.7941782,"task_uuid":"329c63ed-9d48-4ddb-a5c9-47ab07e67816","action_type":"order:process","task_level":[1]}
+{"items":0,"timestamp":1770290061.7942069,"task_uuid":"329c63ed-9d48-4ddb-a5c9-47ab07e67816","task_level":[2],"message_type":"order:validate"}
+{"exception":"builtins.ValueError","reason":"Order has no items","action_status":"failed","timestamp":1770290061.7942305,"task_uuid":"329c63ed-9d48-4ddb-a5c9-47ab07e67816","action_type":"order:process","task_level":[3]}
+{"error":"Order validation failed","order_id":"ORD-002","timestamp":1770290061.7942662,"task_uuid":"832b273d-ec2f-4b97-951a-1b3cd322c563","task_level":[1],"message_type":"order:error"}

@@ -1,0 +1,10 @@
+--- 1. Configuration ---
+
+--- 2. Field Masking ---
+
+Check 'example_config.log' for file output.
+{"timestamp":1770277932.1089127,"task_uuid":"d977590e-662c-48f8-bbb2-25b3a7254448","task_level":[1],"message_type":"loggerx:info","message":"Logger configured"}
+{"timestamp":1770277932.1090016,"task_uuid":"4c1fe8db-25bf-442d-a32c-18d28cdc5f5d","task_level":[1],"username":"admin","password":"***","message_type":"loggerx:info","message":"User login"}
+{"timestamp":1770277932.109047,"task_uuid":"33000434-276b-4d83-a3a0-c8b4e2d26d1a","task_level":[1],"url":"https://api.com","token":"***","message_type":"loggerx:debug","message":"API Call"}
+{"timestamp":1770277932.1090767,"task_uuid":"a4431d1a-a011-41e4-8310-bc3b561932a6","task_level":[1],"config":{"db":{"host":"localhost","password":"***"}},"message_type":"loggerx:info","message":"Config dump"}
+

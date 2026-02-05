@@ -1,0 +1,14 @@
+--- 1. @log.logged ---
+{"timestamp":1770277929.1115773,"task_uuid":"e828b179-a719-4667-9733-6387bd40f80a","task_level":[1],"a":10,"b":20,"action_type":"__main__.calculate_sum","action_status":"started"}
+{"timestamp":1770277929.2117941,"task_uuid":"e828b179-a719-4667-9733-6387bd40f80a","task_level":[1,1],"a":10,"b":20,"result":30,"eliot:duration":0.100202,"action_type":"__main__.calculate_sum","action_status":"succeeded"}
+
+--- 2. Configured @log.logged ---
+{"timestamp":1770277929.212017,"task_uuid":"90b01b94-829b-456d-b58d-d6a907c008e7","task_level":[1],"password":"***","action_type":"__main__.sensitive_operation","action_status":"started"}
+{"timestamp":1770277929.312097,"task_uuid":"90b01b94-829b-456d-b58d-d6a907c008e7","task_level":[1,1],"password":"***","eliot:duration":0.100077,"action_type":"__main__.sensitive_operation","action_status":"succeeded"}
+
+--- 3. @log.timed ---
+{"timestamp":1770277929.5122423,"task_uuid":"e041df5e-aacf-4658-bad2-6f9ca0f9bdbc","task_level":[1],"metric":"process_duration","duration_ms":200.07,"message_type":"loggerx:debug","message":"⏱ long_process"}
+
+--- 4. @log.retry ---
+{"timestamp":1770277929.5123382,"task_uuid":"1fba3b05-be9f-4d6a-bc33-844f473ba7b2","task_level":[1],"message_type":"loggerx:warning","message":"Retry 1: Network flaked"}
+{"timestamp":1770277929.6124282,"task_uuid":"2db67444-cf3e-4cee-8ef1-bda6a41fb9d1","task_level":[1],"result":"Connected","message_type":"loggerx:success","message":"Network call succeeded"}

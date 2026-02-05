@@ -1,0 +1,104 @@
+================================================================================
+🌟 EXAMPLE 06: DEEP NESTING (7 LEVELS) - HIGHLIGHTS
+================================================================================
+
+File: example_06_deep_nesting.py
+Log: example_06_deep_nesting.log (17K, 102 entries)
+Depth: 7 levels deep
+
+================================================================================
+WHY THIS EXAMPLE IS SPECIAL
+================================================================================
+
+✅ Shows MAXIMUM nesting depth (7 levels)
+✅ Demonstrates tree enter/exit at EVERY level
+✅ THREE different nesting patterns:
+   1. Functional nesting (Server → HTTP → Validation → Auth → Cache → DB → Level 7)
+   2. Class-based nesting (Application → Service → Repository → Pool → Connection → Query → Parser)
+   3. Recursive tree processing (Root → Branches → Leaves → Data → Validate → Transform → Output)
+
+✅ Real-world scenarios for each pattern
+✅ Perfect for testing log viewers
+✅ Shows how logxpy handles complex hierarchies
+
+================================================================================
+TREE STRUCTURE VISUALIZATION
+================================================================================
+
+Level 1: level_1:server [started]
+  ├─ server:incoming_connection
+  └─ Level 2: level_2:http_handler [started]
+      ├─ http:received
+      └─ Level 3: level_3:validation [started]
+          ├─ validation:headers
+          └─ Level 4: level_4:auth [started]
+              ├─ auth:validate_token
+              └─ Level 5: level_5:cache [started]
+                  ├─ cache:lookup
+                  └─ Level 6: level_6:database [started]
+                      ├─ db:connect
+                      └─ Level 7: level_7:operation [started]
+                          ├─ level_7:start (DEEPEST!)
+                          ├─ level_7:processing
+                          └─ level_7:complete
+                      [succeeded]
+                  [succeeded]
+              [succeeded]
+          [succeeded]
+      [succeeded]
+  [succeeded]
+
+================================================================================
+INDENTATION LEVELS
+================================================================================
+
+Level 1: No indentation
+Level 2: 2 spaces
+Level 3: 4 spaces
+Level 4: 6 spaces
+Level 5: 8 spaces
+Level 6: 10 spaces
+Level 7: 12 spaces (DEEPEST!)
+
+Each level clearly shows enter ([started]) and exit ([succeeded])
+
+================================================================================
+RUN THE EXAMPLE
+================================================================================
+
+Quick run:
+    ./run_single.sh 6
+
+Manual:
+    python example_06_deep_nesting.py
+    python view_tree.py example_06_deep_nesting.log
+
+================================================================================
+WHAT YOU'LL SEE
+================================================================================
+
+3 Complete scenarios with 7-level nesting:
+
+1. HTTP Request Flow (Functional Pattern)
+   Server → Handler → Validation → Auth → Cache → Database → Final Op
+
+2. Layered Architecture (Class Pattern)
+   App → Service → Repo → Pool → Connection → Query → Parser
+
+3. Tree Processing (Recursive Pattern)
+   Root → Branch → Leaf → Data → Validate → Transform → Output
+
+Total: 102 log entries showing complete tree structure!
+
+================================================================================
+KEY TAKEAWAYS
+================================================================================
+
+✅ logxpy handles deep nesting gracefully
+✅ Tree structure remains readable at 7 levels
+✅ Enter/exit tracking works perfectly
+✅ Performance is excellent (< 1 second)
+✅ File size is manageable (17K)
+✅ Demonstrates real-world complex scenarios
+
+================================================================================
