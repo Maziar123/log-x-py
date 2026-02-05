@@ -69,7 +69,8 @@ python view_tree.py example_01_basic.log
 | `/1` | Root level | First action |
 | `/2/1` | Child of 2nd | 1st sub-action |
 | `/3/2/1` | 3 levels | 3rd→2nd→1st |
-| `/3/3/3/3/3/3/3` | 7 levels | Maximum tested depth |
+| `/3/3/3/3/3/3/3` | 7 levels | Deep nesting |
+| `...×49` | 49 levels | Maximum tested depth |
 | **Duration Format** | | |
 | `< 1ms` | Sub-millisecond | Very fast (dim) |
 | `145ms` | Milliseconds | 0-999ms (cyan) |
@@ -101,6 +102,7 @@ python view_tree.py example_01_basic.log
 | 05 Pipeline | 32 entries | ETL workflow |
 | 06 Deep | 102 entries | 7-level nesting |
 | 07 Types | 42 entries | All data types |
+| 08 Ultra Deep | 662 entries | 25-49 level nesting |
 
 ## Output Format
 
@@ -190,9 +192,11 @@ The `/1/2/3` format shows hierarchical nesting:
 
 ```
 /1              ← Root level, 1st action
-/2/1            ← Child of 2nd action, its 1st sub-action  
+/2/1            ← Child of 2nd action, its 1st sub-action
 /3/2/1          ← 3 levels deep
-/3/3/3/3/3/3/3  ← 7 levels deep (maximum tested)
+/3/3/3/3/3/3/3  ← 7 levels deep
+/×25            ← 25 levels (enterprise architecture example)
+/×49            ← 49 levels (maximum tested - recursive scenario)
 ```
 
 ### All Data Types (Example 07)
@@ -326,6 +330,7 @@ See [PYTHON_312_FEATURES.md](PYTHON_312_FEATURES.md) for complete guide.
 | 05 | ETL data pipeline | 65 | 32 |
 | 06 | Deep nesting (7 levels) | 230 | 102 |
 | 07 | All data types | 383 | 42 |
+| 08 | Ultra deep nesting (25-49 levels) | 425 | 662 |
 
 Run all: `./examples-log-view/run_all.sh`
 
@@ -350,6 +355,7 @@ log-x-py/
 │   ├── example_05_data_pipeline.py # ETL pipeline
 │   ├── example_06_deep_nesting.py  # 7-level nesting
 │   ├── example_07_all_data_types.py # All data types
+│   ├── example_08_ultra_deep_nesting.py # 25-49 level nesting
 │   ├── run_all.sh / run_single.sh  # Helper scripts
 │   └── *.md                        # Documentation
 ├── tutorials/                       # Detailed tutorials
@@ -360,9 +366,9 @@ log-x-py/
 ## Statistics
 
 - **Code**: 499 lines (tree viewer), 4000+ total
-- **Examples**: 7 complete examples
+- **Examples**: 8 complete examples
 - **Data Types**: 15+ types tested
-- **Max Nesting**: 7 levels
+- **Max Nesting**: 49 levels (verified), 25 levels (intentional enterprise architecture)
 - **Dependencies**: 0
 - **Performance**: -40% memory, +10% speed
 
