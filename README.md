@@ -108,6 +108,15 @@ python view_tree.py example_01_basic.log
 
 The viewer displays **colorized** structured logs with emojis, Unicode tree characters, and smart color coding:
 
+### Color Showcase (Actual HTML Colors)
+
+- <span style="color:#00FFFF">**42**</span> - Numbers (Cyan)
+- <span style="color:#FF00FF">**True**</span> - Booleans (Magenta)
+- <span style="color:#1E90FF">**user_id:**</span> - Field Keys (Bright Blue)
+- <span style="color:#FF4444">**"error"**</span> - Error Strings (Bright Red)
+- <span style="color:#00FF00">**"success"**</span> - Success Strings (Bright Green)
+- <span style="color:#FF00FF">**92769c9b-...**</span> - Task UUIDs (Bright Magenta)
+
 ### Live Terminal Output (with ANSI colors)
 
 When viewed in a terminal, logs display with **full ANSI colors**:
@@ -119,93 +128,93 @@ When viewed in a terminal, logs display with **full ANSI colors**:
 
 Total entries: 102
 
-🟣92769c9b-d4e9c-4f71-8065-b91db2d54e1c
-├── 🖥️ level_1:server/1 ⇒ 🔵 ▶️ started 14:14:30
-│   └── depth: 🔣7
+<span style="color:#FF00FF">92769c9b-d4e9c-4f71-8065-b91db2d54e1c</span>
+├── 🖥️ level_1:server/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   └── depth: <span style="color:#00FFFF">7</span>
 ├── 🖥️ server:incoming_connection/2 14:14:30
-│   ├── ip: 🔣192.168.1.100
-│   └── port: 🔣8080
+│   ├── ip: <span style="color:#00FFFF">192.168.1.100</span>
+│   └── port: <span style="color:#00FFFF">8080</span>
 ├── 🖥️ server:assign_worker/3 14:14:30
 │   ├── worker_id: worker_05
-│   ├── 🔌 level_2:http_handler/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   └── depth: 🔣2
+│   ├── 🔌 level_2:http_handler/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   └── depth: <span style="color:#00FFFF">2</span>
 │   ├── 🔌 http:received/4/2 14:14:30
 │   │   ├── method: POST
 │   │   └── path: /api/users/123
 │   ├── 🔌 http:parse/4/3 14:14:30
-│   │   ├── content_length: 🔣1024
-│   │   ├── ⚡ level_3:validation/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   │   └── depth: 🔣3
+│   │   ├── content_length: <span style="color:#00FFFF">1024</span>
+│   │   ├── ⚡ level_3:validation/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   │   └── depth: <span style="color:#00FFFF">3</span>
 │   │   ├── ⚡ validation:headers/4/4/2 14:14:30
-│   │   │   └── count: 🔣12
+│   │   │   └── count: <span style="color:#00FFFF">12</span>
 │   │   ├── ⚡ validation:body/4/4/3 14:14:30
 │   │   │   ├── content_type: application/json
-│   │   │   ├── size: 🔣1024
-│   │   │   ├── 🔐 level_4:auth/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   │   │   └── depth: 🔣4
+│   │   │   ├── size: <span style="color:#00FFFF">1024</span>
+│   │   │   ├── 🔐 level_4:auth/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   │   │   └── depth: <span style="color:#00FFFF">4</span>
 │   │   │   ├── 🔐 auth:validate_token/4/4/4/2 14:14:30
 │   │   │   │   └── token_id: tok_abc123
 │   │   │   ├── 🔐 auth:check_permissions/4/4/4/3 14:14:30
 │   │   │   │   ├── user_id: user_123
-│   │   │   │   ├── ⚡ level_5:cache/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   │   │   │   └── depth: 🔣5
+│   │   │   │   ├── ⚡ level_5:cache/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   │   │   │   └── depth: <span style="color:#00FFFF">5</span>
 │   │   │   │   ├── ⚡ cache:lookup/4/4/4/4/2 14:14:30
 │   │   │   │   │   └── key: user:data:123
 │   │   │   │   ├── ⚡ cache:miss/4/4/4/4/3 14:14:30
 │   │   │   │   │   ├── reason: expired
-│   │   │   │   │   ├── 💾 level_6:database/4/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   │   │   │   ┆   └── depth: 🔣6
+│   │   │   │   │   ├── 💾 level_6:database/4/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   │   │   │   ┆   └── depth: <span style="color:#00FFFF">6</span>
 │   │   │   │   │   ├── 💾 db:connect/4/4/4/4/4/2 14:14:30
 │   │   │   │   │   ┆   └── connection: postgres://localhost
 │   │   │   │   │   ├── 💾 db:query/4/4/4/4/4/3 14:14:30
 │   │   │   │   │   ┆   ├── sql: SELECT * FROM records
-│   │   │   │   │   ┆   ├── ⚡ level_7:operation/4/4/4/4/4/4/1 ⇒ 🔵 ▶️ started 14:14:30
-│   │   │   │   │   ┆   ┆   └── depth: 🔣7
+│   │   │   │   │   ┆   ├── ⚡ level_7:operation/4/4/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
+│   │   │   │   │   ┆   ┆   └── depth: <span style="color:#00FFFF">7</span>
 │   │   │   │   │   ┆   ├── ⚡ level_7:start/4/4/4/4/4/4/2 14:14:30
-│   │   │   │   │   ┆   ┆   └── info: 🟢 Deepest level reached
+│   │   │   │   │   ┆   ┆   └── info: <span style="color:#00FF00">Deepest level reached</span>
 │   │   │   │   │   ┆   ├── ⚡ level_7:processing/4/4/4/4/4/4/3 14:14:30
 │   │   │   │   │   ┆   ┆   └── data: Final computation
 │   │   │   │   │   ┆   ├── ⚡ level_7:complete/4/4/4/4/4/4/4 14:14:30
-│   │   │   │   │   ┆   ┆   └── result: 🟢 SUCCESS
-│   │   │   │   │   ┆   └── ⚡ level_7:operation/4/4/4/4/4/4/5 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   │   ┆   ┆   └── result: <span style="color:#00FF00">SUCCESS</span>
+│   │   │   │   │   ┆   └── ⚡ level_7:operation/4/4/4/4/4/4/5 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 │   │   │   │   │   ├── 💾 db:result/4/4/4/4/4/5 14:14:30
-│   │   │   │   │   ┆   └── rows: 🔣42
-│   │   │   │   │   └── 💾 level_6:database/4/4/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   │   ┆   └── rows: <span style="color:#00FFFF">42</span>
+│   │   │   │   │   └── 💾 level_6:database/4/4/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 │   │   │   │   ├── ⚡ cache:update/4/4/4/4/5 14:14:30
 │   │   │   │   │   ├── key: user:data:123
-│   │   │   │   │   └── ttl: 🔣3600
-│   │   │   │   └── ⚡ level_5:cache/4/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   │   └── ttl: <span style="color:#00FFFF">3600</span>
+│   │   │   │   └── ⚡ level_5:cache/4/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 │   │   │   ├── 🔐 auth:success/4/4/4/5 14:14:30
 │   │   │   │   ├── user: alice
-│   │   │   │   └── roles: [🟣admin, 🟣user]
-│   │   │   └── 🔐 level_4:auth/4/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   │   └── roles: [<span style="color:#FF00FF">admin</span>, <span style="color:#FF00FF">user</span>]
+│   │   │   └── 🔐 level_4:auth/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 │   │   ├── ⚡ validation:complete/4/4/5 14:14:30
-│   │   │   └── status: 🟢 valid
-│   │   └── ⚡ level_3:validation/4/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   │   └── status: <span style="color:#00FF00">valid</span>
+│   │   └── ⚡ level_3:validation/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 │   ├── 🔌 http:response/4/5 14:14:30
-│   │   ├── status: 🔣200
-│   │   └── duration_ms: 🔣150
-│   └── 🔌 level_2:http_handler/4/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   │   ├── status: <span style="color:#00FFFF">200</span>
+│   │   └── duration_ms: <span style="color:#00FFFF">150</span>
+│   └── 🔌 level_2:http_handler/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 ├── 🖥️ server:connection_closed/5 14:14:30
-│   └── duration_ms: 🔣200
-└── 🖥️ level_1:server/6 ⇒ 🟢 ✔️ succeeded 14:14:30
+│   └── duration_ms: <span style="color:#00FFFF">200</span>
+└── 🖥️ level_1:server/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
 ```
 
 ### Color Legend
 
 | Element | ANSI Color | Example |
 |---------|------------|---------|
-| 🔣 **Numbers** | Cyan (`\033[36m`) | `42`, `3.14`, `8080` |
-| 🟣 **Booleans** | Magenta (`\033[35m`) | `True`, `False` |
-| 🔵 **Field Keys** | Bright Blue (`\033[94m`) | `user_id:`, `status:` |
-| 🔴 **Error strings** | Bright Red (`\033[91m`) | `"Failed"`, `"error"` |
-| 🟢 **Success strings** | Bright Green (`\033[92m`) | `"completed"`, `"SUCCESS"` |
-| ⚪ **Regular strings** | White (`\033[37m`) | `"alice"`, `"GET"` |
-| ⚫ **Timestamps** | Dim Gray (`\033[90m`) | `14:14:30` |
-| 🟪 **Task UUIDs** | Bright Magenta (`\033[95m`) | `92769c9b-...` |
-| 🔵 **Started** | Bright Blue (`\033[94m`) | `▶️ started` |
-| 🟢 **Succeeded** | Bright Green (`\033[92m`) | `✔️ succeeded` |
-| 🔴 **Failed** | Bright Red (`\033[91m`) | `✖️ failed` |
+| **Numbers** | `\033[36m` (Cyan) | <span style="color:#00FFFF">42</span>, <span style="color:#00FFFF">3.14</span>, <span style="color:#00FFFF">8080</span> |
+| **Booleans** | `\033[35m` (Magenta) | <span style="color:#FF00FF">True</span>, <span style="color:#FF00FF">False</span> |
+| **Field Keys** | `\033[94m` (Bright Blue) | <span style="color:#1E90FF">user_id:</span>, <span style="color:#1E90FF">status:</span> |
+| **Error strings** | `\033[91m` (Bright Red) | <span style="color:#FF4444">"Failed"</span>, <span style="color:#FF4444">"error"</span> |
+| **Success strings** | `\033[92m` (Bright Green) | <span style="color:#00FF00">"completed"</span>, <span style="color:#00FF00">"SUCCESS"</span> |
+| **Regular strings** | `\033[37m` (White) | "alice", "GET" |
+| **Timestamps** | `\033[90m` (Dim Gray) | 14:14:30 |
+| **Task UUIDs** | `\033[95m` (Bright Magenta) | <span style="color:#FF00FF">92769c9b-...</span> |
+| **Status: Started** | `\033[94m` (Bright Blue) | <span style="color:#1E90FF">▶️ started</span> |
+| **Status: Succeeded** | `\033[92m` (Bright Green) | <span style="color:#00FF00">✔️ succeeded</span> |
+| **Status: Failed** | `\033[91m` (Bright Red) | <span style="color:#FF4444">✖️ failed</span> |
 
 ### Color Coding
 
@@ -242,33 +251,33 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
         Message.log(message_type="database:result", rows=10, duration_ms=45)
 ```
 
-**Terminal Output (with ANSI colors):**
+**Terminal Output (with actual ANSI colors):**
 
 ```
-🟣a1b2c3d4-e5f6-7890-abcd-ef1234567890
-├── 🔌 http:request/1 ⇒ 🔵 ▶️ started 14:30:00
+<span style="color:#FF00FF">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span>
+├── 🔌 http:request/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
 │   ├── method: POST
 │   └── path: /api/users
-├── 🔐 auth:verify/2/1 ⇒ 🔵 ▶️ started 14:30:00
-│   ├── user_id: 🔣123
+├── 🔐 auth:verify/2/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+│   ├── user_id: <span style="color:#00FFFF">123</span>
 │   ├── 🔐 auth:check/2/2 14:30:00
-│   │   └── valid: 🟣True
-│   └── 🔐 auth:verify/2/3 ⇒ 🟢 ✔️ succeeded 14:30:00
-├── 💾 database:query/3/1 ⇒ 🔵 ▶️ started 14:30:00
+│   │   └── valid: <span style="color:#FF00FF">True</span>
+│   └── 🔐 auth:verify/2/3 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:00
+├── 💾 database:query/3/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
 │   ├── table: users
 │   ├── 💾 database:result/3/2 14:30:01
-│   │   ├── rows: 🔣10
-│   │   └── duration_ms: 🔣45
-│   └── 💾 database:query/3/3 ⇒ 🟢 ✔️ succeeded 14:30:01
-└── 🔌 http:request/4 ⇒ 🟢 ✔️ succeeded 14:30:01
+│   │   ├── rows: <span style="color:#00FFFF">10</span>
+│   │   └── duration_ms: <span style="color:#00FFFF">45</span>
+│   └── 💾 database:query/3/3 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
+└── 🔌 http:request/4 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
 ```
 
 **Color coding:**
-- 🔣 = Cyan (numbers)
-- 🟣 = Magenta (booleans, UUIDs)
-- 🔵 = Bright Blue (started status, keys)
-- 🟢 = Bright Green (succeeded status, success strings)
-- 🔴 = Bright Red (failed status, error strings)
+- <span style="color:#00FFFF">Cyan</span> = Numbers (123, 10, 45)
+- <span style="color:#FF00FF">Magenta</span> = Booleans (True), UUIDs
+- <span style="color:#1E90FF">Bright Blue</span> = Started status, Field keys
+- <span style="color:#00FF00">Bright Green</span> = Succeeded status, Success strings
+- <span style="color:#FF4444">Bright Red</span> = Failed status, Error strings
 
 ### Task Level Format
 
