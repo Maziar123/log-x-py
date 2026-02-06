@@ -1,0 +1,256 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>Dispatcher Connections</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content="Connections,Dispatcher Connections"> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">Advanced Techniques</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">Dispatcher Connections</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="destinationstrings.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="loggingfromservices.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p>The <a href="codesitemanager_defaultdestination.htm" class="topiclink">CodeSiteManager.DefaultDestination</a> and <a href="tcodesitelogger_destination.htm" class="topiclink">T|CodeSiteLogger.Destination</a> properties are used to specify where (and how) CodeSite messages are routed to their final destination <span style="font-weight: bold;">after they are received</span> by a <a href="dispatcher.htm" class="topiclink">CodeSite Dispatcher</a>. &nbsp;As you can see from the <a href="codesitearchitecture.htm" class="topiclink">CodeSite Architecture</a> diagram, a CodeSite Dispatcher is always responsible for updating an instance of the Live Viewer, or updating a CodeSite log file. </p>
+<p>However, you can also see from the <a href="codesitearchitecture.htm" class="topiclink">CodeSite Architecture</a> that there are two different ways <a href="tcodesitelogger.htm" class="topiclink">T|CodeSiteLogger</a> instances can connect to a CodeSite Dispatcher. Specifically, a <span style="font-weight: bold;">T|CodeSiteLogger</span> instance can connect to a <span style="font-weight: bold;">local</span> Dispatcher using the <span style="font-weight: bold;">wm_CopyData</span> window message protocol (the default). Or, a <span style="font-weight: bold;">T|CodeSiteLogger</span> instance can connect to a <span style="font-weight: bold;">local</span> or <span style="font-weight: bold;">remote</span> Dispatcher using the <span style="font-weight: bold;">TCP</span> protocol. While a <a href="tcodesitedestination.htm" class="topiclink">T|CodeSiteDestination</a> defines what happens to a CodeSite message once it reaches a Dispatcher, a <span style="font-style: italic;">Dispatcher Connection</span> defines how the message is transported to the Dispatcher.</p>
+<p>Changing the way logger instances connect to the Dispatcher is very easy. The <a href="codesitemanager.htm" class="topiclink">CodeSiteManager</a> defines several methods for configuring the default connection: </p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingCopyData;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp(&nbsp;host,&nbsp;port&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp(&nbsp;host&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp;</span></p>
+<p>&nbsp;</p>
+<p>By default, the <span style="font-weight: bold;">CodeSiteManager</span> internally calls <a href="codesitemanager_connectusingcopydata.htm" class="topiclink">ConnectUsingCopyData</a>, which is very effective is most situations. However, there are times when the <span style="font-weight: bold;">wm_CopyData</span> protocol is not applicable (e.g. <a href="loggingfromservices.htm" class="topiclink">Logging from Services</a>, <a href="asp_net.htm" class="topiclink">ASP.NET</a>). Plus, <span style="font-weight: bold;">wm_CopyData</span> cannot be used to connect to a remote Dispatcher. In these situations, one of the <a href="codesitemanager_connectusingtcp.htm" class="topiclink">ConnectUsingTcp</a> methods must be used. For example:</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Connect&nbsp;to&nbsp;local&nbsp;Dispatcher&nbsp;using&nbsp;default&nbsp;port</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;CodeSiteManager.ConnectUsingTcp;&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;Connect&nbsp;to&nbsp;the&nbsp;HelpDesk&nbsp;machine&nbsp;on&nbsp;port&nbsp;4040.&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;The&nbsp;Dispatcher&nbsp;must&nbsp;be&nbsp;configured&nbsp;to&nbsp;monitor&nbsp;port&nbsp;4040&nbsp;for&nbsp;TCP&nbsp;messages.</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;CodeSiteManager.ConnectUsingTcp(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">'HelpDesk'</span><span class="f_CodeExample">,&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">4040</span><span class="f_CodeExample">&nbsp;);</span></p>
+<p>&nbsp;</p>
+<p>By default all <a href="tcodesitelogger.htm" class="topiclink">T|CodeSiteLogger</a> instances will connect to the Dispatcher in the manner defined by the CodeSiteManager. &nbsp;However, if you would like to override the connection mechanism for a particular logger instance, you may do so with the following methods:</p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingCopyData;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp(&nbsp;host,&nbsp;port&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp(&nbsp;host&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;ConnectUsingTcp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;UseCodeSiteManagerConnection;</span></p>
+<p>&nbsp;</p>
+<p>As you can see, aside from the <a href="tcodesitelogger_usecodesitemanagerconnection.htm" class="topiclink">UseCodeSiteManagerConnection</a> method, the <span style="font-weight: bold;">T|CodeSiteLogger</span> methods above are identical to the <span style="font-weight: bold;">CodeSiteManager</span> versions. The <span style="font-weight: bold;">UseCodeSiteManagerConnection</span> method removes any existing connection override being used by the logger instance and once again uses the connection that is defined by the <span style="font-weight: bold;">CodeSiteManager</span>.</p>
+<p>&nbsp;</p>
+ 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

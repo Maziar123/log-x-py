@@ -1,0 +1,272 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>CodeSite Tools</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content="CodeSite Tools,Tools"> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">CodeSite Logging System</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">CodeSite Tools</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="tcodesiteproperties_events.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="viewer.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p>In addition to the CodeSite Logging Classes, the CodeSite Logging System relies on the <span style="font-weight: bold;">CodeSite Tools</span>, which is a set of redistributable applications that allow your applications to continue to log CodeSite messages even when they are running on another system. The following programs are included in the CodeSite Tools:</p>
+<div style="text-align: left; text-indent: 0px; padding: 0px 0px 0px 0px; margin: 0px 0px 19px 0px;"><table cellspacing="0" cellpadding="2" border="0" style="border:none; border-spacing:0px;">
+<tr style="text-align:left;vertical-align:middle;">
+<td style="vertical-align:middle; width:40px; height:30px; padding:2px;"><p style="text-align: center;"><img src="appdispatcher.png" width="32" height="32" alt="appDispatcher" style="border:none"></p>
+</td>
+<td style="vertical-align:middle; width:200px; height:30px; padding:2px;"><p><a href="dispatcher.htm" class="topiclink">CodeSite Dispatcher</a></p>
+</td>
+<td style="vertical-align:middle; height:30px; padding:2px;"><p>Responsible for distributing CodeSite messages and managing CodeSite log files.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:middle;">
+<td style="vertical-align:middle; width:40px; height:30px; padding:2px;"><p style="text-align: center;"><img src="appliveviewer.png" width="32" height="32" alt="appLiveViewer" style="border:none"></p>
+</td>
+<td style="vertical-align:middle; width:200px; height:30px; padding:2px;"><p><a href="viewer.htm" class="topiclink">CodeSite Live Viewer</a></p>
+</td>
+<td style="vertical-align:middle; height:30px; padding:2px;"><p>Live Logging Receiver. Provides a wide variety of inspectors and other services specifically designed for analyzing CodeSite messages.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:middle;">
+<td style="vertical-align:middle; width:40px; height:30px; padding:2px;"><p style="text-align: center;"><img src="appfileviewer.png" width="32" height="32" alt="appFileViewer" style="border:none"></p>
+</td>
+<td style="vertical-align:middle; width:200px; height:30px; padding:2px;"><p><a href="viewer.htm" class="topiclink">CodeSite File Viewer</a></p>
+</td>
+<td style="vertical-align:middle; height:30px; padding:2px;"><p>Log file reader. &nbsp;Provides a wide variety of inspectors and other services specifically designed for analyzing CodeSite messages.</p>
+</td>
+</tr>
+<tr style="text-align:left;vertical-align:middle;">
+<td style="vertical-align:middle; width:40px; height:30px; padding:2px;"><p style="text-align: center;"><img src="appcontroller.png" width="32" height="32" alt="appController" style="border:none"></p>
+</td>
+<td style="vertical-align:middle; width:200px; height:30px; padding:2px;"><p><a href="controller.htm" class="topiclink">CodeSite Controller</a></p>
+</td>
+<td style="vertical-align:middle; height:30px; padding:2px;"><p>provides access to settings that affect the behavior of the CodeSite Dispatcher, even when the Dispatcher is running in stealth mode.</p>
+</td>
+</tr>
+</table>
+</div>
+<p>Furthermore, the CodeSite Tools may be freely distributed with your application. At a minimum the CodeSite Dispatcher is required for logging. However, you may also wish to include the other tools (Live Viewer, File Viewer, and Controller) when deploying your application. &nbsp;Please read the <a href="deployingcodesite.htm" class="topiclink">Deploying CodeSite</a> topic for more information on deploying your applications built with CodeSite. </p>
+<p>To aid in the distribution and installation of these support programs, a separate installation program, <span style="font-weight: bold;">CS5_Tools.exe</span>, is provided in the <span style="font-weight: bold;">CS5\Tools</span> folder. This installation program can be run silently so that it can be easily incorporated into the primary installation process of your own application. &nbsp;The <span style="font-weight: bold;">Tools</span> folder also contains a <span style="font-weight: bold;">CodeSiteToolsSetup.txt</span> file that describes the various ways the <span style="font-weight: bold;">CS5_Tools</span> installation program can be customized.</p>
+<p class="p_NotesHeader" style="border-bottom: none;"><span class="f_NotesHeader">NOTE</span></p>
+<p class="p_Notes" style="border-top: none;"><span class="f_Notes">Please see the Deploy.txt file in the CodeSite installation folder for more details.</span></p>
+<p>&nbsp;</p>
+ 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

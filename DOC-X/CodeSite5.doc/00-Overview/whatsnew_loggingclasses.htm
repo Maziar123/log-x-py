@@ -1,0 +1,231 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>Logging Classes</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content=""> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">What's New</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">Logging Classes</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="whatsnewcs5.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="whatsnew_viewer.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>CodeSite 5 includes support for <span style="font-weight: bold;">Embarcadero RAD Studio XE2, XE3, XE4, and XE5</span> including <span style="font-weight: bold;">64-bit</span> Delphi &amp; C++Builder support.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>In previous versions of CodeSite, the message type parameter to CodeSite logging methods was used to identify the type of message. However, in certain situations, the message type was also used to identify the message content. For example, the Object message type was used to indicate that additional properties and values were associated with the message. &nbsp;While this worked well in most cases, the double-duty role of the message type parameter also caused some limitations. For instance, it was not possible to send an object instance to CodeSite and have the message marked as an Error message. &nbsp;The Object message type would override the Error message type. &nbsp;In CodeSite 5, a <a href="messagetypes.htm" class="topiclink">message's type is separate from its content</a>. &nbsp;The CodeSite logging classes have been extended to handle the new message content parameter. &nbsp;Also, existing method calls will NOT need to be changed. &nbsp;The new logging methods will select default values for the message type and message content if they are not provided. &nbsp;In addition, both values are visible in the CodeSite Viewers.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>CodeSite 5 utilizes a redesigned message packet when transporting CodeSite messages. In previous versions, the native Delphi logging classes utilized a packet layout combining fixed length fields along with variable length data, while the .NET logging classes utilized a serialized XML layout. In CodeSite 5, all logging classes regardless of platform or framework now utilize the same packet layout. The new layout is more flexible than the fixed length approach and does not have the high overhead of XML. </p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <span style="font-weight: bold;">LogFile</span>, <span style="font-weight: bold;">TCP</span>, and <span style="font-weight: bold;">UDP</span> destination sub-types now define a <span style="font-weight: bold;">Compressed</span> property. For <span style="font-weight: bold;">LogFile</span> destinations, setting <span style="font-weight: bold;">Compressed</span> to True causes the Dispatcher to compress each message before saving it to the log file. This reduces the size of the message on disk and also obfuscates the message data in the log file. For <span style="font-weight: bold;">TCP</span> and <span style="font-weight: bold;">UDP</span> destinations, the <span style="font-weight: bold;">Compressed</span> property instructs the <span style="font-style: italic;">local</span> Dispatcher to compress each message before transporting the message to the <span style="font-style: italic;">remote</span> Dispatcher.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <span style="font-weight: bold;">ConnectUsing*</span> methods (in <span style="font-weight: bold;">CodeSiteManager</span> and <span style="font-weight: bold;">TCodeSiteLogger</span>) in the native Delphi/C++Builder logging classes have been updated to accept a new <span style="font-weight: bold;">MsgFormat</span> parameter of type <span style="font-weight: bold;">TCodeSiteMessageFormat</span>. The default parameter value is <span style="font-weight: bold;">mfDefault</span>. The other value of <span style="font-weight: bold;">TCodeSiteMessageFormat</span> is <span style="font-weight: bold;">mfCompressed</span>. When <span style="font-weight: bold;">mfCompressed</span> is specified, the messages are compressed before they are transported to the Dispatcher. Use the <span style="font-weight: bold;">mfCompressed</span> message format along with the new <span style="font-weight: bold;">Compressed</span> options for destinations (see above) and the message data will be compressed and obfuscated throughout the entire transport process.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span><a href="tcodesitelogger_tracemethod.htm" class="topiclink">TraceMethod</a> functionality is now available directly in the <a href="tcodesitelogger.htm" class="topiclink">TCodeSiteLogger</a> class (native Delphi/C++Builder). The implementation is based on the classes that were originally part of the CodeSiteEx project, an add-on to CodeSite, created by <span style="font-weight: bold;">Dustin Campbell</span> and then enhanced and maintained by <span style="font-weight: bold;">Rich Ackerson</span>. <span style="font-weight: bold;">TraceMethod</span> allows both an <span style="font-weight: bold;">EnterMethod</span> and <span style="font-weight: bold;">ExitMethod</span> message to be sent with just a single statement. When <span style="font-weight: bold;">TraceMethod</span> is called, an <span style="font-weight: bold;">EnterMethod</span> message is sent. When control exits from the current method whether by normal control flow or by exception, an <span style="font-weight: bold;">ExitMethod</span> message is automatically sent. In addition, the <span style="font-weight: bold;">TraceMethod</span> method can accept an optional parameter, <span style="font-weight: bold;">tmoTiming</span>, which can be used to include timing information for the method being traced.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>CodeSite 5 also defines a new <span style="font-weight: bold;">csmTiming</span> message type, which is used by the new timing capabilities available in the <a href="tcodesitelogger.htm" class="topiclink">TCodeSiteLogger</a> class to log durations. In addition to the <span style="font-weight: bold;">tmoTiming</span> parameter defined above for <a href="tcodesitelogger_tracemethod.htm" class="topiclink">TraceMethod</a>, <span style="font-weight: bold;">TCodeSiteLogger</span> also defines a new <a href="tcodesitelogger_timer.htm" class="topiclink">Timer</a> method, which returns an interface reference to a high resolution timer that can be used to time sections of your code.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>All <a href="tcodesitelogger_send.htm" class="topiclink">Send</a> and <a href="tcodesitelogger_write.htm" class="topiclink">Write</a> methods that accept format strings have been enhanced such that if a format exception is raised, the original format string is also included in the error message.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Bitmap images (e.g. screen shots) are now transported and stored as PNG images instead of standard bitmap images. This results in a significant savings in the size of the log files and transfer packets.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Added new <span style="font-weight: bold;">Send</span> method overload that supports sending TPngImage images directly. The Send method that accepts a bitmap image is still available. The bitmap is converted to a PNG image and then transported.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <a href="tcodesitelogger_sendvariant.htm" class="topiclink">TCodeSiteLogger.SendVariant</a> method (Delphi) has been modified to correctly handle additional variant types that have been added to more recent versions of Delphi (e.g. <span style="font-weight: bold;">varUString</span>, <span style="font-weight: bold;">varLongWord</span>).</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Fixed issue in evaluating a published variant property that was null.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Enhanced <a href="tcodesitelogger_senddatetime.htm" class="topiclink">SendDateTime</a> and <a href="tcodesitelogger_writedatetime.htm" class="topiclink">WriteDateTime</a> to accept a format parameter which will override the default <a href="tcodesitelogger_datetimeformat.htm" class="topiclink">DateTimeFormat</a> property.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>For each logger instance, the current CheckPoint value is now accessible via the <a href="tcodesitelogger_checkpointcounter.htm" class="topiclink">CheckPointCounter</a> property.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Use the new <a href="tcodesitelogger_sendfileversioninfo.htm" class="topiclink">SendFileVersionInfo</a> method to send version information for the specified file name.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <a href="tcodesitelogger_sendsysteminfo.htm" class="topiclink">SendSystemInfo</a> method has been enhanced to record the number of monitors, the primary screen size, and the virtual screen size.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <a href="tcodesitelogger_sendcontrols.htm" class="topiclink">SendControls</a> method now handles unnamed controls.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>As a result of the new transport message packet, Unicode character encoding issues in .NET have been eliminated (e.g. extended Polish characters).</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The VCL.NET logging classes have been discontinued and removed from the product. The VCL.NET framework has not been supported by Embarcadero for quite some time and the Raize.CodeSiteLogging.dll assembly can be used in .NET and VCL.NET applications. As a result, the Raize.CodeSiteLogging.Vcl.dll assembly is no longer necessary.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The Raize.CodeSiteLogging.dll assembly for .NET Framework 1.1 has been removed and is no longer supported.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The timing methods used to record ellapsed time have been modified to address inconsistent results under 64-bit systems, and to provide more accurate results.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <a href="tcodesitelogger_sendheapstatus.htm" class="topiclink">SendHeapStatus</a> method, has been replaced with the new <a href="tcodesitelogger_sendmemorymanagerstatus.htm" class="topiclink">SendMemoryManagerStatus</a> method. The SendHeapStatus method is still present, but it simply calls the SendMemoryManagerStatus method. The new method provides a more detailed view of the block allocations of the memory manager. The resulting data is displayed in a table visible in the inspector pane.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Assertions in 64-bit applications are now handled correctly.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Added several new Send methods for logging dynamic arrays. Specifically, TIntegerDynArray, TCardinalDynArray, TWordDynArray, TSmallIntDynArray, TByteDynArray, TShortIntDynArray, TInt64DynArray, TLongWordDynArray, TSingleDynArray, TDoubleDynArray, TBooleanDynArray, TStringDynArray</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Added SendList&lt;T&gt; method, which allows the logging of the contents of a TList&lt;T&gt; generic list.</p> 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

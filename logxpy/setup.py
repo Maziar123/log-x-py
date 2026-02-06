@@ -6,7 +6,12 @@ def read(path):
     """
     Read the contents of a file.
     """
-    with open(path) as f:
+    import os
+    # Read from main project folder (parent of this file's directory)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(base_dir)
+    full_path = os.path.join(parent_dir, path)
+    with open(full_path) as f:
         return f.read()
 
 
@@ -71,8 +76,8 @@ setup(
     keywords="logging",
     license="Apache 2.0",
     packages=["logxpy", "logxpy.tests"],
-    url="https://github.com/itamarst/eliot/",
-    maintainer="Itamar Turner-Trauring",
-    maintainer_email="itamar@itamarst.org",
+    url="https://github.com/logxpy/logxpy/",
+    maintainer="logxpy Team",
+    maintainer_email="",
     long_description=read("README.rst"),
 )

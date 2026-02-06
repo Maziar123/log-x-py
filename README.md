@@ -34,6 +34,53 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
         Message.log(message_type="database:result", rows=10)
 ```
 
+### Core API
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `Message.log(**fields)` | Log structured message | `Message.log(info="starting", count=5)` |
+| `start_action(action_type, **fields)` | Begin hierarchical action | `with start_action("db_query", table="users"):` |
+| `start_task(action_type, **fields)` | Create top-level action | `with start_task("process"):` |
+| `log(message_type, **fields)` | Log in current action | `log(message_type="event", x=1)` |
+| `to_file(output_file)` | Set log output file | `to_file(open("app.log", "w"))` |
+| `current_action()` | Get current action context | `action = current_action()` |
+| `write_traceback()` | Log exception traceback | `except: write_traceback()` |
+
+### LoggerX Level Methods
+
+| Method | Level | Example |
+|--------|-------|---------|
+| `log.debug(msg, **fields)` | DEBUG | `log.debug("starting", count=5)` |
+| `log.info(msg, **fields)` | INFO | `log.info("user login", user="alice")` |
+| `log.success(msg, **fields)` | SUCCESS | `log.success("completed", total=100)` |
+| `log.note(msg, **fields)` | NOTE | `log.note("checkpoint", step=3)` |
+| `log.warning(msg, **fields)` | WARNING | `log.warning("slow query", ms=5000)` |
+| `log.error(msg, **fields)` | ERROR | `log.error("failed", code=500)` |
+| `log.critical(msg, **fields)` | CRITICAL | `log.critical("system down")` |
+| `log.checkpoint(msg, **fields)` | CHECKPOINT | `log.checkpoint("step1")` |
+| `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
+
+### Decorators
+
+| Decorator | Purpose | Example |
+|-----------|---------|---------|
+| `@logged(level, ...)` | Universal logging decorator | `@logged(level="DEBUG")` |
+| `@timed(metric)` | Timing-only decorator | `@timed("db.query")` |
+| `@retry(attempts, delay)` | Retry with backoff | `@retry(attempts=5)` |
+| `@log_call(action_type)` | Log function calls | `@log_call(action_type="func")` |
+
+### System Message Types
+
+| Message Type | Purpose |
+|--------------|---------|
+| `eliot:traceback` | Exception traceback logging |
+| `loggerx:debug` | Debug level messages |
+| `loggerx:info` | Info level messages |
+| `loggerx:success` | Success level messages |
+| `loggerx:warning` | Warning level messages |
+| `loggerx:error` | Error level messages |
+| `loggerx:critical` | Critical level messages |
+
 ---
 
 ## 🌲 Package 2: logxpy-cli-view - Colored Tree Viewer
@@ -57,6 +104,38 @@ logxpy-cli-view app.log
 # Or use the standalone script
 python examples-log-view/view_tree.py app.log
 ```
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `logxpy-view <file>` | View log as tree |
+| `logxpy-view <file> --failed` | Show only failed actions |
+| `logxpy-view <file> --filter "db_*"` | Filter by action name |
+| `logxpy-view <file> --export json` | Export as JSON |
+| `logxpy-view <file> --export csv` | Export as CSV |
+| `logxpy-view <file> --export html` | Export as HTML |
+| `logxpy-view <file> --tail` | Live log monitoring |
+| `logxpy-view <file> --stats` | Show statistics |
+
+### Filter Functions
+
+| Function | Purpose |
+|----------|---------|
+| `filter_by_action_status(tasks, status)` | Filter by status (succeeded/failed) |
+| `filter_by_action_type(tasks, pattern)` | Filter by action name pattern |
+| `filter_by_duration(tasks, min_seconds)` | Filter by duration range |
+| `filter_by_keyword(tasks, keyword)` | Search in values |
+| `filter_by_jmespath(tasks, query)` | JMESPath query filter |
+
+### Export Functions
+
+| Function | Purpose |
+|----------|---------|
+| `export_json(tasks, file)` | Export as JSON |
+| `export_csv(tasks, file)` | Export as CSV |
+| `export_html(tasks, file)` | Export as HTML |
+| `export_logfmt(tasks, file)` | Export as logfmt |
 
 ---
 
@@ -125,8 +204,6 @@ cd examples-log-view
 python example_01_basic.py
 python view_tree.py example_01_basic.log
 ```
-
-## Complete Cheat Sheet
 
 ## Complete Cheat Sheet
 
@@ -315,7 +392,7 @@ Total entries: 102
 | **Success strings** | `\033[92m` (Bright Green) | <span style="color:#00FF00">"completed"</span>, <span style="color:#00FF00">"SUCCESS"</span> |
 | **Regular strings** | `\033[37m` (White) | "alice", "GET" |
 | **Timestamps** | `\033[90m` (Dim Gray) | 14:14:30 |
-| **Task UUIDs** | `\033[95m` (Bright Magenta) | <span style="color:#FF00FF">92769c9b-...</span> |
+| **Task UUIDs** | `\033[95m` (Bright Magenta) | <span style="color:#FF00FF">56ffc3bf-08f7-...</span> |
 | **Status: Started** | `\033[94m` (Bright Blue) | <span style="color:#1E90FF">▶️ started</span> |
 | **Status: Succeeded** | `\033[92m` (Bright Green) | <span style="color:#00FF00">✔️ succeeded</span> |
 | **Status: Failed** | `\033[91m` (Bright Red) | <span style="color:#FF4444">✖️ failed</span> |
@@ -412,7 +489,7 @@ Message.log(
 )
 ```
 
-See `examples-log-view/` for 7 complete examples.
+See `examples-log-view/` for 8 complete examples.
 
 ## CLI Options (logxpy-cli-view)
 

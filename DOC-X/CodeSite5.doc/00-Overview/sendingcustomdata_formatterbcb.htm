@@ -1,0 +1,364 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>TCodeSiteFormatter (C++Builder)</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content=""> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">Advanced Techniques</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">Sending Custom Data: TCodeSiteFormatter (C++Builder)</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="sendingcustomdata_formatterdelphi.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="remotedestinations.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p><span style="font-weight: bold;">Note:</span> <span class="f_ExpressEdition">*Not Available in <a href="codesiteeditions.htm" class="topiclink">CodeSite Express</a></span></p>
+<p>The following is the complete C++Builder source code for the BaseballPlayer sample unit (BaseballPlayer.hpp and BaseballPlayer.cpp), which implements a custom formatter for the <span style="font-weight: bold;">TBaseballPlayer</span> record data type.</p>
+<p>Let's start with the BaseballPlayer.hpp file:</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008000;">#ifndef</span><span class="f_CodeExample">&nbsp;BaseballPlayerHpp</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008000;">#define</span><span class="f_CodeExample">&nbsp;BaseballPlayerHpp</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;csmPlayerSummary&nbsp;=&nbsp;csmUser&nbsp;+&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">1</span><span class="f_CodeExample">;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;csmPlayerDetails&nbsp;=&nbsp;csmUser&nbsp;+&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">2</span><span class="f_CodeExample">;</span></p>
+<p>&nbsp;</p>
+<p>The first thing that we need to do in our custom unit header file is to define a new CodeSite message type constant for each formatter class that we are going to create. &nbsp;In this example, two formatter classes will be created. &nbsp;Therefore, we define two new constants.</p>
+<p>If you are creating the formatters for your own personal use or for use within your department or organization, then you should define your constants based on the <span style="font-weight: bold;">csmUser</span> constant plus some offset. &nbsp;The valid offset range is 1 to 32,000. &nbsp;If you are creating the formatters for public use outside of your department or organization, then you should define your constants based on the <span style="font-weight: bold;">csmPublic</span> constant plus some offset. &nbsp;Please contact <span style="font-weight: bold;">Raize Software (support@raize.com)</span> to obtain a valid offset that does not conflict with other public formatters.</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">struct</span><span class="f_CodeExample">&nbsp;TBaseballPlayer</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;UnicodeString&nbsp;LastName;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;UnicodeString&nbsp;FirstName;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;UnicodeString&nbsp;Position;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Currency&nbsp;Salary;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">int</span><span class="f_CodeExample">&nbsp;Games;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">int</span><span class="f_CodeExample">&nbsp;AtBats</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">int</span><span class="f_CodeExample">&nbsp;Hits;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Single&nbsp;ERA;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">bool</span><span class="f_CodeExample">&nbsp;AllStar;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">};</span></p>
+<p>&nbsp;</p>
+<p>The above structure defines the custom data type that we want to send using CodeSite. &nbsp;Please note that the custom data type does not have to reside in the same unit as the custom formatters. &nbsp;It is done so here to simplify the example. &nbsp;Also, any code that requires this data type will also automatically include the necessary formatters.</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">class</span><span class="f_CodeExample">&nbsp;TPlayerSummaryFormatter&nbsp;:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">public</span><span class="f_CodeExample">&nbsp;TCodeSiteFormatter</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">public</span><span class="f_CodeExample">:</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;TCodeSiteInspectorType&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;InspectorType(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;FormatData(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;*Data);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;UnicodeString&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TypeName(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">};</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">class</span><span class="f_CodeExample">&nbsp;TCSPlayerDetailsFormatter&nbsp;:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">public</span><span class="f_CodeExample">&nbsp;TCodeSiteFormatter</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">public</span><span class="f_CodeExample">:</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;TCodeSiteInspectorType&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;InspectorType(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;FormatData(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;*Data);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">virtual</span><span class="f_CodeExample">&nbsp;UnicodeString&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TypeName(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">};</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#endif</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">//&nbsp;end&nbsp;of&nbsp;BaseballPlayer.hpp</span></p>
+<p>&nbsp;</p>
+<p>These are the class declarations for the two custom formatters defined in this unit. &nbsp;The first formatter class will format a <span style="font-weight: bold;">TBaseballPlayer</span> <span style="font-weight: bold;">struct</span> into a text format, while the second formatter will format a <span style="font-weight: bold;">TBaseballPlayer</span> <span style="font-weight: bold;">struct</span> into a name-value grid format. </p>
+<p>Next, we'll look at the BaseballPlayer.cpp file:</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#include&nbsp;&lt;vcl.h&gt;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#include&nbsp;&lt;CodeSiteLogging.hpp&gt;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#pragma&nbsp;hdrstop</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#include&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;BaseballPlayer.hpp&quot;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #008080;">#pragma&nbsp;package(smart_init)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">/////////////////////////////////////</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">//&nbsp;TPlayerSummaryFormatter&nbsp;Methods&nbsp;//</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">/////////////////////////////////////</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TPlayerSummaryFormatter::InspectorType(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">return</span><span class="f_CodeExample">&nbsp;itStockText;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>The first step in implementing a custom formatter is to determine which inspector will be used by the CodeSite Viewer to view the formatted data. &nbsp;The inspector type will determine which helper methods are used in the <a href="tcodesiteformatter_formatdata.htm" class="topiclink">FormatData</a> method. &nbsp;For the player summary formatter, the stock text inspector within the CodeSite Viewer will be used.</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TPlayerSummaryFormatter::FormatData(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;*Data)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;TCSBaseballPlayer&nbsp;*Player&nbsp;=&nbsp;(TCSBaseballPlayer&nbsp;*)&nbsp;Data;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddLine(&nbsp;Player-&gt;FirstName&nbsp;+&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;Player-&gt;LastName&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">if</span><span class="f_CodeExample">&nbsp;(&nbsp;Player-&gt;AllStar&nbsp;)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;All-Star&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;Player.Position&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">else</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;AddLine(&nbsp;Player-&gt;Position&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;&quot;</span><span class="f_CodeExample">&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Salary:&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;FloatToStrF(&nbsp;Player-&gt;Salary,&nbsp;ffCurrency,&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">18</span><span class="f_CodeExample">,&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">2</span><span class="f_CodeExample">&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;&quot;</span><span class="f_CodeExample">&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Games&nbsp;Played:&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;IntToStr(&nbsp;Player-&gt;Games&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">if</span><span class="f_CodeExample">&nbsp;(&nbsp;Player-&gt;Position&nbsp;==&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Pitcher&quot;</span><span class="f_CodeExample">&nbsp;)&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;ERA:&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;FormatFloat(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;0.00&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;ERA&nbsp;)&nbsp;)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">else</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;AddLine(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Batting&nbsp;Avg:&nbsp;&quot;</span><span class="f_CodeExample">&nbsp;+&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FormatFloat(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;0.000&quot;</span><span class="f_CodeExample">,&nbsp;(float)&nbsp;Player-&gt;Hits&nbsp;/&nbsp;Player-&gt;AtBats&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>The <a href="tcodesiteformatter_formatdata.htm" class="topiclink">FormatData</a> method is where the real work is performed. &nbsp;Note that the parameter to <span style="font-weight: bold;">FormatData</span> is an untyped variable parameter. &nbsp;This means that any data type may be passed to this method. &nbsp;However, because of the registration process that will follow we can safely typecast the passed-in parameter to the type we expect to format.</p>
+<p>Fortunately, actually formatting the data is not very complicated because helper methods are defined in the <a href="tcodesiteformatter.htm" class="topiclink">TCodeSiteFormatter</a> base class. Since the <span style="font-weight: bold;">InspectorType</span> method above specified the <span style="font-weight: bold;">itStockText</span> inspector type, the <a href="tcodesiteformatter_addline.htm" class="topiclink">AddLine</a> helper method is used to add lines to the formatted string list.</p>
+<p class="p_CodeExample"><span class="f_CodeExample">UnicodeString&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TPlayerSummaryFormatter::TypeName(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">return</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;TCSBaseballPlayer&quot;</span><span class="f_CodeExample">;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>Overriding the <a href="tcodesiteformatter_typename.htm" class="topiclink">TypeName</a> is optional, but recommended. &nbsp;The message details panel in the CodeSite Viewer will show the <span style="font-weight: bold;">TypeName</span> of the data type associated with the message.</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">/////////////////////////////////////</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">//&nbsp;TPlayerDetailsFormatter&nbsp;Methods&nbsp;//</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">/////////////////////////////////////</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TCSPlayerDetailsFormatter::InspectorType(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">return</span><span class="f_CodeExample">&nbsp;itStockProperties;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>For the player details formatter, the stock name-value grid inspector within the CodeSite Viewer will be used.</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TCSPlayerDetailsFormatter::FormatData(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">&nbsp;*Data)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;TCSBaseballPlayer&nbsp;*Player&nbsp;=&nbsp;(TCSBaseballPlayer&nbsp;*)&nbsp;Data;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;LastName&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;LastName&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;FirstName&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;FirstName&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Position&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;Address&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Salary&quot;</span><span class="f_CodeExample">,&nbsp;FloatToStrF(&nbsp;Player-&gt;Salary,&nbsp;ffCurrency,&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">18</span><span class="f_CodeExample">,&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">2</span><span class="f_CodeExample">&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Games&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;Games&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;AtBats&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;AtBats&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;Hits&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;Hits&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;ERA&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;ERA&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;AddNameValuePair(&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;AllStar&quot;</span><span class="f_CodeExample">,&nbsp;Player-&gt;AllStar&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>To format you custom data for the name-value grid inspector, use the <a href="tcodesiteformatter_addnamevaluepair.htm" class="topiclink">AddNameValuePair</a> method. &nbsp;The <span style="font-weight: bold;">AddNameValuePair</span> method is overloaded with several variations to minimize the need for converting your data to a string format.</p>
+<p class="p_CodeExample"><span class="f_CodeExample">UnicodeString&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__fastcall</span><span class="f_CodeExample">&nbsp;TCSPlayerDetailsFormatter::TypeName(</span><span class="f_CodeExample" style="font-weight: bold;">void</span><span class="f_CodeExample">)</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">{</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">return</span><span class="f_CodeExample">&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">&quot;TCSBaseballPlayer&quot;</span><span class="f_CodeExample">;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">}</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="color: #000080;">//&nbsp;end&nbsp;of&nbsp;CSBaseballPlayer.cpp</span></p>
+<p>&nbsp;</p>
+<p>In order for the SendCustomData method to access to the custom formatter classes, we must first register them with the CodeSiteManager by calling the CodeSiteManager.RegisterCustomFormatter method.  </p>
+<p class="p_CodeExample"><span class="f_CodeExample">CodeSiteManager-&gt;RegisterCustomFormatter(&nbsp;csmPlayerSummary,&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__classid</span><span class="f_CodeExample">(&nbsp;TCSPlayerSummaryFormatter&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">CodeSiteManager-&gt;RegisterCustomFormatter(&nbsp;csmPlayerDetails,&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">__classid</span><span class="f_CodeExample">(&nbsp;TCSPlayerDetailsFormatter&nbsp;)&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p>Note that the corresponding message type is passed along with the class reference of the appropriate formatter. &nbsp;The CodeSiteManager maintains a list of all registered formatters indexed by the message type. &nbsp;When the CodeSiteObject.SendCustomData method is called, the message type passed determines the formatter used to format the data.</p>
+<p>&nbsp;</p>
+ 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

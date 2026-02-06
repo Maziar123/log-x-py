@@ -2,7 +2,66 @@ include LICENSE
 include README.rst
 include versioneer.py
 include logxpy/_version.py
+
+# Include documentation
 recursive-include docs *
 prune docs/_build
+
+# Include benchmarks and examples
 recursive-include benchmarks *
 recursive-include examples *
+
+# ==========================================
+# EXCLUDE LOCAL-ONLY CONTENT FROM PYPI
+# ==========================================
+
+# Exclude documentation & private folders
+global-exclude DOC-X/*
+
+# Exclude local/personal folders
+global-exclude .local/*
+global-exclude private/*
+global-exclude personal/*
+global-exclude notes/*
+global-exclude experiments/*
+global-exclude prototypes/*
+global-exclude drafts/*
+global-exclude .work/*
+global-exclude workspace/*
+global-exclude sandbox/*
+
+# Exclude large data files
+global-exclude *.csv
+global-exclude *.parquet
+global-exclude *.db
+global-exclude *.sqlite
+global-exclude data/*
+global-exclude datasets/*
+global-exclude large_files/*
+
+# Exclude local config overrides
+global-exclude config.local.yaml
+global-exclude settings.local.json
+global-exclude .env.local
+
+# Exclude IDE and dev files (already in .gitignore but be explicit)
+global-exclude .vscode/*
+global-exclude .idea/*
+global-exclude *.swp
+
+# Exclude cache and test artifacts
+global-exclude __pycache__/*
+global-exclude .pytest_cache/*
+global-exclude .mypy_cache/*
+global-exclude .ruff_cache/*
+global-exclude *.pyc
+
+# Exclude git files
+global-exclude .git/*
+global-exclude .gitignore
+
+# Exclude GitHub-specific files from package
+global-exclude .github/*
+
+# Exclude local log files
+global-exclude *.log

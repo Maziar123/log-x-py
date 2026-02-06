@@ -1,0 +1,253 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>C# Tutorial</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content=""> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">Getting Started</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">File Logging Tutorial: C#</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="filelogging_delphiprism.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="filelogging_bcb.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">1.</span>Complete the example presented in the <a href="livelogging.htm" class="topiclink">Live Logging Tutorial</a> if you have not done so already.</p><p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">2.</span>Double click on an empty area of the form to generate a handler for the form's Load event. In the event handler add the following code:<br>
+&nbsp;<br>
+<span class="f_CodeExample"> &nbsp; &nbsp;CodeSiteDestination dest = new CodeSiteDestination();</span><br>
+<span class="f_CodeExample">&nbsp;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.Active = </span><span class="f_CodeExample" style="font-weight: bold;">true</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.FileName = </span><span class="f_CodeExample" style="color: #0000ff;">&quot;MyFirstLog.csl&quot;</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.FilePath = </span><span class="f_CodeExample" style="color: #0000ff;">&quot;$(MyDocs)&quot;</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample">&nbsp;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;CodeSite.Destination = dest;</span></p><p style="text-indent: -24px; margin: 0px 0px 10px 24px;">&nbsp;</p>
+<p class="p_NotesHeader" style="border-bottom: none; margin: 0px 1px -2px 20px;"><span class="f_NotesHeader">NOTE</span></p>
+<p class="p_Notes" style="border-top: none; margin: -4px 1px 15px 20px;"><span class="f_Notes">$(MyDocs) maps to the users My Documents folder.</span></p>
+<p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">3.</span>Compile and run the application. &nbsp;When the program is up and running, click on the button. &nbsp;The messages are no longer being sent to the CodeSite Live Viewer so the viewer will not be started. &nbsp;If the CodeSite Live Viewer is already running, you will not see any messages appear in the message log.</p><p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">4.</span>Use Windows Explorer to navigate to your My Documents folder and locate the MyFirstLog.csl file.</p><p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">5.</span>Double-click the MyFirstLog.csl file. &nbsp;This causes the <span style="font-weight: bold;">CodeSite File Viewer</span> to be started, which will then load the messages that are stored in the MyFirstLog.csl file.</p><p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">6.</span>Stop the sample application. &nbsp;Next, well see how to conduct <span style="font-style: italic;">live logging</span> and <span style="font-style: italic;">file logging</span> simultaneously. &nbsp;To do this, we need to modify the <a href="tcodesitedestination.htm" class="topiclink">CodeSiteDestination</a> object. &nbsp;Update the event handler created above as shown below:<br>
+&nbsp;<br>
+<span class="f_CodeExample"> &nbsp; &nbsp;CodeSiteDestination dest = new CodeSiteDestination();</span><br>
+<span class="f_CodeExample">&nbsp;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.Active = </span><span class="f_CodeExample" style="font-weight: bold;">true</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.FileName = </span><span class="f_CodeExample" style="color: #0000ff;">&quot;MyFirstLog.csl&quot;</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.LogFile.FilePath = </span><span class="f_CodeExample" style="color: #0000ff;">&quot;$(MyDocs)&quot;</span><span class="f_CodeExample">;</span><br>
+<span class="f_CodeExample">&nbsp;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;dest.Viewer.Active := </span><span class="f_CodeExample" style="font-weight: bold;">true</span><span class="f_CodeExample">; &nbsp;  </span><span class="f_CodeExample" style="color: #000080;">// Add this line</span><br>
+<span class="f_CodeExample" style="color: #000080;">&nbsp;</span><br>
+<span class="f_CodeExample"> &nbsp; &nbsp;CodeSite.Destination = dest;</span></p><p style="text-align: left; padding: 0px 0px 0px 24px; margin: 0px 0px 10px 0px;"><span style="font-size:9pt; font-family: 'Verdana';color:#000000;display:inline-block;width:24px;margin-left:-24px">7.</span>Recompile and run the application. &nbsp;This time, when you click the button, you will see the messages show up in the CodeSite Live Viewer and the MyFirstLog.csl log file will grow in size as new messages are sent to it as well. If you have the <span style="font-weight: bold;">CodeSite File Viewer</span> still viewing the log file, then select View|Refresh or press F5 to update the display with any new messages that have been written to the log file.</p><p>&nbsp;</p>
+ 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

@@ -1,44 +1,85 @@
-Eliot: Logging that tells you *why* it happened
-================================================
+logxpy: Structured Logging with Action Tracing
+===============================================
 
-Python's built-in ``logging`` and other similar systems output a stream of factoids: they're interesting, but you can't really tell what's going on.
+**logxpy** is a Python logging library that outputs structured, actionable logs
+tracing causal chains of actions—helping you understand *why* things happened
+in your application.
+
+Why logxpy?
+-----------
+
+Python's built-in ``logging`` and similar systems output a stream of factoids:
+they're interesting, but hard to trace.
 
 * Why is your application slow?
 * What caused this code path to be chosen?
 * Why did this error happen?
 
-Standard logging can't answer these questions.
+Standard logging can't answer these questions easily.
 
-But with a better model you could understand what and why things happened in your application.
-You could pinpoint performance bottlenecks, you could understand what happened when, who called what.
+With **logxpy**, you get **causal chains of actions**: actions can spawn other
+actions, and eventually they either **succeed or fail**. The resulting logs tell
+you the story of what your software did.
 
-That is what Eliot does.
-``logxpy`` is a Python logging system that outputs causal chains of **actions**: actions can spawn other actions, and eventually they either **succeed or fail**.
-The resulting logs tell you the story of what your software did: what happened, and what caused it.
+Features
+--------
 
-Eliot supports a range of use cases and 3rd party libraries:
+* **Structured Logging** - JSON output for easy parsing and analysis
+* **Action Tracing** - Track operations from start to finish with timing
+* **Hierarchical Tasks** - Nested actions show the full call chain
+* **Python 3.12+ Ready** - Built with modern Python features
+* **Async Support** - Works with asyncio and async/await patterns
+* **Type Safety** - Full type hints throughout
 
-* Logging within a single process.
-* Causal tracing across a distributed system.
-* Scientific computing, with `built-in support for NumPy and Dask <https://logxpy.readthedocs.io/en/stable/scientific-computing.html>`_.
-* `Asyncio and Trio coroutines <https://logxpy.readthedocs.io/en/stable/generating/asyncio.html>`_ and the `Twisted networking framework <https://logxpy.readthedocs.io/en/stable/generating/twisted.html>`_.
+Quick Start
+-----------
 
-Eliot is only used to generate your logs; you will might need tools like Logstash and ElasticSearch to aggregate and store logs if you are using multiple processes across multiple machines.
+Install logxpy::
 
-Eliot supports Python 3.9-3.13, as well as PyPy3.
-It is maintained by Itamar Turner-Trauring, and released under the Apache 2.0 License.
+    pip install logxpy
 
-* `Read the documentation <https://logxpy.readthedocs.io>`_.
-* Download from `PyPI`_ or `conda-forge <https://anaconda.org/conda-forge/logxpy>`_.
-* Need help or have any questions? `File an issue <https://github.com/itamarst/logxpy/issues/new>`_ on GitHub.
-* **Commercial support** is available from `Python⇒Speed <https://pythonspeed.com/services/#logxpy>`_.
+Basic usage::
 
-Testimonials
+    from logxpy import start_action, Message, to_file
+
+    # Output to a file
+    to_file(open("app.log", "w"))
+
+    # Log messages
+    Message.log(message_type="app:startup", version="1.0.0")
+
+    # Trace actions
+    with start_action(action_type="http:request", method="POST", path="/api/users"):
+        with start_action(action_type="database:query", table="users"):
+            Message.log(message_type="database:result", rows=10)
+
+Output is structured JSON that's easy to parse, visualize, and analyze.
+
+Viewing Logs
 ------------
 
-    "Eliot has made tracking down causes of failure (in complex external integrations and internal uses) tremendously easier. Our errors are logged to Sentry with the Eliot task UUID. That means we can go from a Sentry notification to a high-level trace of operations—with important metadata at each operation—in a few seconds. We immediately know which user did what in which part of the system."
+Use the companion ``logxpy-cli-view`` package to render logs as beautiful
+colored trees::
 
-    —Jonathan Jacobs
+    pip install logxpy-cli-view
+    logxpy-cli-view app.log
 
-.. _Github: https://github.com/itamarst/logxpy
-.. _PyPI: https://pypi.python.org/pypi/logxpy
+Or use the standalone viewer from the examples::
+
+    python examples-log-view/view_tree.py app.log
+
+Requirements
+------------
+
+* Python 3.9 or newer (including PyPy3)
+
+Links
+-----
+
+* `Documentation <https://github.com/logxpy/logxpy/>`_
+* `Issue Tracker <https://github.com/logxpy/logxpy/issues>`_
+
+License
+-------
+
+Apache 2.0 License

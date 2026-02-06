@@ -191,3 +191,41 @@ yarn-error.log*
 *.rar
 *.tar
 *.zip
+
+# ==========================================
+# LOCAL-ONLY FOLDERS (Not on GitHub or PyPI)
+# ==========================================
+# Add your local development folders here
+# These will exist only on your local machine
+
+# Documentation & private notes
+DOC-X/                  # Private documentation folder
+
+# Personal notes & scratch work
+.local/
+private/
+personal/
+notes/
+
+# Large datasets / test files
+ data/
+datasets/
+large_files/
+*.csv
+*.parquet
+*.db
+*.sqlite
+
+# Experimentation / prototyping
+experiments/
+prototypes/
+drafts/
+
+# Local configuration overrides
+config.local.yaml
+settings.local.json
+
+# Temporary working directories
+.work/
+workspace/
+sandbox/

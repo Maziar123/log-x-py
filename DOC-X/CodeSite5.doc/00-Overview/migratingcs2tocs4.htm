@@ -1,0 +1,292 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>Migrating from Version 2.x</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content=""> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">Migrating from Older Versions</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">Migrating from Version 2.x</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="migratingfromolderversions.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="migratingcs3tocs4.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p>One the major challenges faced when developing recent versions of CodeSite was how to handle the new frameworks and languages that would be supported. In addition, we also wanted to simplify the way certain tasks were accomplished such as specifying destinations when compared with CodeSite 2.x. &nbsp;In order to accomplish our goals, ALL of the classes used by developers to send CodeSite messages--including the public interfaces of those classes needed to be changed. The benefits of these changes are described below.</p>
+<p>It should also be noted that some of the changes that have been made will break existing code. &nbsp;While we do not like to break existing code, we strongly feel that the benefits of doing so tremendously outweighed the disadvantages of inconsistency between the interfaces and increased complexity in usability. So, without further ado, let's take a look at what's new.</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">CodeSiteLogging Unit and Namespaces</span> </p>
+<p>The most visible change with respect to source code is that a number of names have been changed--names of units, classes, components, properties, methods, etc. &nbsp;The most noticeable of the changes is in the unit name containing the CodeSite logging classes.  </p>
+<p>The new unit is named <span style="font-weight: bold;">CodeSiteLogging</span>. &nbsp;Therefore, at a minimum when moving to your existing code from CodeSite 2.0 to CodeSite 5.0, you will need to change references to the old <span style="font-weight: bold;">CSIntf</span> unit to <span style="font-weight: bold;">CodeSiteLogging</span>.</p>
+<p>The <span style="font-weight: bold;">CodeSiteLogging</span> name is used throughout the system and represents the CodeSite Logging Classes to be used within a particular development environment. For example, developers using Delphi to develop a Win32 application will use the <span style="font-weight: bold;">CodeSiteLogging</span> unit directly. &nbsp;And developers using Delphi Prism or any other &nbsp;.NET development tool/language (e.g. C#/VB.NET) will use the <span style="font-weight: bold;">Raize.CodeSiteLogging.dll</span> assembly. The <span style="font-weight: bold;">CodeSiteLogging</span> name is also used in the .NET namespaces defined in the product. (To be precise, the namespace names are the same as the assembly names).</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Class Name Changes</span></p>
+<p>In addition to the unit name change, many of the classes in the <span style="font-weight: bold;">CodeSiteLogging</span> unit have also changed. Normally, this will have little effect on developers as most CodeSite 2 developers simply used the global <span style="font-weight: bold;">CodeSite</span> object, which still exists in CodeSite 5.0. &nbsp;(For .NET development, the <span style="font-weight: bold;">CodeSite</span> static class is available in the <span style="font-weight: bold;">Raize.CodeSiteLogging</span> namespace, which serves the same purpose.)</p>
+<p>Also, please note that class names are the same regardless of tool or platform with one minor difference. &nbsp;Delphi based classes use a &quot;T&quot; prefix while the .NET classes do not. &nbsp;Please see the <a href="documentationconventions.htm" class="topiclink">Documentation Conventions</a> topic for more details. The primary class used to send CodeSite messages is now called <a href="tcodesitelogger.htm" class="topiclink">T|CodeSiteLogger</a>.</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Simplified Sending Interface</span></p>
+<p>The <a href="tcodesitelogger.htm" class="topiclink">T|CodeSiteLogger</a> class is the main class that developers use to capture information about their program, package it up, and send it to the CodeSite Dispatcher. &nbsp;The T|CodeSiteLogger class has also received quite a bit of attention besides the new name. &nbsp;For example, in CS2, you can send an integer value using any one of the following:</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;SendInteger(&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;SendInteger(&nbsp;MsgType:&nbsp;Integer;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;SendIntegerEx(&nbsp;MsgType:&nbsp;Integer;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;Send(&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;Send(&nbsp;MsgType:&nbsp;Integer;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span><br>
+<span class="f_CodeExample">&nbsp;</span></p>
+<p>The extra methods were needed to ensure interface consistency between Delphi 3 and later versions of Delphi. &nbsp;Other than that, the only thing these extra methods do is to increase the size of Delphi's Code Insight window! &nbsp;Since CodeSite no longer supports Delphi 3 or 4, we have simplified the interface dramatically. &nbsp;The above set of methods for sending integer values has been reduced to:</p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;Send(&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">procedure</span><span class="f_CodeExample">&nbsp;Send(&nbsp;MsgType:&nbsp;Integer;&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">const</span><span class="f_CodeExample">&nbsp;Msg:&nbsp;</span><span class="f_CodeExample" style="font-weight: bold;">string</span><span class="f_CodeExample">;&nbsp;Value:&nbsp;Integer&nbsp;);&nbsp;overload;</span><br>
+<span class="f_CodeExample">&nbsp;</span></p>
+<p>The same types of changes have been made for the other common data types.</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Other Message Sending Changes</span></p>
+<p>The <span style="font-weight: bold;">SendStream</span> method has been renamed to <a href="tcodesitelogger_sendcomponentastext.htm" class="topiclink">SendComponentAsText</a> to more accurately reflect what the method does.  </p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">CodeSite Component Changes</span></p>
+<p>For Delphi/C++Builder development, nonvisual design-time components are still available for backward compatibility, but they are no longer encouraged, and the components are not supported in .NET.</p>
+<p>The nonvisual <span style="font-weight: bold;">TCSGlobalObject</span> component provided a design-time wrapper around the properties of the global CodeSite object. &nbsp;The TCSGlobalObject component was marked deprecated in CodeSite 4, and has been removed in CodeSite 5.</p>
+<p>The nonvisual <span style="font-weight: bold;">TCSObject</span> component provided a way to create additional objects. &nbsp;The TCSObject component was deprecated in CodeSite 4, and has been removed in CodeSite 5. The <a href="tcodesitelogger.htm" class="topiclink">T|CodeSiteLogger</a> class should be used to create new instances.</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Destination and DestinationDetails</span></p>
+<p>The <span style="font-weight: bold;">DestinationDetails</span> string property of the <span style="font-weight: bold;">T|CodeSiteLogger</span> objects is no longer defined. Instead a new <a href="tcodesitelogger_destination.htm" class="topiclink">Destination</a> property is used to specify where the Dispatcher should send the CodeSite messages. &nbsp;The Destination property is of type <a href="tcodesitedestination.htm" class="topiclink">T|CodeSiteDestination</a>. </p>
+<p>The properties of <span style="font-weight: bold;">T|CodeSiteDestination</span> class are used to specify the destination. &nbsp;Instead of having to specify a specially formatted string to specify a destination, all you need to do now is to change the appropriate properties of a <span style="font-weight: bold;">T|CodeSiteDestination</span> object.</p>
+<p>For example, in the following code, the CodeSite object's destination has been changed so that messages sent from the CodeSite object will be sent to the viewer <span style="font-weight: bold;">and</span> stored in a log file: </p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">var</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest:&nbsp;TCodeSiteDestination;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample" style="font-weight: bold;">begin</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest&nbsp;:=&nbsp;TCodeSiteDestination.Create(&nbsp;Self&nbsp;);</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest.Viewer.Active&nbsp;:=&nbsp;True;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest.LogFile.Active&nbsp;:=&nbsp;True;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest.LogFile.FileName&nbsp;:=&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">'Sample.csl'</span><span class="f_CodeExample">;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;Dest.LogFile.FilePath&nbsp;:=&nbsp;</span><span class="f_CodeExample" style="color: #0000ff;">'C:\Logs'</span><span class="f_CodeExample">;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_CodeExample"><span class="f_CodeExample">&nbsp;&nbsp;CodeSite.Destination&nbsp;:=&nbsp;Dest;</span><br>
+<span class="f_CodeExample">&nbsp;</span></p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Sending Custom Data and Custom Formatting</span></p>
+<p>The custom formatting capabilities have also been enhanced. &nbsp;It is now possible to implement the <a href="icodesitecustomdata.htm" class="topiclink">ICodeSiteCustomData</a> interface on your custom classes. Of course, you can still use the CS2 approach of creating a descendant of <a href="tcodesiteformatter.htm" class="topiclink">TCodeSiteFormatter</a> (formerly <span style="font-weight: bold;">TCSFormatter</span>).  </p>
+<p>Please read the <a href="sendingcustomdata.htm" class="topiclink">Sending Custom Data</a> topic for more information.</p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">CodeSiteManager and CSObjectManager</span></p>
+<p>The <span style="font-weight: bold;">CSObjectManager</span> global variable has been renamed to <a href="codesitemanager.htm" class="topiclink">CodeSiteManager</a> and is of type <span style="font-weight: bold;">T|CodeSiteManager</span>. &nbsp;(In the NET interface, <span style="font-weight: bold;">CodeSiteManager</span> is a static class.) &nbsp;The purpose of the <span style="font-weight: bold;">CodeSiteManager</span> is to provide properties that are shared by all active T|CodeSiteLogger instances. &nbsp;For example, the <span style="font-weight: bold;">CodeSiteManager</span> defines a <a href="codesitemanager_defaultdestination.htm" class="topiclink">DefaultDestination</a> property. &nbsp;If an individual <span style="font-weight: bold;">T|CodeSiteLogger</span> instance does not specify a <a href="tcodesitelogger_destination.htm" class="topiclink">Destination</a>, then the <span style="font-weight: bold;">DefaultDestination</span> settings are used.</p>
+<p>In addition, the <span style="font-weight: bold;">EnableAllObjects</span> and <span style="font-weight: bold;">DisableAllObjects</span> methods have been removed. In its place, the new <a href="codesitemanager_enabled.htm" class="topiclink">Enabled</a> property should be used. &nbsp;Setting <span style="font-weight: bold;">Enabled</span> to <span style="font-weight: bold;">False</span> prevents all <span style="font-weight: bold;">T|CodeSiteLogger</span> instances from sending messages. &nbsp;The benefit of this change is that the <span style="font-weight: bold;">Enabled</span> states of the individual <span style="font-weight: bold;">T|CodeSiteLogger</span> instances are not affected by changing the <span style="font-weight: bold;">CodeSiteManager.Enabled</span> property.</p>
+<p>Also new in the <span style="font-weight: bold;">CodeSiteManager</span> is the ability to name threads. By using the <a href="codesitemanager_setcurrentthreadname.htm" class="topiclink">CodeSiteManager.SetCurrentThreadName</a> a logical name for a thread can be assigned and recorded by the <span style="font-weight: bold;">CodeSiteManager</span>, which then ensures that all messages that are sent from this thread specify the thread name rather than the thread's ID. &nbsp;This is very handy when creating new views in the <a href="viewer.htm" class="topiclink">CodeSite Viewer</a> based on Thread Name. </p>
+<p class="p_NotesHeader" style="border-bottom: none;"><span class="f_NotesHeader">NOTE</span></p>
+<p class="p_Notes" style="border-top: none;"><span class="f_Notes">The SetCurrentThreadName method is not in the .NET CodeSiteManager as .NET threads are already named.</span></p>
+<p class="p_SectionHeading"><span class="f_SectionHeading">Package File Changes</span></p>
+<p>The packages that contain the CodeSite Logging classes for Delphi/C++Builder development have been renamed according to the Raize Software package naming convention. &nbsp;The primary benefit of this is that the version number of the product and the version number of the RTL have been removed from the names. &nbsp;The result is that when a new version of CodeSite is released, you will no longer be required to modify the source code of your dependent packages.</p>
+<p>The new packages are:</p>
+<p>CodeSiteLoggingPkg120.bpl</p>
+<p>CodeSiteLoggingPkg140.bpl</p>
+<p>CodeSiteLoggingPkg150.bpl</p>
+<p>CodeSiteLoggingPkg160.bpl</p>
+<p>However, in your dependent packages, you simply need to list CodeSiteLoggingPkg.dcp as the required package.</p>
+<p>&nbsp;</p>
+ 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

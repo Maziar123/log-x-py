@@ -1,0 +1,180 @@
+/* Text Styles */
+hr { color: #000000}
+body, table, tr, th /* Normal */
+{
+ font-size: 9pt;
+ font-family: Verdana;
+ font-style: normal;
+ font-weight: normal;
+ color: #000000;
+ text-decoration: none;
+}
+span.f_CodeExample /* Code Example */
+{
+ font-size: 10pt;
+ font-family: Consolas;
+}
+span.f_Comment /* Comment */
+{
+}
+span.f_CourierFixed /* Courier Fixed */
+{
+ font-family: 'Courier New';
+}
+span.f_ExpressEdition /* Express Edition */
+{
+ font-size: 8pt;
+ font-style: italic;
+}
+span.f_Heading1 /* Heading1 */
+{
+ font-size: 10pt;
+ font-weight: bold;
+ color: #3c508c;
+}
+span.f_ImageCaption /* Image Caption */
+{
+ font-size: 8pt;
+ font-weight: bold;
+}
+span.f_Notes /* Notes */
+{
+}
+span.f_NotesHeader /* Notes Header */
+{
+ font-weight: bold;
+ color: #3c508c;
+ text-transform: uppercase;
+}
+span.f_SectionHeading /* Section Heading */
+{
+ font-size: 10pt;
+ font-weight: bold;
+ color: #3c508c;
+}
+span.f_TableCell /* Table Cell */
+{
+}
+span.f_TableHeading /* Table Heading */
+{
+ font-weight: bold;
+}
+span.f_TableHeading-Dimmed /* Table Heading - Dimmed */
+{
+ font-weight: bold;
+ color: #787878;
+}
+span.f_TopicCategory /* TopicCategory */
+{
+ font-size: 8pt;
+ color: #3c508c;
+}
+/* Paragraph styles */
+p /* Normal */
+{
+ text-align: left;
+ text-indent: 0px;
+ padding: 0px 0px 0px 0px;
+ margin: 0px 0px 19px 0px;
+}
+.p_CodeExample /* Code Example */
+{
+ white-space: nowrap;
+ margin: 0px 0px 0px 0px;
+}
+.p_Comment /* Comment */
+{
+}
+.p_ExpressEdition /* Express Edition */
+{
+}
+.p_Heading1 /* Heading1 */
+{
+ font-size: 100%;
+ font-weight: normal;
+ text-align: left;
+ text-indent: 0px;
+ padding: 0px 0px 0px 0px;
+ margin: 0px 0px 5px 0px;
+}
+.p_ImageCaption /* Image Caption */
+{
+}
+.p_Notes /* Notes */
+{
+ border-color: #5f78b9;
+ border-style: solid;
+ border-width: 1px;
+ border-top: none;
+ background: #e1e6f5;
+ padding: 4px 4px 4px 4px;
+ margin: -4px 1px 15px 1px;
+}
+.p_NotesHeader /* Notes Header */
+{
+ border-color: #5f78b9;
+ border-style: solid;
+ border-width: 1px;
+ border-bottom: none;
+ background: #e1e6f5;
+ padding: 4px 4px 4px 4px;
+ margin: 0px 1px -2px 1px;
+}
+.p_SectionHeading /* Section Heading */
+{
+ margin: 16px 0px 8px 0px;
+}
+.p_TableCell /* Table Cell */
+{
+ margin: 2px 0px 2px 0px;
+}
+.p_TableHeading /* Table Heading */
+{
+ margin: 2px 0px 2px 0px;
+}
+.p_TableHeading-Dimmed /* Table Heading - Dimmed */
+{
+ text-align: center;
+ margin: 2px 0px 2px 0px;
+}
+.p_TopicCategory /* TopicCategory */
+{
+ margin: 0px 0px 5px 0px;
+}
+
+
+#hmpopupdiv /* used for javascript text popups */
+{
+  display: none;
+  position: absolute;
+  z-index: 1000;
+  background-color: #FFFFFF;
+  padding: 6px;
+  border:1px solid #000000;
+  border-radius: 5px;
+  box-shadow: 5px 5px 5px #888;
+}
+
+#hmlightbox /* image lightbox */
+{
+  border: none;
+  padding: 8px;
+  background: #FFF;
+  font-size: 110%;
+  font-weight: bold;
+  color: #777;
+  box-shadow: 5px 5px 5px #888;
+}
+
+a.dropdown-toggle /* dropdown toggle caption */
+{
+  cursor: pointer;
+}
+a.inline-toggle /* inline toggle caption */
+{
+  cursor: pointer;
+}
+img.dropdown-toggle-icon /* toggle icon */
+{
+  cursor: pointer;
+}

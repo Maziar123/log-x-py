@@ -1,0 +1,232 @@
+<!DOCTYPE HTML> 
+<html> 
+<head> 
+  <title>Live Viewer/File Viewer</title> 
+  <meta name="generator" content="Help & Manual"> 
+  <meta name="keywords" content=""> 
+  <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"> 
+  <link type="text/css" href="default.css" rel="stylesheet"> 
+
+  <!-- non-scrolling headers for CHM and browser-based help--> 
+  <style type="text/css" media="screen"> 
+    a 
+    { 
+      color: rgb( 60, 60, 120 ); 
+      text-decoration: underline 
+    }
+    a:visited 
+    {
+      color: rgb( 60, 60, 120 );
+      text-decoration: underline 
+    }
+    a:hover 
+    {
+      color: rgb( 185, 145, 85 ); 
+      text-decoration: underline 
+    }
+    
+    <!-- 
+    body 
+    {    
+      margin:0; 
+      padding:0; 
+      overflow: auto; 
+      background: #FFFFFF; 
+    } 
+    #idheader 
+    {
+      width:100%; 
+      height:auto; 
+      padding: 0; 
+      margin: 0; 
+      background: #DCDCDC; 
+      border-bottom: 2px solid rgb( 120, 120, 120 );      
+    } 
+  
+    /* Set the padding in the OUTER div for MSIE and CHM to prevent the 
+       width bug and the horizontal scrollbar bug from activating. */ 
+  
+    #idcontent 
+    {
+      width: 100%; 
+      padding: 0px !important; 
+      padding: 10px 15px 5px 10px; 
+    } 
+  
+    /* Set the padding in the INNER div for all other browsers. */ 
+  
+    #innerdiv 
+    {
+      padding: 10px 5px 5px 10px !important;  
+      padding: 0px; 
+    } 
+  
+    /* These styles are for the header, the print link and the navigation links. 
+       Change .topichead padding to 5px 5px 0px 5px if you use the Print 
+       Topic link.  */
+  
+    .topichead 
+    {
+      padding: 5px;
+    }
+      
+    .navlinks 
+    {
+      font-size: 10pt;
+    }
+    
+    .navlinks a 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:visited 
+    {
+      text-decoration: none;
+      color: blue;
+    }
+    
+    .navlinks a:hover 
+    {
+      text-decoration: underline;
+      color: blue;
+    }
+  
+    /* These styles are dynamically assigned with Javascript. 
+       Since the media type is "screen", they do not apply for print */ 
+  
+    html.nonscroll 
+    {
+      overflow:hidden; 
+    } 
+  
+    body.nonscroll 
+    {
+      overflow:hidden; 
+      height:100%; 
+    } 
+  
+    div.nonscroll 
+    {
+      overflow:auto; 
+    } 
+    --> 
+  </style> 
+
+  
+    <style TYPE="text/css" media="print">
+    <!--
+
+      /* Hide navigation links and add space between header and
+         text in the printed version. DON'T change this instance for
+         adding the Print Topic link, you need the instance further up! */
+
+      #idnav 
+      { 
+        display:none; 
+      }
+      
+      .topichead 
+      { 
+        padding: 5px 5px 20px 5px; 
+      }
+    -->
+    </style>
+  
+
+  <script type="text/javascript"> 
+  <!-- 
+  function doResize() 
+  {
+    var clheight; 
+    if (self.innerHeight) // all except Explorer 
+    { 
+      clheight = self.innerHeight; 
+    }
+    else if (document.documentElement && document.documentElement.clientHeight) // Explorer 6 Strict Mode
+    { 
+      clheight = document.documentElement.clientHeight; 
+    }
+    else if (document.body) // other Explorers 
+    { 
+      clheight = document.body.clientHeight; 
+    }
+    document.getElementById('idcontent').style.height = clheight - document.getElementById('idheader').clientHeight +'px';
+  } 
+
+  function nsrInit() 
+  {
+    contentbody = document.getElementById('idcontent'); 
+    if (contentbody) 
+    {
+      contentbody.className = 'nonscroll'; 
+      document.getElementsByTagName('body')[0].className = 'nonscroll'; 
+      document.getElementsByTagName('html')[0].className = 'nonscroll'; 
+      window.onresize = doResize; 
+      doResize(); 
+    } 
+  } 
+  --> 
+  </script> 
+
+   <script type="text/javascript" src="jquery.js"></script>
+   <script type="text/javascript" src="helpman_settings.js"></script>
+   <script type="text/javascript" src="helpman_topicinit.js"></script>
+
+
+</head> 
+
+<body> 
+<div id="idheader"> 
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"> 
+    <tr valign="middle"> 
+      <td align="left" class="topichead"> 
+        <p class="p_TopicCategory"><span class="f_TopicCategory">What's New</span></p>
+<h1 class="p_Heading1"><span class="f_Heading1">Live Viewer/File Viewer</span></h1>
+ 
+      </td>
+      <td align="right" class="topichead" id="idnav"> 
+        <span class="navlinks"> 
+
+          <a href="whatsnew_loggingclasses.htm"><img src="helpprevious.png" border=0 alt="Previous"></a>&nbsp;
+          <a href="codesiteloggingsystem.htm"><img src="helptop.png" border=0 alt="Top"></a>&nbsp;
+          <a href="whatsnew_dispatcher.htm"><img src="helpnext.png" border=0 alt="Next"></a>
+        </span> 
+      </td> 
+    </tr>
+  
+    <!-- To add a Print Topic link uncomment this section and change the
+         padding value of the .topichead style at the top of the template 
+         to "padding: 5px 5px 0px 5px;"
+
+    
+    <tr id="idnav">
+      <td colspan="2" style="padding: 0px 5px 5px 5px">
+        <span class="navlinks"><a href="javascript:print()">Print this Topic</a></span>
+      </td>
+    </tr> 
+    
+
+    Uncomment this section to add a Print Topic link -->
+  </table>
+</div> 
+
+<div id="idcontent"><div id="innerdiv"> 
+<p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>As noted in the changes to the logging classes, a message's type has been separated from the message's content. This separation of message type and content is prevalent throughout both viewers. For instance, the message list has been enhanced to display both the Message Type and Message Content icons for each message. Second, the message navigation toolbar now has drop-downs for both Message Type and Message Content. The Automatic Navigation Mode has also been enhanced to automatically update the type and content values from the selected message. The New View dialog box has also been updated to allow the selection of message types and content values for filtering.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The viewers have been updated to support loading and saving the new CodeSite 5 log file format. &nbsp;The viewers can also load log files in the CodeSite 3 &amp; 4 log file format.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The tabs for additional filtered views have been moved to the top of the message list rather than the bottom. The change makes it much easier to manage the views because the commands that affect the views are located at the top of the message list in the message list toolbar.</p><p><img src="liveviewer.png" width="934" height="571" alt="LiveViewer" style="border:none"></p>
+<p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The Ctrl+Tab and Ctrl+Shift+Tab keyboard commands can now be used to navigate between view tabs.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>All view tabs except the All Messages tab now have a close button displayed on the tab to quickly close views that are no longer needed.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The order of the view tabs can be quickly changed by simply dragging a tab to the desired position. &nbsp;All tabs can be moved except the primary All Messages tab, which remains in the left most position.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The File Viewer now includes a <a href="viewer_commands_view_refresh.htm" class="topiclink">Refresh</a> button on the toolbar.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The primary font used in the viewer matches the default font used by the operating system. For example, if Windows Vista or Windows 7 is being used, then the font used by the viewers is Seqoe UI. Earlier versions of Windows use Tahoma.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The General page of the Options dialog box now contains a color picker to specify the Highlight Color used throughout the viewer.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The Xml Structure and Syntax inspector has been integrated directly into the viewer and, as a result, it is no longer necessary to distribute a separate plug-in package to utilize this inspector.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The filter criteria used to define new views has been extended to support Regular Expressions in the message text field.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Regular Expressions can now be used in the Find dialog box.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The <a href="viewer_commands_search_updatesynchronizedmessage.htm" class="topiclink">Update Synchronized Message</a> command has been added to the <a href="viewer_commands_search.htm" class="topiclink">Search</a> menu. Use this command to quickly change the message that is synchronized between multiple views. &nbsp;This command can also be invoked by clicking the desired message while holding down the Alt key.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Resolved issue where hint windows would not appear correctly if the viewer was not on the primary monitor in a multi-monitor system.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The viewers are built using Delphi 10.1 Berlin, and as a result, any custom plug-ins will need to be recompiled using 10.1 Berlin before they can be loaded into the viewers.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The search string field in the Find dialog box is no longer case sensitive.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Performing a Find Next with an empty search string no longer raises an exception.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>New Notes and CheckPoints added to the message list now have the correct message type.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Project Files now correctly store the selected Message Type and Message Content values used in each view's filter.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Fixed issue where dragging a view's tab to reorder the list of views would cause the view and corresponding tab to get out of sync.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The Always On Top functionality has been restored. That is, when Always On Top is enabled, dialogs are no longer displayed behind the main viewer window.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>The Table inspector is now more tolerant in displaying tables that contain rows with a variable number of columns.</p><p style="text-align: left; padding: 0px 0px 0px 13px; margin: 0px 0px 19px 0px;"><span style="display:inline-block;width:13px;margin-left:-13px;font-size:9pt;font-family:'Symbol';font-style:normal;color:#000000;text-decoration:none;">&#183;</span>Fixed issue where CategoryFontColor values were not being displayed correctly in the viewers.</p> 
+</div></div> 
+
+<script type="text/javascript"> 
+<!-- 
+var lastSlashPos = document.URL.lastIndexOf("/") >
+document.URL.lastIndexOf("\\") ? document.URL.lastIndexOf("/") :
+document.URL.lastIndexOf("\\");
+if( document.URL.substring( lastSlashPos + 1, lastSlashPos + 4 ).toLowerCase() != "~hh" )
+{
+    nsrInit();
+}
+--> 
+</script> 
+</body> 
+</html>

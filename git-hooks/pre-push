@@ -1,0 +1,51 @@
+#!/bin/bash
+# Pre-push hook: Prevents pushing local-only files to GitHub
+# Install: cp git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+
+# List of local-only patterns that should NOT be pushed to GitHub
+LOCAL_ONLY_PATTERNS=(
+    "DOC-X/"           # Private documentation folder
+    "local/"
+    "private/"
+    "personal/"
+    "secrets/"
+    "*.local.json"
+    "*.local.yaml"
+    "*.local.conf"
+    "credentials/"
+    "api_keys/"
+    ".env.local"
+    ".env.private"
+)
+
+# Get the list of files being pushed
+files_being_pushed=$(git diff --name-only HEAD @{push} 2>/dev/null || git diff --name-only HEAD origin/$(git branch --show-current) 2>/dev/null || echo "")
+
+# Check if any local-only files are in the push
+blocked_files=()
+for pattern in "${LOCAL_ONLY_PATTERNS[@]}"; do
+    while IFS= read -r file; do
+        if [[ "$file" == $pattern ]] || [[ "$file" == */$pattern ]] || [[ "$file" == $pattern* ]]; then
+            blocked_files+=("$file")
+        fi
+    done <<< "$files_being_pushed"
+done
+
+if [ ${#blocked_files[@]} -gt 0 ]; then
+    echo "❌ PUSH BLOCKED: Local-only files detected!"
+    echo ""
+    echo "The following files are marked as LOCAL-ONLY and cannot be pushed to GitHub:"
+    echo ""
+    for file in "${blocked_files[@]}"; do
+        echo "  • $file"
+    done
+    echo ""
+    echo "Options:"
+    echo "  1. Remove these files from the commit: git reset HEAD <file>"
+    echo "  2. Move them to .gitignore if they shouldn't be tracked"
+    echo "  3. Use 'git push --no-verify' to force (not recommended)"
+    echo ""
+    exit 1
+fi
+
+exit 0
