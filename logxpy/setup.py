@@ -7,10 +7,9 @@ def read(path):
     Read the contents of a file.
     """
     import os
-    # Read from main project folder (parent of this file's directory)
+    # Read from the same directory as this file
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(base_dir)
-    full_path = os.path.join(parent_dir, path)
+    full_path = os.path.join(base_dir, path)
     with open(full_path) as f:
         return f.read()
 
