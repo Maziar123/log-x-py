@@ -1,3 +1,10 @@
+# NOTE: For EXISTING PyPI projects, create the Trusted Publisher at:
+# https://pypi.org/manage/project/logxpy/settings/publishing/
+# (NOT at /account/publishing/)
+#
+# Required GitHub Environment: 'pypi' 
+# Create at: GitHub Repo → Settings → Environments → New environment
+
 name: Publish to PyPI
 
 on:
