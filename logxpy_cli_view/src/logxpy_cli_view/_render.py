@@ -1,4 +1,4 @@
-"""Rendering functions for Eliot task trees."""
+"""Rendering functions for logxpy task trees."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from toolz import compose, excepts, identity
 from logxpy_cli_view import format
 from logxpy_cli_view._color import colored
 from logxpy_cli_view._theme import Theme, get_theme
-from logxpy_cli_view._util import Writable, eliot_ns, format_namespace, is_namespace
+from logxpy_cli_view._util import Writable, logxpy_ns, eliot_ns, format_namespace, is_namespace
 from logxpy_cli_view.tree_format import ASCII_OPTIONS, Options, format_tree
 
 T = TypeVar("T")

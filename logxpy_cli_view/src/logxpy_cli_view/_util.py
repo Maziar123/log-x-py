@@ -1,4 +1,4 @@
-"""Utility functions for eliot-tree."""
+"""Utility functions for logxpy-cli-view."""
 
 from __future__ import annotations
 
@@ -36,7 +36,8 @@ def is_namespace(value: Any) -> bool:
 
 
 # Pre-defined logxpy namespace factory
-eliot_ns = namespaced("eliot")
+logxpy_ns = namespaced("logxpy")
+eliot_ns = logxpy_ns  # Backwards compatibility alias
 
 
 @runtime_checkable

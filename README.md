@@ -73,7 +73,7 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 
 | Message Type | Purpose |
 |--------------|---------|
-| `eliot:traceback` | Exception traceback logging |
+| `logxpy:traceback` | Exception traceback logging |
 | `loggerx:debug` | Debug level messages |
 | `loggerx:info` | Info level messages |
 | `loggerx:success` | Success level messages |
@@ -671,9 +671,22 @@ log-x-py/
 
 MIT License
 
-## Credits
+## Credits & Attribution
 
-Inspired by [eliottree](https://github.com/jonathanj/eliottree), uses [Eliot](https://github.com/itamarst/eliot) format. Built with Python 3.12+.
+This project is a fork and modernization of two excellent libraries:
+
+### logxpy (Logging Library)
+**Forked from [Eliot](https://github.com/itamarst/eliot)** by Itamar Turner-Trauring  
+- Original: Structured logging for complex & distributed systems
+- Changes: Modernized for Python 3.12+, renamed to logxpy, enhanced API
+
+### logxpy-cli-view (Tree Viewer)
+**Forked from [eliottree](https://github.com/jonathanj/eliottree)** by Jonathan Jacobs  
+- Original: Render Eliot logs as ASCII trees
+- Changes: Modernized codebase, renamed to logxpy-cli-view, added new features
+
+### License
+Both original projects are licensed under Apache 2.0. This fork maintains compatibility with the original Eliot log format while providing a modernized API and toolset.
 
 ---
 

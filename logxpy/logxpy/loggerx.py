@@ -1,4 +1,8 @@
-"""Main Logger facade - LoggerX API built on eliot."""
+"""Main Logger facade - LoggerX API.
+
+LoggerX provides a modern, fluent API for structured logging.
+Part of the logxpy library - a fork of Eliot.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +11,7 @@ from contextlib import contextmanager
 from typing import Any
 
 from . import decorators
-from ._action import current_action  # Use eliot's to work with both Action types
+from ._action import current_action
 from ._async import _emit, current_scope, scope
 from ._base import now, uuid
 from ._fmt import format_value
@@ -52,7 +56,7 @@ class Logger:
         return self._log(Level.INFO, f"📍 {msg}", **f)
 
     def exception(self, msg: str, **f: Any) -> Logger:
-        f["eliot:traceback"] = traceback.format_exc()
+        f["logxpy:traceback"] = traceback.format_exc()
         return self._log(Level.ERROR, msg, **f)
 
     def __call__(self, msg: str, **f: Any) -> Logger:
@@ -164,23 +168,11 @@ class Logger:
 
         if destinations:
             # Clear existing destinations if possible, or we just add new ones?
-            # Eliot doesn't easily allow clearing all destinations without accessing private members.
-            # But we can try.
-            # However, EliotLogger._destinations is a global singleton-like thing.
-
             # Simple implementation: Add what's requested.
             for dest in destinations:
                 if dest == "console":
-                    # We don't add console by default in eliot, usually.
-                    # But here we can add our ConsoleDestination
-                    # Need to adapt it to Eliot's interface?
-                    # No, _emit uses _destinations.send.
-                    # Our ConsoleDestination is an async thing in _dest.py?
-                    # Wait, _dest.py destinations have `write(record)`.
-                    # Eliot destinations expect `call(dict)`.
-
-                    # We need to bridge between Eliot destinations and LoggerX destinations if we want to use LoggerX destinations.
-                    # Or we just use Eliot's to_file.
+                    # Console destination setup
+                    if format == "rich":
 
                     if format == "rich":
                         # We can't easily plug async destination into sync logxpy pipeline yet
@@ -219,19 +211,19 @@ class Logger:
             task_uuid=task_uuid,
             task_level=task_level,
         )
-        _emit(record)  # Goes to eliot's destinations + any new handlers
+        _emit(record)  # Goes to destinations + any registered handlers
         return self
 
 
 def _get_task_info(act) -> tuple[str, tuple[int, ...]]:
-    """Extract task info from eliot.Action or AsyncAction."""
+    """Extract task info from Action or AsyncAction."""
     if act is None:
         return uuid(), (1,)
     task_uuid = act.task_uuid
-    # eliot.Action uses _task_level (TaskLevel), AsyncAction uses task_level (tuple)
+    # Action uses _task_level (TaskLevel), AsyncAction uses task_level (tuple)
     if hasattr(act, "task_level"):  # AsyncAction
         return task_uuid, act.task_level
-    if hasattr(act, "_task_level"):  # eliot.Action
+    if hasattr(act, "_task_level"):  # Action
         return task_uuid, tuple(act._task_level.as_list())
     return task_uuid, (1,)
 

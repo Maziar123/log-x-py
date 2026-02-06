@@ -1,4 +1,4 @@
-"""Core types and protocols - eliot-compatible field names."""
+"""Core types and protocols - logxpy-compatible field names."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Any, Protocol, runtime_checkable
 
-# Eliot-compatible field names (from eliot/_message.py, eliot/_action.py)
+# LogXPy field names (compatible with structured logging format)
 TASK_UUID = "task_uuid"
 TASK_LEVEL = "task_level"
 TIMESTAMP = "timestamp"
@@ -27,21 +27,21 @@ class Level(IntEnum):
 
 @dataclass(frozen=True, slots=True)
 class Record:
-    """Immutable log record with eliot-compatible field names."""
+    """Immutable log record with structured logging field names."""
 
-    timestamp: float  # eliot: timestamp
+    timestamp: float  # Unix timestamp
     level: Level
     message: str
     fields: dict[str, Any]
     context: dict[str, Any]
-    task_uuid: str  # eliot: task_uuid
-    task_level: tuple[int, ...]  # eliot: task_level
+    task_uuid: str  # Task identifier
+    task_level: tuple[int, ...]  # Hierarchical task level
     action_type: str | None = None
     action_status: str | None = None
     message_type: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to eliot-compatible dict format."""
+        """Convert to structured logging dict format."""
         d = {
             TIMESTAMP: self.timestamp,
             TASK_UUID: self.task_uuid,

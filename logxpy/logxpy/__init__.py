@@ -1,5 +1,9 @@
 """
-Eliot: Logging for Complex & Distributed Systems.
+LogXPy: Modern Structured Logging for Python 3.12+
+
+Forked from Eliot (https://github.com/itamarst/eliot).
+Modernized with Python 3.12+ features: type aliases, pattern matching,
+dataclass slots, and StrEnum.
 """
 
 from warnings import warn
@@ -20,6 +24,30 @@ from ._traceback import write_traceback, writeFailure
 from ._validation import ActionType, Field, MessageType, ValidationError, fields
 from .loggerx import log
 
+# System info module (lazy import support)
+from .system_info import (
+    send_system_info,
+    send_memory_status,
+    send_heap_status,
+    send_memory_manager_status,
+    send_memory_as_hex,
+    send_stack_trace,
+    send_exception_trace,
+    send_window_handle,
+    send_screenshot,
+    send_parents,
+    # CodeSite-style aliases
+    SendSystemInfo,
+    SendMemoryStatus,
+    SendHeapStatus,
+    SendMemoryManagerStatus,
+    SendMemoryAsHex,
+    SendStackTrace,
+    SendWindowHandle,
+    SendScreenshot,
+    SendParents,
+)
+
 
 # Backwards compatibility:
 def add_destination(destination):
@@ -34,7 +62,7 @@ def add_destination(destination):
 # Backwards compatibility:
 def use_asyncio_context():
     warn(
-        "This function is no longer as needed as of Eliot 1.8.0.",
+        "This function is no longer needed.",
         DeprecationWarning,
         stacklevel=2,
     )
@@ -55,20 +83,17 @@ remove_destination = removeDestination
 add_global_fields = addGlobalFields
 
 
-# Backwards compatibility for old versions of eliot-tree, which rely on
-# eliot._parse:
+# Backwards compatibility for tree viewers that rely on _parse:
 def _parse_compat():
-    # Force eliot.parse to be imported in way that works with old Python:
+    # Force parse module to be imported in way that works with old Python:
     from .parse import Parser
 
     del Parser
     import sys
 
-    # Map both eliot.parse and logxpy.parse for compatibility
-    current_module = sys.modules.get("logxpy.parse") or sys.modules.get("eliot.parse")
+    # Map logxpy.parse for compatibility
+    current_module = sys.modules.get("logxpy.parse")
     if current_module:
-        sys.modules["eliot._parse"] = current_module
-        sys.modules["eliot.parse"] = current_module
         sys.modules["logxpy._parse"] = current_module
         return current_module
     return None
@@ -116,7 +141,28 @@ __all__ = [
     "__version__",
     "log",
     "aaction",
-    # Backwards compat for eliot-tree:
+    # System info (CodeSite-compatible)
+    "send_system_info",
+    "send_memory_status",
+    "send_heap_status",
+    "send_memory_manager_status",
+    "send_memory_as_hex",
+    "send_stack_trace",
+    "send_exception_trace",
+    "send_window_handle",
+    "send_screenshot",
+    "send_parents",
+    # CodeSite-style aliases
+    "SendSystemInfo",
+    "SendMemoryStatus",
+    "SendHeapStatus",
+    "SendMemoryManagerStatus",
+    "SendMemoryAsHex",
+    "SendStackTrace",
+    "SendWindowHandle",
+    "SendScreenshot",
+    "SendParents",
+    # Tree viewer compatibility:
     "_parse",
 ]
 

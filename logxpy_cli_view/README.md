@@ -1,15 +1,15 @@
-# logxpy-tree2
+# logxpy-cli-view
 
-[![CI](https://github.com/jonathanj/eliottree/workflows/CI/badge.svg)](https://github.com/jonathanj/eliottree/actions)
-[![codecov](https://codecov.io/gh/jonathanj/eliottree/branch/main/graph/badge.svg)](https://codecov.io/gh/jonathanj/eliottree)
-[![PyPI version](https://badge.fury.io/py/logxpy-tree.svg)](https://pypi.org/project/logxpy-tree/)
-[![Python versions](https://img.shields.io/pypi/pyversions/logxpy-tree.svg)](https://pypi.org/project/logxpy-tree/)
+[![Python versions](https://img.shields.io/pypi/pyversions/logxpy-cli-view.svg)](https://pypi.org/project/logxpy-cli-view/)
 
-Render [Eliot](https://github.com/scatterhq/logxpy) logs as an ASCII tree.
+Render [LogXPy](https://github.com/yourusername/log-x-py) logs as an ASCII tree.
+
+Forked from [eliottree](https://github.com/jonathanj/eliottree) by Jonathan Jacobs.
+Modernized with new features and integrated with the LogXPy ecosystem.
 
 ## Example
 
-Given this Eliot log output:
+Given this LogXPy log output:
 
 ```json
 {"dump": "/home/user/dump_files/20150303/1425356936.28_Client_req.xml", "timestamp": 1425356936.278875, "uri": "http://example.org/soap", "action_status": "started", "task_uuid": "f3a32bb3-ea6b-457c-aa99-08a3d0491ab4", "action_type": "app:soap:client:request", "soapAction": "a_soap_action", "task_level": [1]}
@@ -36,7 +36,7 @@ f3a32bb3-ea6b-457c-aa99-08a3d0491ab4
 ## Installation
 
 ```bash
-pip install logxpy-tree2
+pip install logxpy-cli-view
 ```
 
 ## Usage
@@ -45,47 +45,47 @@ pip install logxpy-tree2
 
 ```bash
 # Render a log file
-logxpy-tree2 logxpy.log
+logxpy-view app.log
 
 # Pipe from another command
-tail -f logxpy.log | logxpy-tree2
+tail -f app.log | logxpy-view
 
 # Filter by task UUID
-logxpy-tree2 -u f3a32bb3-ea6b-457c-aa99-08a3d0491ab4 logxpy.log
+logxpy-view -u f3a32bb3-ea6b-457c-aa99-08a3d0491ab4 app.log
 ```
 
 ### Filtering
 
 ```bash
 # Filter by date range
-logxpy-tree2 --start 2024-01-01T00:00:00 --end 2024-01-02T00:00:00 logxpy.log
+logxpy-view --start 2024-01-01T00:00:00 --end 2024-01-02T00:00:00 app.log
 
 # Filter using JMESPath query
-logxpy-tree2 --select "action_type == \`app:soap:client:request\`" logxpy.log
+logxpy-view --select "action_type == \`app:soap:client:request\`" app.log
 
 # Multiple filters (AND logic)
-logxpy-tree --select "action_status == \`failed\`" --select "error == \`true\`" logxpy.log
+logxpy-view --select "action_status == \`failed\`" --select "error == \`true\`" app.log
 ```
 
 ### Output options
 
 ```bash
 # Use ASCII characters instead of Unicode
-logxpy-tree2 --ascii logxpy.log
+logxpy-view --ascii app.log
 
 # Disable colors
-logxpy-tree2 --color never logxpy.log
+logxpy-view --color never app.log
 
 # Limit field length
-logxpy-tree2 --field-limit 50 logxpy.log
+logxpy-view --field-limit 50 app.log
 
 # Use local timezone instead of UTC
-logxpy-tree2 --local-timezone logxpy.log
+logxpy-view --local-timezone app.log
 ```
 
 ### Configuration file
 
-Create `~/.config/logxpy-tree2/config.json`:
+Create `~/.config/logxpy-cli-view/config.json`:
 
 ```json
 {
@@ -101,10 +101,10 @@ Create `~/.config/logxpy-tree2/config.json`:
 from logxpy_cli_view import render_tasks, tasks_from_iterable
 import json
 
-# Parse Eliot log messages
+# Parse LogXPy log messages
 tasks = tasks_from_iterable([
     json.loads(line)
-    for line in open("logxpy.log")
+    for line in open("app.log")
 ])
 
 # Render to stdout
@@ -120,8 +120,8 @@ render_tasks(
 
 ```bash
 # Clone the repository
-git clone https://github.com/jonathanj/eliottree.git
-cd eliottree
+git clone https://github.com/yourusername/log-x-py.git
+cd log-x-py/logxpy_cli_view
 
 # Install in development mode
 pip install -e ".[dev]"

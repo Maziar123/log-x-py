@@ -1,4 +1,8 @@
-"""Eliot Tree - Render Eliot logs as an ASCII tree."""
+"""LogXPy CLI View - Render structured logs as an ASCII tree.
+
+Forked from eliottree (https://github.com/jonathanj/eliottree).
+Modernized with enhanced features and renamed to logxpy-cli-view.
+"""
 
 from logxpy_cli_view._color import color_factory, colored, no_color
 from logxpy_cli_view._compat import catch_errors, deprecated, dump_json_bytes
@@ -97,7 +101,7 @@ from logxpy_cli_view.format import (
 )
 
 try:
-    from eliottree2._version import __version__
+    from logxpy_cli_view._version import __version__
 except ImportError:
     __version__ = "unknown"
 

@@ -37,15 +37,15 @@ class Message(object):
         The keyword arguments will become the initial contents of the L{Message}.
 
         @param _serializer: A positional argument, either C{None} or a
-            L{eliot._validation._MessageSerializer} with which a
-            L{eliot.ILogger} may choose to serialize the message. If you're
-            using L{eliot.MessageType} this will be populated for you.
+            L{logxpy._validation._MessageSerializer} with which a
+            L{logxpy.ILogger} may choose to serialize the message. If you're
+            using L{logxpy.MessageType} this will be populated for you.
 
         @return: The new L{Message}
         """
         warn(
             "Message.new() is deprecated since 1.11.0, "
-            "use eliot.log_message() instead.",
+            "use log_message() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -60,7 +60,7 @@ class Message(object):
         """
         warn(
             "Message.log() is deprecated since 1.11.0, "
-            "use Action.log() or eliot.log_message() instead.",
+            "use Action.log() or log_message() instead.",
             DeprecationWarning,
             stacklevel=2,
         )
@@ -75,9 +75,9 @@ class Message(object):
            C{bytes}.
 
         @param serializer: Either C{None}, or
-            L{eliot._validation._MessageSerializer} with which a
-            L{eliot.Logger} may choose to serialize the message. If you're
-            using L{eliot.MessageType} this will be populated for you.
+            L{logxpy._validation._MessageSerializer} with which a
+            L{logxpy.Logger} may choose to serialize the message. If you're
+            using L{logxpy.MessageType} this will be populated for you.
         """
         self._contents = contents.copy()
         self._serializer = serializer
@@ -112,7 +112,7 @@ class Message(object):
 
         Byte field names will be converted to Unicode.
 
-        @type logger: L{eliot.ILogger} or C{None} indicating the default one.
+        @type logger: L{logxpy.ILogger} or C{None} indicating the default one.
             Should not be set if the action is also set.
 
         @param action: The L{Action} which is the context for this message.  If
@@ -122,10 +122,10 @@ class Message(object):
         if "message_type" not in fields:
             fields["message_type"] = ""
         if self._serializer is not None:
-            fields["__eliot_serializer__"] = self._serializer
+            fields["__logxpy_serializer__"] = self._serializer
         if action is None:
             if logger is not None:
-                fields["__eliot_logger__"] = logger
+                fields["__logxpy_logger__"] = logger
             log_message(**fields)
         else:
             action.log(**fields)
@@ -164,7 +164,7 @@ class WrittenMessage(PClass):
     @property
     def contents(self):
         """
-        A C{PMap}, the message contents without Eliot metadata.
+        A C{PMap}, the message contents without logxpy metadata.
         """
         return (
             self._logged_dict.discard(TIMESTAMP_FIELD)
@@ -186,7 +186,7 @@ class WrittenMessage(PClass):
         """
         Return the dictionary that was used to write this message.
 
-        @return: A C{dict}, as might be logged by Eliot.
+        @return: A C{dict}, as might be logged by logxpy.
         """
         return self._logged_dict
 

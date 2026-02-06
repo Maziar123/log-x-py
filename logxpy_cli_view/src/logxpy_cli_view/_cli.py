@@ -1,4 +1,4 @@
-"""Command-line interface for eliot-tree."""
+"""Command-line interface for logxpy-cli-view."""
 
 from __future__ import annotations
 
@@ -15,8 +15,9 @@ from pprint import pformat
 from typing import Any, TextIO
 
 import iso8601
-from eliottree import (
-    EliotParseError,
+from logxpy_cli_view import (
+    LogXPyParseError,
+    EliotParseError,  # Backwards compatibility alias
     JSONParseError,
     combine_filters_and,
     filter_by_action_status,
@@ -68,7 +69,7 @@ def parse_messages(
     max_task_level: int | None = None,
 ) -> tuple[dict[int, tuple[str, int | str]], Iterator[Any]]:
     """
-    Parse message dictionaries from inputs into Eliot tasks.
+    Parse message dictionaries from inputs into logxpy tasks.
 
     Args:
         files: List of file objects to read from
@@ -389,7 +390,7 @@ def cmd_render(args: argparse.Namespace) -> int:
             id(e.message_dict), ("<unknown>", "<unknown>")
         )
         stderr.write(
-            f"Eliot message parse error, file {file_name}, line {line_number}:\n"
+            f"LogXPy message parse error, file {file_name}, line {line_number}:\n"
             f"{pformat(e.message_dict)}\n\n"
         )
         raise e.exc_info[1].with_traceback(e.exc_info[2])
@@ -436,7 +437,7 @@ def cmd_stats(args: argparse.Namespace) -> int:
 
 def cmd_export(args: argparse.Namespace) -> int:
     """Handle export command."""
-    from eliottree2._parse import tasks_from_iterable
+    from logxpy_cli_view._parse import tasks_from_iterable
 
     # Load tasks
     tasks = []
@@ -497,13 +498,13 @@ def cmd_tail(args: argparse.Namespace) -> int:
 def create_argument_parser() -> argparse.ArgumentParser:
     """Create and configure the argument parser."""
     parser = argparse.ArgumentParser(
-        prog="eliot-tree2",
-        description="Render and analyze Eliot logs as ASCII trees.",
+        prog="logxpy-view",
+        description="Render and analyze logxpy logs as ASCII trees.",
     )
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s {__import__('eliottree').__version__}",
+        version=f"%(prog)s {__import__('logxpy_cli_view').__version__}",
         help="Show version and exit.",
     )
 

@@ -1,4 +1,4 @@
-"""Exception classes for eliot-tree."""
+"""Exception classes for logxpy-cli-view."""
 
 from __future__ import annotations
 
@@ -20,14 +20,18 @@ class JSONParseError(Exception):
 
 
 @dataclass(slots=True)
-class EliotParseError(Exception):
-    """Exception raised when Eliot message parsing fails."""
+class LogXPyParseError(Exception):
+    """Exception raised when logxpy message parsing fails."""
 
     message_dict: dict[str, Any]
     exc_info: Any
 
     def __str__(self) -> str:
-        return f"Eliot message parse error: {self.message_dict}"
+        return f"LogXPy message parse error: {self.message_dict}"
+
+
+# Backwards compatibility alias
+EliotParseError = LogXPyParseError
 
 
 @dataclass(slots=True)

@@ -1,4 +1,4 @@
-"""Async action and scope - integrates with eliot's context system."""
+"""Async action and scope - integrates with logxpy's context system."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager, contextmanager
 from contextvars import ContextVar, Token
 from typing import Any
 
-# Reuse eliot's context var for compatibility
+# Use shared context var for action tracking
 from ._action import _ACTION_CONTEXT, current_action
 from ._base import now, uuid
 from ._types import Level, Record
@@ -21,10 +21,10 @@ def current_scope() -> dict[str, Any]:
 
 
 def _get_parent_info() -> tuple[str, tuple[int, ...]]:
-    """Get task_uuid and next level from current logxpy action."""
+    """Get task_uuid and next level from current action."""
     parent = current_action()
     if parent:
-        # eliot.Action has task_uuid property and _task_level (TaskLevel object)
+        # Action has task_uuid property and _task_level (TaskLevel object)
         task_uuid = parent.task_uuid
         # Get current level and create child level
         if hasattr(parent, "_task_level"):
@@ -35,9 +35,9 @@ def _get_parent_info() -> tuple[str, tuple[int, ...]]:
     return uuid(), (1,)
 
 
-# === AsyncAction (works alongside eliot.Action for async contexts) ===
+# === AsyncAction (works alongside Action for async contexts) ===
 class AsyncAction:
-    """Async-native action that integrates with eliot's context system."""
+    """Async-native action that integrates with logxpy's context system."""
 
     __slots__ = (
         "_child_count",
@@ -96,7 +96,7 @@ class AsyncAction:
 
     def _end_record(self, exc: BaseException | None) -> Record:
         status = "failed" if exc else "succeeded"
-        fields = {**self.fields, "eliot:duration": round(now() - self._start, 6)}
+        fields = {**self.fields, "logxpy:duration": round(now() - self._start, 6)}
         if exc:
             fields["exception"] = f"{type(exc).__module__}.{type(exc).__name__}"
             fields["reason"] = str(exc)
@@ -128,7 +128,7 @@ class AsyncAction:
 
 @contextmanager
 def action(action_type: str, level: str | Level = Level.INFO, **fields: Any) -> Iterator[AsyncAction]:
-    """Create action context (sync) - compatible with eliot's nesting."""
+    """Create action context (sync) - compatible with logxpy's nesting."""
     if isinstance(level, str):
         level = Level[level.upper()]
     task_uuid, t_level = _get_parent_info()
@@ -148,7 +148,7 @@ async def aaction(action_type: str, level: str | Level = Level.INFO, **fields: A
         yield act
 
 
-# === Scope (LoggerX feature - not in eliot) ===
+# === Scope (LoggerX feature) ===
 @contextmanager
 def scope(**ctx: Any) -> Iterator[dict[str, Any]]:
     """Create nested scope context for field inheritance."""
@@ -161,12 +161,12 @@ def scope(**ctx: Any) -> Iterator[dict[str, Any]]:
         _SCOPE.reset(token)
 
 
-# === Emit (connects to eliot's destination system) ===
+# === Emit (connects to destination system) ===
 _emit_handlers: list[Callable[[Record], None]] = []
 
 
 def _emit(record: Record) -> None:
-    """Emit to eliot's destinations + any registered handlers."""
+    """Emit to destinations + any registered handlers."""
     from ._output import Logger
     from .loggerx import get_global_masker
 
@@ -177,7 +177,7 @@ def _emit(record: Record) -> None:
     if masker:
         data = masker.mask(data)
 
-    Logger._destinations.send(data)  # Uses eliot's system
+    Logger._destinations.send(data)  # Uses internal destination system
     for fn in _emit_handlers:
         fn(record)
 

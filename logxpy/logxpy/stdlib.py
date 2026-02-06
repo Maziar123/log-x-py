@@ -6,8 +6,8 @@ from ._action import log_message
 from ._traceback import write_traceback
 
 
-class EliotHandler(Handler):
-    """A C{logging.Handler} that routes log messages to Eliot."""
+class LogXPyHandler(Handler):
+    """A C{logging.Handler} that routes log messages to LogXPy."""
 
     def emit(self, record):
         log_message(
@@ -20,4 +20,4 @@ class EliotHandler(Handler):
             write_traceback(exc_info=record.exc_info)
 
 
-__all__ = ["EliotHandler"]
+__all__ = ["LogXPyHandler", "EliotHandler"]  # EliotHandler kept for compatibility

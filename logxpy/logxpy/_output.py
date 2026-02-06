@@ -27,7 +27,7 @@ from ._validation import ValidationError
 
 # Action type for log messages due to a (hopefully temporarily) broken
 # destination.
-DESTINATION_FAILURE = "eliot:destination_failure"
+DESTINATION_FAILURE = "logxpy:destination_failure"
 
 
 class BufferingDestination(object):
@@ -90,7 +90,7 @@ class Destinations(object):
             except Exception as e:
                 # If the destination is broken not because of a specific
                 # message, but rather continously, we will get a
-                # "eliot:destination_failure" log message logged, and so we
+                # "logxpy:destination_failure" log message logged, and so we
                 # want to ensure it doesn't do infinite recursion.
                 if not is_destination_error_message:
                     errors.append(e)
@@ -110,7 +110,7 @@ class Destinations(object):
                 if logger is not None:
                     # This is really only useful for testing, should really
                     # figure out way to get rid of this mechanism...
-                    new_msg["__eliot_logger__"] = logger
+                    new_msg["__loggerx_logger__"] = logger
                 log_message(**new_msg)
             except:
                 # Nothing we can do here, raising exception to caller will
@@ -222,7 +222,7 @@ class Logger(object):
             log_message(
                 "eliot:serialization_failure",
                 message=_safe_unicode_dictionary(dictionary),
-                __eliot_logger__=self,
+                __logxpy_logger__=self,
             )
             return
 

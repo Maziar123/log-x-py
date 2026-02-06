@@ -104,7 +104,7 @@ def writeFailure(failure, logger=None):
 
     This is for situations where you got an unexpected exception and want to
     log a traceback. For example, if you have C{Deferred} that might error,
-    you'll want to wrap it with a L{eliot.twisted.DeferredContext} and then add
+    you'll want to wrap it with a L{logxpy.twisted.DeferredContext} and then add
     C{writeFailure} as the error handler to get the traceback logged:
 
         d = DeferredContext(dostuff())
@@ -114,7 +114,7 @@ def writeFailure(failure, logger=None):
 
     @param failure: L{Failure} to write to the log.
 
-    @type logger: L{eliot.ILogger}. Will be deprecated at some point, so just
+    @type logger: L{logxpy.ILogger}. Will be deprecated at some point, so just
         ignore it.
 
     @return: None
