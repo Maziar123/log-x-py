@@ -14,7 +14,7 @@ from logxpy.parse import Task, WrittenAction, WrittenMessage
 from toolz import compose, excepts, identity
 
 from logxpy_cli_view import format
-from logxpy_cli_view._color import colored
+from logxpy_cli_view._color import colored, _get_color_code
 from logxpy_cli_view._theme import Theme, get_theme
 from logxpy_cli_view._util import Writable, logxpy_ns, eliot_ns, format_namespace, is_namespace
 from logxpy_cli_view.tree_format import ASCII_OPTIONS, Options, format_tree
@@ -147,31 +147,56 @@ def message_name(
         )
     elif "message_type" in message.contents:
         message_type = format.escape_control_characters(message.contents.message_type)
-        
+
         # Check for custom foreground/background colors from logxpy
         fg = message.contents.get("logxpy:foreground")
         bg = message.contents.get("logxpy:background")
-        
-        if fg or bg:
-            # Apply custom colors using theme's color function
-            from logxpy_cli_view._color import _get_color_code, _get_style_code
-            import colored as _colored_module
-            
-            # Build formatting string
-            formatting = ""
-            if fg:
-                formatting += _get_color_code(fg, is_background=False)
-            if bg:
-                formatting += _get_color_code(bg, is_background=True)
-            
-            if formatting:
-                formatted = _colored_module.stylize(
-                    f"{message_type} {message.task_level.to_string()} {timestamp}",
-                    formatting
-                )
-                return formatted
-        
-        return f"{theme.parent(message_type)} {theme.task_level(message.task_level.to_string())} {timestamp}"
+
+        # Check if message field has custom colors (for colored messages)
+        msg = message.contents.get("message")
+        msg_fg = message.contents.get("logxpy:msg_foreground")
+        msg_bg = message.contents.get("logxpy:msg_background")
+
+        # Build formatting string for header
+        header_formatting = ""
+        if fg:
+            header_formatting += _get_color_code(fg, is_background=False)
+        if bg:
+            header_formatting += _get_color_code(bg, is_background=True)
+
+        # Build formatting string for message content
+        # If msg_fg/msg_bg are not set, inherit from header colors
+        msg_formatting = ""
+        if msg_fg:
+            msg_formatting += _get_color_code(msg_fg, is_background=False)
+        elif fg:
+            # Inherit foreground color from header
+            msg_formatting += _get_color_code(fg, is_background=False)
+
+        if msg_bg:
+            msg_formatting += _get_color_code(msg_bg, is_background=True)
+        elif bg:
+            # Inherit background color from header
+            msg_formatting += _get_color_code(bg, is_background=True)
+
+        # Format header with colors
+        header_text = f"{message_type} {message.task_level.to_string()} {timestamp}"
+        if header_formatting:
+            header = colored(header_text, header_formatting)
+        else:
+            header = header_text
+
+        # Format message with colors if available
+        if msg:
+            msg_text = str(msg)
+            if msg_formatting:
+                formatted_msg = colored(msg_text, msg_formatting)
+            else:
+                formatted_msg = msg_text
+            return f"{header}\n    {formatted_msg}"
+
+        # No message field, just return header (already colored)
+        return header
 
     return "<unnamed>"
 
@@ -273,13 +298,29 @@ def get_children(
     if isinstance(node, Task):
         return [node.root()]
     elif isinstance(node, WrittenAction):
-        children = message_fields(node.start_message, ignored_fields)
+        # Check if start_message has custom colors that cause message to display inline
+        start_ignored = set(ignored_fields)
+        if "logxpy:foreground" in node.start_message.contents or "logxpy:background" in node.start_message.contents:
+            if "message" in node.start_message.contents:
+                start_ignored.add("message")
+            # Also hide the color fields as they're applied to the header
+            start_ignored.add("logxpy:foreground")
+            start_ignored.add("logxpy:background")
+        children = message_fields(node.start_message, start_ignored)
         children.extend(node.children)
         if node.end_message:
             children.append(node.end_message)
         return [c for c in children if c is not None]
     elif isinstance(node, WrittenMessage):
-        return message_fields(node, ignored_fields)
+        # Check if message has custom colors that cause message to display inline
+        msg_ignored = set(ignored_fields)
+        if "logxpy:foreground" in node.contents or "logxpy:background" in node.contents:
+            if "message" in node.contents:
+                msg_ignored.add("message")
+            # Also hide the color fields as they're applied to the header
+            msg_ignored.add("logxpy:foreground")
+            msg_ignored.add("logxpy:background")
+        return message_fields(node, msg_ignored)
     elif isinstance(node, tuple):
         value = node[1]
         if isinstance(value, dict):

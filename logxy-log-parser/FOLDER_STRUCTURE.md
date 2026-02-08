@@ -1,11 +1,15 @@
 # LogXPy Log Parser - Folder Structure
 
+## Project Directory Layout
+
 ```
 logxy-log-parser/
 │
 ├── logxy_log_parser/              # Main package directory
 │   ├── __init__.py                # Public API exports
+│   ├── simple.py                  # One-line API functions
 │   ├── core.py                    # LogEntry, LogParser
+│   ├── monitor.py                 # LogFile for real-time monitoring
 │   ├── filter.py                  # LogFilter, LogEntries
 │   ├── analyzer.py                # LogAnalyzer, statistics
 │   ├── export.py                  # Export to JSON/CSV/HTML/MD/DataFrame
@@ -17,6 +21,7 @@ logxy-log-parser/
 │   ├── __init__.py
 │   ├── conftest.py                # pytest fixtures
 │   ├── test_core.py               # Parser tests
+│   ├── test_monitor.py            # LogFile tests
 │   ├── test_filter.py             # Filter tests
 │   ├── test_analyzer.py           # Analyzer tests
 │   ├── test_export.py             # Export tests
@@ -28,6 +33,7 @@ logxy-log-parser/
 │
 ├── examples/                      # Usage examples
 │   ├── basic_usage.py             # Getting started
+│   ├── monitoring.py              # LogFile and real-time monitoring
 │   ├── filtering.py               # Filter examples
 │   ├── performance.py             # Performance analysis
 │   ├── error_analysis.py          # Error tracking

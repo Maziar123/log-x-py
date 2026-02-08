@@ -177,9 +177,12 @@ class WrittenMessage(PClass):
         """
         Reconstruct a L{WrittenMessage} from a logged dictionary.
 
-        @param logged_dictionary: A C{PMap} representing a parsed log entry.
+        @param logged_dictionary: A C{dict} or C{PMap} representing a parsed log entry.
         @return: A L{WrittenMessage} for that dictionary.
         """
+        from pyrsistent import PMap, pmap
+        if not isinstance(logged_dictionary, PMap):
+            logged_dictionary = pmap(logged_dictionary)
         return cls(_logged_dict=logged_dictionary)
 
     def as_dict(self):

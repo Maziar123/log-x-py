@@ -1,214 +1,416 @@
-# New Filtering Features
+# LogXPy CLI View - Features
 
-This document describes the new advanced filtering features added to logxpy_cli_view.
+This document describes all features of the logxpy-cli-view tree viewer.
 
-## New Filter Functions
+## Core Features
 
-### 1. filter_by_action_status(status)
-Filter tasks by their action status.
+### 1. ASCII Tree Rendering
 
-```python
-from logxpy_cli_view import filter_by_action_status
-
-# Only failed tasks
-filter_fn = filter_by_action_status('failed')
-
-# Only succeeded tasks
-filter_fn = filter_by_action_status('succeeded')
-```
-
-### 2. filter_by_action_type(pattern, regex=False)
-Filter tasks by action type. Supports exact match or regex pattern.
-
-```python
-from logxpy_cli_view import filter_by_action_type
-
-# Exact match
-filter_fn = filter_by_action_type('app:http:request')
-
-# Regex match
-filter_fn = filter_by_action_type(r'app:http:.*', regex=True)
-```
-
-### 3. filter_by_duration(min_seconds=None, max_seconds=None)
-Filter tasks by their duration.
-
-```python
-from logxpy_cli_view import filter_by_duration
-
-# Slow tasks (> 5 seconds)
-filter_fn = filter_by_duration(min_seconds=5.0)
-
-# Fast tasks (< 100ms)
-filter_fn = filter_by_duration(max_seconds=0.1)
-
-# Tasks within a range
-filter_fn = filter_by_duration(min_seconds=1.0, max_seconds=10.0)
-```
-
-### 4. filter_by_relative_time(lookback)
-Filter tasks within a relative time window from now.
-
-```python
-from datetime import timedelta
-from logxpy_cli_view import filter_by_relative_time
-
-# Last 5 minutes
-filter_fn = filter_by_relative_time(timedelta(minutes=5))
-
-# Last hour
-filter_fn = filter_by_relative_time(timedelta(hours=1))
-```
-
-### 5. filter_by_field_exists(field_path)
-Filter tasks that have a specific field (supports nested paths).
-
-```python
-from logxpy_cli_view import filter_by_field_exists
-
-# Tasks with error field
-filter_fn = filter_by_field_exists('error')
-
-# Tasks with nested metadata
-filter_fn = filter_by_field_exists('metadata.request_id')
-```
-
-### 6. filter_by_keyword(keyword, case_sensitive=False)
-Search for a keyword in any field (deep search through nested dicts).
-
-```python
-from logxpy_cli_view import filter_by_keyword
-
-# Case-insensitive search
-filter_fn = filter_by_keyword('timeout')
-
-# Case-sensitive search
-filter_fn = filter_by_keyword('ERROR', case_sensitive=True)
-```
-
-### 7. filter_by_task_level(min_level=None, max_level=None)
-Filter tasks by their depth level in the task tree.
-
-```python
-from logxpy_cli_view import filter_by_task_level
-
-# Top-level tasks only
-filter_fn = filter_by_task_level(max_level=1)
-
-# Nested tasks (level 2 or deeper)
-filter_fn = filter_by_task_level(min_level=2)
-```
-
-### 8. filter_sample(every_n)
-Sample every Nth task for statistical analysis.
-
-```python
-from logxpy_cli_view import filter_sample
-
-# Sample 10% of tasks
-filter_fn = filter_sample(10)
-```
-
-### 9. combine_filters_not(filter_fn)
-Negate a filter (logical NOT).
-
-```python
-from logxpy_cli_view import combine_filters_not, filter_by_action_status
-
-# All non-failed tasks
-filter_fn = combine_filters_not(filter_by_action_status('failed'))
-```
-
-## CLI Usage
-
-All new filters are available as command-line arguments:
+Render LogXPy logs as beautiful ASCII trees with Unicode box-drawing characters.
 
 ```bash
-# Filter by status
-logxpy-tree2 --status failed logfile.json
-
-# Filter by action type (exact)
-logxpy-tree2 --action-type "app:http:request" logfile.json
-
-# Filter by action type (regex)
-logxpy-tree2 --action-type "http:.*" --action-type-regex logfile.json
-
-# Filter by duration
-logxpy-tree2 --min-duration 5.0 logfile.json
-logxpy-tree2 --max-duration 0.1 logfile.json
-
-# Filter by field existence
-logxpy-tree2 --has-field error logfile.json
-logxpy-tree2 --has-field metadata.user_id logfile.json
-
-# Filter by keyword
-logxpy-tree2 --keyword timeout logfile.json
-
-# Filter by task level
-logxpy-tree2 --max-level 1 logfile.json  # Top-level only
-logxpy-tree2 --min-level 2 logfile.json  # Nested only
-
-# Combined filters
-logxpy-tree2 --status failed --min-duration 1.0 logfile.json
+logxpy-view app.log
 ```
+
+Output:
+```
+56ffc3bf-08f7-4f71-8065-b91db2d54e1c
+├── 🔌 http:request/1 ⇒ ▶️ started 14:30:00
+│   ├── method: POST
+│   └── path: /api/users
+├── 🔐 auth:verify/2/1 ⇒ ▶️ started 14:30:00
+│   ├── user_id: 123
+│   └── valid: True
+└── 💾 database:query/3/1 ⇒ ▶️ started 14:30:00
+    ├── table: users
+    └── 💾 database:result/3/2 14:30:01
+        ├── rows: 10
+        └── duration_ms: 45
+```
+
+### 2. Color Support
+
+Full ANSI color support with automatic color coding:
+
+- **Cyan** - Numbers
+- **Magenta** - Booleans, UUIDs
+- **Bright Blue** - Started status, Field keys
+- **Bright Green** - Succeeded status
+- **Bright Red** - Failed status
+- **White** - Regular strings
+- **Dim Gray** - Timestamps
+
+### 3. Color Block Rendering
+
+Supports `logxpy:foreground` and `logxpy:background` fields from log entries:
+
+```python
+# In your logxpy code
+log.colored("Important message", foreground="red", background="yellow")
+```
+
+When viewed with `logxpy-view`, the message will render with the specified colors.
+
+### 4. Emoji Icons
+
+Automatic emoji icons based on action type keywords:
+
+| Keyword | Emoji |
+|---------|-------|
+| `database`, `db:`, `query` | 💾 |
+| `http`, `api`, `request` | 🔌 |
+| `auth`, `login` | 🔐 |
+| `payment`, `charge` | 💳 |
+| `server` | 🖥️ |
+| `pipeline`, `etl` | 🔄 |
+| `error`, `fail` | 🔥 |
+| Default | ⚡ |
+
+### 5. Filtering
+
+#### Filter by Action Status
+
+```bash
+logxpy-view app.log --status failed
+logxpy-view app.log --status succeeded
+```
+
+#### Filter by Action Type
+
+```bash
+logxpy-view app.log --filter "db_*"
+logxpy-view app.log --action-type "database:query"
+```
+
+#### Filter by Duration
+
+```bash
+logxpy-view app.log --min-duration 1.0  # Slower than 1 second
+logxpy-view app.log --max-duration 5.0  # Faster than 5 seconds
+```
+
+#### Filter by Time Range
+
+```bash
+logxpy-view app.log --start 2024-01-01T00:00:00
+logxpy-view app.log --end 2024-12-31T23:59:59
+```
+
+#### JMESPath Queries
+
+```bash
+logxpy-view app.log --select "action_status == 'failed'"
+```
+
+### 6. Export Functions
+
+#### JSON Export
+
+```bash
+logxpy-view app.log --export json -o output.json
+```
+
+#### CSV Export
+
+```bash
+logxpy-view app.log --export csv -o output.csv
+```
+
+#### HTML Export
+
+```bash
+logxpy-view app.log --export html -o output.html
+```
+
+#### Logfmt Export
+
+```bash
+logxpy-view app.log --export logfmt -o output.log
+```
+
+### 7. Live Monitoring
+
+#### Tail Mode
+
+```bash
+logxpy-view app.log --tail
+```
+
+Monitor log file as it grows, displaying new entries in real-time.
+
+#### Dashboard Mode
+
+```bash
+logxpy-view app.log --tail --dashboard
+```
+
+Show a live updating dashboard with statistics.
+
+#### Aggregation
+
+```bash
+logxpy-view app.log --tail --aggregate --interval 60
+```
+
+Show periodic statistics every 60 seconds.
+
+### 8. Statistics
+
+```bash
+logxpy-view app.log --stats
+```
+
+Display statistics including:
+- Total actions
+- Success/failure rates
+- Duration statistics (mean, median, min, max, std dev)
+- Timeline analysis
+- Top action types
+- Task depth distribution
+
+### 9. Display Options
+
+#### ASCII Mode
+
+```bash
+logxpy-view app.log --ascii
+```
+
+Use plain ASCII characters instead of Unicode box-drawing.
+
+#### Color Control
+
+```bash
+logxpy-view app.log --color never      # No colors
+logxpy-view app.log --color always     # Force colors
+logxpy-view app.log --no-color-tree    # No tree colors
+```
+
+#### Emoji Control
+
+```bash
+logxpy-view app.log --no-emojis
+```
+
+#### Depth Limiting
+
+```bash
+logxpy-view app.log --depth-limit 3
+```
+
+Limit nesting depth in the tree display.
+
+#### Field Limiting
+
+```bash
+logxpy-view app.log --field-limit 50
+```
+
+Truncate field values to specified length.
+
+#### Human-Readable Format
+
+```bash
+logxpy-view app.log --human-readable
+```
+
+Format durations and timestamps in human-readable format.
+
+#### Timezone
+
+```bash
+logxpy-view app.log --local-timezone    # Use local timezone
+logxpy-view app.log --utc-timestamps    # Use UTC (default)
+```
+
+### 10. Theme Support
+
+```bash
+logxpy-view app.log --theme dark
+logxpy-view app.log --theme light
+logxpy-view app.log --theme auto        # Auto-detect (default)
+```
+
+### 11. Configuration File
+
+Create `~/.config/logxpy-cli-view/config.json`:
+
+```json
+{
+  "color": "auto",
+  "field_limit": 100,
+  "theme": "dark",
+  "human_readable": true,
+  "utc_timestamps": false
+}
+```
+
+## Python API
+
+### Basic Usage
+
+```python
+from logxpy_cli_view import render_tasks, tasks_from_iterable
+
+# Parse log lines
+tasks = tasks_from_iterable(open("app.log"))
+
+# Render as tree
+print(render_tasks(tasks))
+```
+
+### Filtering
+
+```python
+from logxpy_cli_view import (
+    filter_by_action_status,
+    filter_by_action_type,
+    filter_by_duration,
+    filter_by_keyword,
+)
+
+# Filter tasks
+failed = filter_by_action_status(tasks, "failed")
+db_tasks = filter_by_action_type(tasks, "db_*")
+slow = filter_by_duration(tasks, min_seconds=5.0)
+```
+
+### Export
+
+```python
+from logxpy_cli_view import export_json, export_csv, export_html
+
+export_json(tasks, "output.json")
+export_csv(tasks, "output.csv")
+export_html(tasks, "output.html")
+```
+
+## CLI Commands Reference
+
+### Main Command: `logxpy-view`
+
+| Argument | Description |
+|----------|-------------|
+| `<file>` | Log file to view (required) |
+| `--color <mode>` | Color mode: auto, always, never |
+| `--ascii` | Use ASCII instead of Unicode |
+| `--field-limit <num>` | Truncate field values |
+| `--human-readable` | Format durations/timestamps |
+| `--local-timezone` | Use local timezone |
+| `--theme <theme>` | Color theme: auto, dark, light |
+| `--depth-limit <num>` | Max nesting depth |
+| `--ignore-task-key <key>` | Ignore specific fields |
+| `--no-emojis` | Disable emoji icons |
+| `--no-color-tree` | Don't color tree lines |
+
+### Filter Options
+
+| Option | Description |
+|--------|-------------|
+| `--task-uuid <uuid>` | Filter by task UUID |
+| `--select <jmespath>` | JMESPath query filter |
+| `--start <date>` | Start date (ISO8601) |
+| `--end <date>` | End date (ISO8601) |
+| `--status <status>` | Filter by action status |
+| `--action-type <type>` | Filter by action type |
+| `--action-type-regex` | Treat action-type as regex |
+| `--min-duration <sec>` | Minimum duration filter |
+| `--max-duration <sec>` | Maximum duration filter |
+| `--has-field <field>` | Field existence check |
+| `--keyword <keyword>` | Keyword search |
+| `--min-level <level>` | Minimum task level depth |
+| `--max-level <level>` | Maximum task level depth |
+
+### Subcommands
+
+#### `render` (default)
+
+Render log as tree. Same as main command.
+
+#### `stats`
+
+```bash
+logxpy-view stats [FILE...]
+logxpy-view s [FILE...]
+```
+
+Show statistics and analysis.
+
+#### `export`
+
+```bash
+logxpy-view export -f FORMAT -o OUTPUT [FILE...]
+logxpy-view e -f FORMAT -o OUTPUT [FILE...]
+```
+
+Export to different formats.
+
+#### `tail`
+
+```bash
+logxpy-view tail [FILE...]
+logxpy-view t [FILE...]
+```
+
+Live log monitoring.
+
+## Color System
+
+### Supported Colors
+
+**Foreground**: red, green, blue, yellow, magenta, cyan, white, black, light_gray, dark_gray, light_red, light_green, light_blue, light_yellow, light_magenta, light_cyan
+
+**Background**: Same colors available
+
+**Styles**: bold, dim, underline, blink, reverse, hidden
+
+### Level-based Colors
+
+| Level | Color |
+|-------|-------|
+| DEBUG | Gray |
+| INFO | White |
+| SUCCESS | Bright Green |
+| NOTE | Yellow |
+| WARNING | Bright Yellow |
+| ERROR | Red |
+| CRITICAL | Bright Red with background |
 
 ## Examples
 
-### Find All Failed HTTP Requests
+### Example 1: View Failed Database Queries
 
-```python
-from logxpy_cli_view import combine_filters_and, filter_by_action_status, filter_by_action_type
-
-filter_fn = combine_filters_and(
-    filter_by_action_status('failed'),
-    filter_by_action_type(r'http:.*', regex=True),
-)
+```bash
+logxpy-view app.log --filter "database:*" --status failed
 ```
 
-### Find Slow Database Queries
+### Example 2: Find Slow HTTP Requests
 
-```python
-from logxpy_cli_view import combine_filters_and, filter_by_action_type, filter_by_duration
-
-filter_fn = combine_filters_and(
-    filter_by_action_type(r'database:.*', regex=True),
-    filter_by_duration(min_seconds=1.0),
-)
+```bash
+logxpy-view app.log --filter "http:*" --min-duration 5.0
 ```
 
-### Find Errors in Last Hour
+### Example 3: Export Today's Errors
 
-```python
-from datetime import timedelta
-from logxpy_cli_view import combine_filters_and, filter_by_action_status, filter_by_relative_time
-
-filter_fn = combine_filters_and(
-    filter_by_action_status('failed'),
-    filter_by_relative_time(timedelta(hours=1)),
-)
+```bash
+logxpy-view app.log --start "$(date -Iseconds)" --status failed --export json -o errors.json
 ```
 
-### Search for Specific Error Types
+### Example 4: Live Monitor with Color
 
-```python
-from logxpy_cli_view import combine_filters_and, filter_by_action_status, filter_by_keyword
+```bash
+logxpy-view app.log --tail --color always --no-emojis
+```
 
-filter_fn = combine_filters_and(
-    filter_by_action_status('failed'),
-    filter_by_keyword('ConnectionError'),
-)
+### Example 5: Statistics Dashboard
+
+```bash
+logxpy-view app.log --stats -o stats.json
 ```
 
 ## Performance Notes
 
-- `filter_by_jmespath` uses `@cache` for compiled expressions
-- `filter_by_keyword` performs deep search (may be slower on large logs)
-- Multiple filters are combined with AND logic by default
-- Use `combine_filters_or()` for OR logic
-
-## New Example Files
-
-- `examples/python_samples/advanced_filtering.py` - Comprehensive filtering examples
-- `examples/python_samples/log_analysis.py` - Log analysis and aggregation
-
-Both examples include sample data generation for easy testing.
+- **Memory Efficient**: Processes large files using generators
+- **Fast Parsing**: Optimized JSON parsing
+- **Lazy Evaluation**: Filters are applied during iteration
+- **Caching**: JMESPath expressions are cached

@@ -3,7 +3,6 @@
 import sys
 from datetime import datetime
 from enum import Enum, auto
-sys.path.insert(0, "../../logxpy")
 from logxpy import log, to_file, start_action
 from logxpy.decorators import logged
 

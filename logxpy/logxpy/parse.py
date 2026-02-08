@@ -106,11 +106,36 @@ class Task(PClass):
         if is_action:
             action_level = written_message.task_level.parent()
             action = self._nodes.get(action_level)
+            action_type = message_dict.get(ACTION_TYPE_FIELD)
+            action_status = message_dict.get(ACTION_STATUS_FIELD)
+
+            # Check if we need to create a new action instead of reusing the existing one
+            # This handles multiple sibling actions at the same task level
+            if action is not None and action.start_message:
+                # If we're starting a new action but the existing action is already complete,
+                # or the action_type doesn't match, create a new one
+                if action_status == STARTED_STATUS:
+                    if (action.end_message is not None or
+                        action.action_type != action_type):
+                        action = None
+                # If we're ending an action but the action_type doesn't match,
+                # create a new completed action for this end message
+                elif action.action_type != action_type:
+                    # Create a completed action from the end message alone
+                    # This handles the case where multiple sibling actions complete
+                    # at the same task level
+                    action = WrittenAction.from_messages(
+                        start_message=written_message,
+                        end_message=written_message
+                    )
+                    return self._insert_action(action)
+
             if action is None:
                 action = WrittenAction(
                     task_level=action_level, task_uuid=message_dict[TASK_UUID_FIELD]
                 )
-            if message_dict[ACTION_STATUS_FIELD] == STARTED_STATUS:
+
+            if action_status == STARTED_STATUS:
                 # Either newly created MissingAction, or one created by
                 # previously added descendant of the action.
                 action = action._start(written_message)

@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "logxpy-cli-view"
-dynamic = ["version"]
+version = "1.0.0"
 description = "Render LogXPy logs as an ASCII tree"
 readme = "README.md"
 license = "MIT"
@@ -38,7 +38,8 @@ dependencies = [
     "iso8601>=2.0.0",
     "colored>=2.0.0",
     "toolz>=0.12.0",
-    "logxpy>=1.14.0",
+    "boltons>=20.0.0",  # Eliot dependency
+    "zope.interface>=5.0",  # Eliot dependency
     "win-unicode-console>=0.5;platform_system=='Windows'",
 ]
 
@@ -57,12 +58,6 @@ logxpy-cli-view = "logxpy_cli_view._cli:main"
 Homepage = "https://github.com/Maziar123/log-x-py"
 Repository = "https://github.com/Maziar123/log-x-py"
 Issues = "https://github.com/Maziar123/log-x-py/issues"
-
-[tool.hatch.version]
-source = "vcs"
-
-[tool.hatch.build.hooks.vcs]
-version-file = "src/logxpy_cli_view/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/logxpy_cli_view"]
