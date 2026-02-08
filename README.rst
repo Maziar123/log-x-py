@@ -5,6 +5,12 @@ logxpy: Structured Logging with Action Tracing
 tracing causal chains of actions—helping you understand *why* things happened
 in your application.
 
+The **log-x-py** project consists of three components:
+
+* **logxpy** - Zero-dependency structured logging library (Python 3.12+)
+* **logxpy-cli-view** - Colored tree viewer for logs
+* **logxy-log-parser** - Log parsing, analysis, and monitoring library
+
 Why logxpy?
 -----------
 
@@ -31,14 +37,19 @@ Features
 * **Async Support** - Works with asyncio and async/await patterns
 * **Type Safety** - Full type hints throughout
 
-Quick Start
------------
+---
+## Component 1: logxpy (Logging Library)
+---------------------------------------
+
+### Installation
 
 Install logxpy::
 
     pip install logxpy
 
-Basic usage::
+### Quick Start
+
+.. code-block:: python
 
     from logxpy import start_action, Message, to_file
 
@@ -53,10 +64,7 @@ Basic usage::
         with start_action(action_type="database:query", table="users"):
             Message.log(message_type="database:result", rows=10)
 
-Output is structured JSON that's easy to parse, visualize, and analyze.
-
-Core API
---------
+### Core API
 
 .. list-table:: Core Logging Functions
    :header-rows: 1
@@ -87,8 +95,7 @@ Core API
      - Log exception traceback
      - ``except: write_traceback()``
 
-LoggerX Level Methods
----------------------
+### LoggerX Level Methods
 
 .. list-table:: Logging Level Methods
    :header-rows: 1
@@ -125,8 +132,62 @@ LoggerX Level Methods
      - ERROR + traceback
      - ``except: log.exception("error")``
 
-Decorators
-----------
+### LoggerX Data Type Methods (Clean API)
+
+.. list-table:: Data Type Logging Methods
+   :header-rows: 1
+   :widths: 30 40 30
+
+   * - Method
+     - Purpose
+     - Example
+   * - ``log.color(value, title)``
+     - Log RGB/hex colors
+     - ``log.color((255, 0, 0), "Theme")``
+   * - ``log.currency(amount, code)``
+     - Log currency with precision
+     - ``log.currency("19.99", "USD")``
+   * - ``log.datetime(dt, title)``
+     - Log datetime in multiple formats
+     - ``log.datetime(dt, "StartTime")``
+   * - ``log.enum(enum_value, title)``
+     - Log enum with name/value
+     - ``log.enum(Status.ACTIVE)``
+   * - ``log.ptr(obj, title)``
+     - Log object identity
+     - ``log.ptr(my_object)``
+   * - ``log.variant(value, title)``
+     - Log any value with type info
+     - ``log.variant(data, "Input")``
+   * - ``log.sset(s, title)``
+     - Log set/frozenset
+     - ``log.sset({1, 2, 3}, "Tags")``
+   * - ``log.system_info()``
+     - Log OS/platform info
+     - ``log.system_info()``
+   * - ``log.memory_status()``
+     - Log memory statistics
+     - ``log.memory_status()``
+   * - ``log.memory_hex(data)``
+     - Log bytes as hex dump
+     - ``log.memory_hex(buffer)``
+   * - ``log.stack_trace(limit)``
+     - Log current call stack
+     - ``log.stack_trace(limit=10)``
+   * - ``log.file_hex(path)``
+     - Log file as hex dump
+     - ``log.file_hex("data.bin")``
+   * - ``log.file_text(path)``
+     - Log text file contents
+     - ``log.file_text("app.log")``
+   * - ``log.stream_hex(stream)``
+     - Log binary stream as hex
+     - ``log.stream_hex(bio)``
+   * - ``log.stream_text(stream)``
+     - Log text stream contents
+     - ``log.stream_text(io)``
+
+### Decorators
 
 .. list-table:: Logging Decorators
    :header-rows: 1
@@ -148,8 +209,7 @@ Decorators
      - Log function calls
      - ``@log_call(action_type="func")``
 
-System Message Types
---------------------
+### System Message Types
 
 .. list-table:: Built-in Message Types
    :header-rows: 1
@@ -172,21 +232,24 @@ System Message Types
    * - ``loggerx:critical``
      - Critical level messages
 
-Viewing Logs
-------------
+---
+## Component 2: logxpy-cli-view (Tree Viewer)
+--------------------------------------------
 
-Use the companion ``logxpy-cli-view`` package to render logs as beautiful
-colored trees::
+### Installation
+
+Install logxpy-cli-view::
 
     pip install logxpy-cli-view
-    logxpy-cli-view app.log
 
-Or use the standalone viewer from the examples::
+### Quick Start
 
-    python examples-log-view/view_tree.py app.log
+.. code-block:: bash
 
-CLI Commands
-------------
+    # View logs as tree
+    logxpy-view app.log
+
+### CLI Commands
 
 .. list-table:: CLI Commands
    :header-rows: 1
@@ -211,8 +274,7 @@ CLI Commands
    * - ``logxpy-view <file> --stats``
      - Show statistics
 
-Filter Functions
-----------------
+### Filter Functions
 
 .. list-table:: Filter Functions
    :header-rows: 1
@@ -231,8 +293,7 @@ Filter Functions
    * - ``filter_by_jmespath(tasks, query)``
      - JMESPath query filter
 
-Export Functions
-----------------
+### Export Functions
 
 .. list-table:: Export Functions
    :header-rows: 1
@@ -249,18 +310,140 @@ Export Functions
    * - ``export_logfmt(tasks, file)``
      - Export as logfmt
 
-Requirements
+---
+## Component 3: logxy-log-parser (Log Parser & Analyzer)
+--------------------------------------------------------
+
+### Installation
+
+Install logxy-log-parser::
+
+    pip install logxy-log-parser
+
+### Quick Start
+
+.. code-block:: python
+
+    from logxy_log_parser import parse_log, check_log, analyze_log
+
+    # One-line parsing
+    entries = parse_log("app.log")
+
+    # Parse + validate
+    result = check_log("app.log")
+    print(f"Valid: {result.is_valid}, Entries: {result.entry_count}")
+
+    # Full analysis
+    report = analyze_log("app.log")
+    report.print_summary()
+
+### Core Classes
+
+.. list-table:: Core Classes
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Class
+     - Purpose
+   * - ``LogFile``
+     - File handle + real-time monitoring
+   * - ``LogParser``
+     - Parse log files
+   * - ``LogEntries``
+     - Collection with filtering/export
+   * - ``LogFilter``
+     - Chainable filters
+   * - ``LogAnalyzer``
+     - Performance/error analysis
+   * - ``TaskTree``
+     - Hierarchical task tree
+
+### LogFile API (Real-time Monitoring)
+
+.. list-table:: LogFile API
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Method
+     - Purpose
+   * - ``LogFile.open(path)``
+     - Open and validate
+   * - ``logfile.entry_count``
+     - Get entry count (fast)
+   * - ``logfile.contains_error()``
+     - Check for errors
+   * - ``logfile.watch()``
+     - Iterate new entries
+   * - ``logfile.wait_for_message(text, timeout)``
+     - Wait for message
+   * - ``logfile.wait_for_error(timeout)``
+     - Wait for error
+
+### Filter Methods
+
+.. list-table:: Filter Methods
+   :header-rows: 1
+   :widths: 40 60
+
+   * - Method
+     - Purpose
+   * - ``by_level(*levels)``
+     - Filter by log level
+   * - ``by_message(pattern)``
+     - Filter by message text
+   * - ``by_time_range(start, end)``
+     - Filter by time range
+   * - ``by_task_uuid(*uuids)``
+     - Filter by task UUID
+   * - ``by_action_type(*types)``
+     - Filter by action type
+   * - ``by_field(field, value)``
+     - Filter by field value
+   * - ``by_duration(min, max)``
+     - Filter by duration
+   * - ``with_traceback()``
+     - Entries with tracebacks
+   * - ``failed_actions()``
+     - Failed actions only
+   * - ``slow_actions(threshold)``
+     - Slow actions only
+
+---
+## Installation
 ------------
 
-* Python 3.9 or newer (including PyPy3)
+Install all three components::
 
-Links
+    pip install logxpy logxpy-cli-view logxy-log-parser
+
+Or install from source::
+
+    # Library
+    cd logxpy && pip install -e .
+
+    # Viewer
+    cd logxpy_cli_view && pip install -e .
+
+    # Parser
+    cd logxy-log-parser && pip install -e .
+
+---
+## Requirements
+------------
+
+* **logxpy**: Python 3.9 or newer (3.12+ recommended for modern features)
+* **logxpy-cli-view**: Python 3.9 or newer
+* **logxy-log-parser**: Python 3.12 or newer
+
+---
+## Links
 -----
 
 * `Documentation <https://github.com/logxpy/logxpy/>`_
 * `Issue Tracker <https://github.com/logxpy/logxpy/issues>`_
 
-License
+---
+## License
 -------
 
 Apache 2.0 License

@@ -147,6 +147,30 @@ def message_name(
         )
     elif "message_type" in message.contents:
         message_type = format.escape_control_characters(message.contents.message_type)
+        
+        # Check for custom foreground/background colors from logxpy
+        fg = message.contents.get("logxpy:foreground")
+        bg = message.contents.get("logxpy:background")
+        
+        if fg or bg:
+            # Apply custom colors using theme's color function
+            from logxpy_cli_view._color import _get_color_code, _get_style_code
+            import colored as _colored_module
+            
+            # Build formatting string
+            formatting = ""
+            if fg:
+                formatting += _get_color_code(fg, is_background=False)
+            if bg:
+                formatting += _get_color_code(bg, is_background=True)
+            
+            if formatting:
+                formatted = _colored_module.stylize(
+                    f"{message_type} {message.task_level.to_string()} {timestamp}",
+                    formatting
+                )
+                return formatted
+        
         return f"{theme.parent(message_type)} {theme.task_level(message.task_level.to_string())} {timestamp}"
 
     return "<unnamed>"

@@ -19,7 +19,7 @@ from ._action import (
 )
 from ._compat import log_call, log_message
 from ._async import aaction
-from ._output import FileDestination, ILogger, Logger, MemoryLogger, to_file
+from ._output import FileDestination, ILogger, Logger, MemoryLogger, init_file_destination, to_file
 from ._traceback import write_traceback, writeFailure
 from ._validation import ActionType, Field, MessageType, ValidationError, fields
 from .loggerx import log
@@ -46,6 +46,61 @@ from .system_info import (
     SendWindowHandle,
     SendScreenshot,
     SendParents,
+)
+
+# File and Stream Operations (lazy import support)
+from .file_stream import (
+    send_file_as_hex,
+    send_text_file,
+    send_stream_as_hex,
+    send_stream_as_text,
+    send_bytes,
+    send_file_info,
+    # CodeSite-style aliases
+    SendFileAsHex,
+    SendTextFile,
+    SendStreamAsHex,
+    SendStreamAsText,
+)
+
+# Data Type Specific (lazy import support)
+from .data_types import (
+    send_color,
+    send_currency,
+    send_datetime,
+    send_datetime_if,
+    send_enum,
+    send_set,
+    send_pointer,
+    send_variant,
+    # Conditional & Formatted Sending
+    send_if,
+    send_assigned,
+    send_fmt_msg,
+    # CodeSite-style aliases
+    SendColor,
+    SendCurrency,
+    SendDateTime,
+    SendDateTimeIf,
+    SendEnum,
+    SendSet,
+    SendPointer,
+    SendVariant,
+    SendIf,
+    SendAssigned,
+    SendFmtMsg,
+)
+
+# Category Management
+from .category import (
+    CategorizedLogger,
+    CategoryManager,
+    Category,
+    category_context,
+    get_current_category,
+    set_category,
+    get_categorized_logger,
+    get_category,
 )
 
 
@@ -162,6 +217,52 @@ __all__ = [
     "SendWindowHandle",
     "SendScreenshot",
     "SendParents",
+    # File and Stream (CodeSite-compatible)
+    "send_file_as_hex",
+    "send_text_file",
+    "send_stream_as_hex",
+    "send_stream_as_text",
+    "send_bytes",
+    "send_file_info",
+    # CodeSite-style aliases
+    "SendFileAsHex",
+    "SendTextFile",
+    "SendStreamAsHex",
+    "SendStreamAsText",
+    # Data Types (CodeSite-compatible)
+    "send_color",
+    "send_currency",
+    "send_datetime",
+    "send_datetime_if",
+    "send_enum",
+    "send_set",
+    "send_pointer",
+    "send_variant",
+    # Conditional & Formatted Sending
+    "send_if",
+    "send_assigned",
+    "send_fmt_msg",
+    # CodeSite-style aliases
+    "SendColor",
+    "SendCurrency",
+    "SendDateTime",
+    "SendDateTimeIf",
+    "SendEnum",
+    "SendSet",
+    "SendPointer",
+    "SendVariant",
+    "SendIf",
+    "SendAssigned",
+    "SendFmtMsg",
+    # Category Management
+    "CategorizedLogger",
+    "CategoryManager",
+    "Category",
+    "category_context",
+    "get_current_category",
+    "set_category",
+    "get_categorized_logger",
+    "get_category",
     # Tree viewer compatibility:
     "_parse",
 ]

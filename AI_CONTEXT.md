@@ -1,6 +1,10 @@
 # log-x-py - Complete User API
 
-Full API for using logxpy (logging) + logxpy-cli-view (viewer). 100% of public features.
+Full API for using logxpy (logging) + logxpy-cli-view (viewer) + logxy-log-parser (analyzer).
+
+> **📁 API Reference Document**: [logxpy-api-reference.html](./logxpy-api-reference.html) - Complete API with 4 columns: logxpy Prototype, Description, Example, Params
+>
+> **📘 Cross-Reference**: [DOC-X/cross-docs/cross-lib1.html](./DOC-X/cross-docs/cross-lib1.html) - CodeSite vs logxpy comparison (11 columns)
 
 ---
 
@@ -59,23 +63,6 @@ async def process():
     await asyncio.sleep(1)
 ```
 
-### Validation Schemas
-
-```python
-from logxpy import MessageType, ActionType, Field, fields
-
-class UserLogin(MessageType):
-    username = Field(fields.text)
-    success = Field(fields.success)
-    ip_address = Field(fields.text)
-
-class DatabaseAction(ActionType):
-    table = Field(fields.text)
-    query = Field(fields.text)
-
-UserLogin().bind(username="alice", success=True)
-```
-
 ### Exception Logging
 
 ```python
@@ -87,7 +74,7 @@ except Exception:
     write_traceback()  # Full traceback in logs
 ```
 
-### Filtering & Export
+### Filtering & Export (logxpy-cli-view)
 
 ```python
 from logxpy_cli_view import (
@@ -113,7 +100,7 @@ export_json(slow_tasks, "output.json")
 print(render_tasks(tasks))
 ```
 
-### Live Tail
+### Live Tail (logxpy-cli-view)
 
 ```python
 from logxpy_cli_view import tail_logs, watch_and_aggregate
@@ -125,6 +112,23 @@ tail_logs("app.log")
 for tasks in watch_and_aggregate("app.log"):
     for task in tasks:
         print(f"Task: {task.get('action_type')}")
+```
+
+### Log Parsing & Analysis (logxy-log-parser)
+
+```python
+from logxy_log_parser import parse_log, check_log, analyze_log
+
+# One-line parsing
+entries = parse_log("app.log")
+
+# Parse + validate
+result = check_log("app.log")
+print(f"Valid: {result.is_valid}, Entries: {result.entry_count}")
+
+# Full analysis
+report = analyze_log("app.log")
+report.print_summary()
 ```
 
 ### CLI Commands
@@ -157,9 +161,9 @@ logxpy-view app.log --no-color
 
 ---
 
-## Part 1: Logging Library (`logxpy`)
+# Component 1: logxpy (Logging Library)
 
-### Messaging - Complete API
+## Messaging - Complete API
 
 | Category | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|----------|-----------|------------|---------|---------|----------|
@@ -280,34 +284,7 @@ logxpy-view app.log --no-color
 
 ---
 
-## System Message Types (Eliot & LoggerX)
-
-### Eliot System Messages
-
-| Message Type | Purpose | Fields |
-|--------------|---------|--------|
-| `eliot:traceback` | Exception traceback logging | `reason`, `traceback`, `exception` |
-| `eliot:destination_failure` | Destination write failure | `reason`, `exception`, `message` |
-| `eliot:serialization_failure` | Message serialization failure | `message` |
-| `eliot:remote_task` | Remote/cross-process task | `action_type` |
-| `eliot:stdlib` | Standard library events | Various |
-| `eliot:duration` | Action duration (field) | Seconds (float) |
-
-### LoggerX Message Types
-
-| Message Type | Level | Purpose |
-|--------------|-------|---------|
-| `loggerx:debug` | DEBUG | Debug level messages |
-| `loggerx:info` | INFO | Info level messages |
-| `loggerx:success` | SUCCESS | Success level messages |
-| `loggerx:note` | NOTE | Note level messages |
-| `loggerx:warning` | WARNING | Warning level messages |
-| `loggerx:error` | ERROR | Error level messages |
-| `loggerx:critical` | CRITICAL | Critical level messages |
-
----
-
-## Part 1.5: LoggerX API
+## LoggerX API
 
 ### Logger Class - Level Methods
 
@@ -357,12 +334,6 @@ logxpy-view app.log --no-color
 | `aiterator` | name, every | Async iterator progress | `@log.aiterator()` |
 | `trace` | name, kind, attributes | OpenTelemetry trace | `@log.trace()` |
 
-### Logger Class - Config
-
-| Method | Parameters | Explain | Examples |
-|--------|------------|---------|----------|
-| `configure` | level, destinations, format, context, mask_fields | Configure logger | `log.configure(level="INFO")` |
-
 ### Global Logger Instance
 
 | Symbol | Type | Explain |
@@ -378,40 +349,17 @@ logxpy-view app.log --no-color
 | Decorator | Parameters | Returns | Explain | Examples |
 |-----------|------------|---------|---------|----------|
 | `logged` | fn=None, level="INFO", capture_args=True, capture_result=True, capture_self=False, exclude=None, timer=True, when=None, max_depth=3, max_length=500, silent_errors=False | Decorator | Universal logging with entry/exit/timing | `@logged(level="DEBUG")` |
-| `timed` | metric=None | Decorator | Timing-only decorator | `@timed("db.query")` |
+| `timed` | metric=None | Decorator | Timing-only decorator | `@timed("database.query")` |
 | `retry` | attempts=3, delay=1.0, backoff=2.0, on_retry=None | Decorator | Retry with exponential backoff | `@retry(attempts=5)` |
 | `generator` | name=None, every=100 | Decorator | Generator progress tracking | `@generator(every=50)` |
 | `aiterator` | name=None, every=100 | Decorator | Async iterator progress | `@aiterator()` |
 | `trace` | name=None, kind="internal", attributes=None | Decorator | OpenTelemetry trace decorator | `@trace(kind="external")` |
 
-### Usage Examples
-
-```python
-from logxpy.decorators import logged, timed, retry, generator
-
-@logged(level="DEBUG", capture_args=False)
-def process_data(x, y):
-    return x + y
-
-@timed("database.query")
-def query_db():
-    ...
-
-@retry(attempts=5, delay=0.5, backoff=2)
-def fetch_api():
-    ...
-
-@generator(every=1000)
-def process_large_dataset():
-    for item in large_data:
-        yield process(item)
-```
-
 ---
 
-## Part 2: Viewer (`logxpy-cli-view`)
+# Component 2: logxpy-cli-view (Viewer)
 
-### CLI Commands
+## CLI Commands
 
 | Command | Options | Type | Explain | Examples |
 |---------|---------|------|---------|----------|
@@ -426,7 +374,7 @@ def process_large_dataset():
 | `--color` | - | flag | Enable colors | `--color` |
 | `--no-color` | - | flag | Disable colors | `--no-color` |
 
-### Core API
+## Core API
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -434,7 +382,7 @@ def process_large_dataset():
 | `tasks_from_iterable` | `tasks_from_iterable(lines)` | `lines`: iterable | Iterator | Parse log lines into tasks | `tasks = tasks_from_iterable(f)` |
 | `parser_context` | `parser_context()` | None | Context manager | Parse with context | `with parser_context():` |
 
-### Filter Functions
+## Filter Functions
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -454,7 +402,7 @@ def process_large_dataset():
 | `combine_filters_or` | `combine_filters_or(*filters)` | `*filters` | Filtered tasks | OR combine | `combine_filters_or(f1, f2)` |
 | `combine_filters_not` | `combine_filters_not(filter)` | `filter` | Filtered tasks | NOT filter | `combine_filters_not(f1)` |
 
-### Export Functions
+## Export Functions
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -466,7 +414,7 @@ def process_large_dataset():
 | `EXPORT_FORMATS` | Constant | - | `list` of str | Available formats: ["json", "csv", "html", "logfmt"] | - |
 | `ExportOptions` | Class | - | - | Export configuration options | `ExportOptions(human_readable=True)` |
 
-### Statistics
+## Statistics
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -476,7 +424,7 @@ def process_large_dataset():
 | `TimeSeriesData` | Class | - | - | Time series with timestamps and counts | `series.timestamps` |
 | `print_statistics` | `print_statistics(stats)` | `stats` | None | Print stats to stdout | `print_statistics(stats)` |
 
-### Live Tail
+## Live Tail
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -488,7 +436,7 @@ def process_large_dataset():
 | `LogTailer.start` | Method | `.start()` | None | None | Start tailing | `tailer.start()` |
 | `LogTailer.stop` | Method | `.stop()` | None | None | Stop tailing | `tailer.stop()` |
 
-### Pattern Extraction
+## Pattern Extraction
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -506,7 +454,7 @@ def process_large_dataset():
 | `PatternMatch` | Class | - | - | Match with type, value, position | `match.type, match.value` |
 | `create_extraction_pipeline` | `create_extraction_pipeline(patterns)` | `patterns`: list | Extractor | Multi-pattern extractor | `create_extraction_pipeline([url, email])` |
 
-### Theme & Color
+## Theme & Color
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -520,7 +468,7 @@ def process_large_dataset():
 | `colored` | `colored(text, color, style)` | `text`, `color`, `style` | `str` | Colorize text | `colored("text", "cyan", "bold")` |
 | `no_color` | Function | `no_color(text)` | `text` | `str` | No-op (plain text) | `no_color("text")` |
 
-### Formatting
+## Formatting
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -535,7 +483,7 @@ def process_large_dataset():
 | `escape_control_characters` | `escape_control_characters(text)` | `text`: str | `str` | Escape control chars | `escape_control_characters(data)` |
 | `fields` | `fields(dict)` | `dict`: dict | `str` | Format dict as fields | `fields({"a": 1})` |
 
-### Rendering
+## Rendering
 
 | Name | Type | Prototype | Parameters | Returns | Explain | Examples |
 |-----|------|-----------|------------|---------|---------|----------|
@@ -547,7 +495,7 @@ def process_large_dataset():
 | `get_children` | Function | `get_children(task)` | `task` | `list` | Get child tasks | `get_children(task)` |
 | `track_exceptions` | Function | `track_exceptions(tasks)` | `tasks` | `dict` | Track exceptions | `track_exceptions(tasks)` |
 
-### Utilities
+## Utilities
 
 | Function | Prototype | Parameters | Returns | Explain | Examples |
 |----------|-----------|------------|---------|---------|----------|
@@ -560,7 +508,7 @@ def process_large_dataset():
 | `_Namespace` | Class | - | - | - | Namespace object | Eliot compatibility |
 | `Writable` | Protocol | - | - | Write protocol | For file-like objects |
 
-### Errors
+## Errors
 
 | Exception | Explain | Examples |
 |-----------|-------------|----------|
@@ -568,7 +516,7 @@ def process_large_dataset():
 | `EliotParseError` | Log parsing failed | `except EliotParseError:` |
 | `JSONParseError` | Invalid JSON | `except JSONParseError:` |
 
-### Compatibility
+## Compatibility
 
 | Name | Type | Prototype | Explain | Examples |
 |------|------|-----------|-------------|----------|
@@ -577,3 +525,100 @@ def process_large_dataset():
 | `dump_json_bytes` | Function | `dump_json_bytes(data)` | Dump as JSON bytes | `dump_json_bytes({"a": 1})` |
 | `__version__` | `str` | - | Package version | `print(__version__)` |
 
+---
+
+# Component 3: logxy-log-parser (Log Parser & Analyzer)
+
+## Simple API (One-Liners)
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `parse_log(path)` | Parse log file | `entries = parse_log("app.log")` |
+| `parse_line(line)` | Parse single line | `entry = parse_line(json_str)` |
+| `check_log(path)` | Parse + validate | `result = check_log("app.log")` |
+| `analyze_log(path)` | Full analysis | `report = analyze_log("app.log")` |
+
+## Core Classes
+
+| Class | Purpose | Example |
+|-------|---------|---------|
+| `LogFile` | File handle + real-time monitoring | `logfile = LogFile.open("app.log")` |
+| `LogParser` | Parse log files | `parser = LogParser("app.log")` |
+| `LogEntries` | Collection with filtering/export | `logs = parser.parse()` |
+| `LogFilter` | Chainable filters | `errors = LogFilter(logs).by_level("error")` |
+| `LogAnalyzer` | Performance/error analysis | `analyzer = LogAnalyzer(logs)` |
+| `TaskTree` | Hierarchical task tree | `tree = parser.build_task_tree()` |
+| `TaskNode` | Node in task tree | `node = tree.root` |
+
+## LogFile API (Real-time Monitoring)
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `LogFile.open(path)` | Open and validate | `logfile = LogFile.open("app.log")` |
+| `logfile.entry_count` | Get entry count (fast) | `count = logfile.entry_count` |
+| `logfile.contains_error()` | Check for errors | `if logfile.contains_error():` |
+| `logfile.watch()` | Iterate new entries | `for entry in logfile.watch():` |
+| `logfile.wait_for_message(text, timeout)` | Wait for message | `entry = logfile.wait_for_message("ready", 30)` |
+| `logfile.wait_for_error(timeout)` | Wait for error | `error = logfile.wait_for_error(60)` |
+
+## Filter Methods
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `by_level(*levels)` | Filter by log level | `by_level("error", "warning")` |
+| `by_message(pattern)` | Filter by message text | `by_message("database")` |
+| `by_time_range(start, end)` | Filter by time range | `by_time_range("2024-01-01", "2024-12-31")` |
+| `by_task_uuid(*uuids)` | Filter by task UUID | `by_task_uuid("abc-123")` |
+| `by_action_type(*types)` | Filter by action type | `by_action_type("db_*")` |
+| `by_field(field, value)` | Filter by field value | `by_field("user_id", 123)` |
+| `by_duration(min, max)` | Filter by duration | `by_duration(min=1.0)` |
+| `with_traceback()` | Entries with tracebacks | `with_traceback()` |
+| `failed_actions()` | Failed actions only | `failed_actions()` |
+| `slow_actions(threshold)` | Slow actions only | `slow_actions(5.0)` |
+
+## Export Formats
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `to_json(file)` | Export as JSON | `logs.to_json("out.json")` |
+| `to_csv(file)` | Export as CSV | `logs.to_csv("out.csv")` |
+| `to_html(file)` | Export as HTML | `logs.to_html("out.html")` |
+| `to_markdown(file)` | Export as Markdown | `logs.to_markdown("out.md")` |
+| `to_dataframe()` | Export as pandas DataFrame | `df = logs.to_dataframe()` |
+
+## Analysis Methods
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `slowest_actions(n)` | Find slowest operations | `for action in analyzer.slowest_actions(10):` |
+| `duration_by_action()` | Duration by action type | `durations = analyzer.duration_by_action()` |
+| `error_summary()` | Error statistics | `summary = analyzer.error_summary()` |
+| `failure_rate_by_action()` | Failure rate per action | `rates = analyzer.failure_rate_by_action()` |
+| `generate_report(format)` | Generate full report | `analyzer.generate_report("html")` |
+
+---
+
+## System Message Types
+
+### Eliot System Messages
+
+| Message Type | Purpose | Fields |
+|--------------|---------|--------|
+| `eliot:traceback` | Exception traceback | `reason`, `traceback`, `exception` |
+| `eliot:destination_failure` | Destination write failure | `reason`, `exception`, `message` |
+| `eliot:serialization_failure` | Message serialization failure | `message` |
+| `eliot:remote_task` | Remote/cross-process task | `action_type` |
+| `eliot:stdlib` | Standard library events | Various |
+| `eliot:duration` | Action duration (field) | Seconds (float) |
+
+### LoggerX Message Types
+
+| Message Type | Level | Purpose |
+|--------------|-------|---------|
+| `loggerx:debug` | DEBUG | Debug level messages |
+| `loggerx:info` | INFO | Info level messages |
+| `loggerx:success` | SUCCESS | Success level messages |
+| `loggerx:note` | NOTE | Note level messages |
+| `loggerx:warning` | WARNING | Warning level messages |
+| `loggerx:error` | ERROR | Error level messages |
+| `loggerx:critical` | CRITICAL | Critical level messages |

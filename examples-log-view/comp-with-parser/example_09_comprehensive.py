@@ -1,0 +1,1 @@
+/mnt/N1/MZ/AMZ/Projects/Prog/a_cross/log-x-py/examples-log-view/complete-example-01/example_09_comprehensive.py

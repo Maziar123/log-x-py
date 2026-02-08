@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>logxpy API Reference</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent-logxpy: #4ecdc4;
+            --accent-view: #95e1d3;
+            --accent-parser: #f38181;
+            --border-color: #2d3561;
+            --code-bg: #0d1117;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--accent-logxpy), #95e1d3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .component-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .component-tab {
+            padding: 12px 24px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .component-tab:hover {
+            border-color: var(--accent-logxpy);
+            background: var(--bg-tertiary);
+        }
+
+        .component-tab.active {
+            border-color: var(--accent-logxpy);
+            background: var(--bg-tertiary);
+        }
+
+        .component-tab.logxpy { border-color: var(--accent-logxpy); }
+        .component-tab.logxpy.active { background: rgba(78, 205, 196, 0.2); }
+
+        .component-tab.view { border-color: var(--accent-view); }
+        .component-tab.view.active { background: rgba(149, 225, 211, 0.2); }
+
+        .component-tab.parser { border-color: var(--accent-parser); }
+        .component-tab.parser.active { background: rgba(243, 129, 129, 0.2); }
+
+        .component-section {
+            display: none;
+        }
+
+        .component-section.active {
+            display: block;
+        }
+
+        .section {
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            background: linear-gradient(90deg, var(--bg-secondary), var(--bg-tertiary));
+            padding: 20px 25px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--accent-logxpy);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title.view { border-color: var(--accent-view); }
+        .section-title.parser { border-color: var(--accent-parser); }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-secondary);
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--accent-logxpy);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th.view { color: var(--accent-view); }
+        th.parser { color: var(--accent-parser); }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: rgba(78, 205, 196, 0.05);
+        }
+
+        .prototype {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: var(--code-bg);
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: var(--accent-logxpy);
+            font-size: 0.9rem;
+        }
+
+        .prototype.view { color: var(--accent-view); }
+        .prototype.parser { color: var(--accent-parser); }
+
+        .description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .example {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            color: #a8d5ba;
+            background: var(--code-bg);
+            padding: 10px;
+            border-radius: 6px;
+            white-space: pre-wrap;
+        }
+
+        .param-info {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .param-name {
+            color: #f38181;
+            font-weight: 500;
+        }
+
+        .param-type {
+            color: #95e1d3;
+            font-style: italic;
+        }
+
+        .deprecated {
+            color: #f38181;
+            font-weight: bold;
+        }
+
+        .note {
+            background: var(--bg-secondary);
+            padding: 15px 25px;
+            border-left: 4px solid var(--accent-logxpy);
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        code {
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--accent-logxpy);
+        }
+
+        .component-header {
+            text-align: center;
+            padding: 30px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+
+        .component-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .component-header.logxpy h2 { color: var(--accent-logxpy); }
+        .component-header.view h2 { color: var(--accent-view); }
+        .component-header.parser h2 { color: var(--accent-parser); }
+
+        .component-header p {
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-box .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .stat-box.logxpy .value { color: var(--accent-logxpy); }
+        .stat-box.view .value { color: var(--accent-view); }
+        .stat-box.parser .value { color: var(--accent-parser); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📜 log-x-py API Reference</h1>
+            <p class="subtitle">Complete API documentation for logxpy, logxpy-cli-view, and logxy-log-parser</p>
+        </header>
+
+        <div class="component-tabs">
+            <button class="component-tab logxpy active" onclick="showComponent('logxpy')">logxpy (Logging)</button>
+            <button class="component-tab view" onclick="showComponent('view')">logxpy-cli-view (Viewer)</button>
+            <button class="component-tab parser" onclick="showComponent('parser')">logxy-log-parser (Parser)</button>
+        </div>
+
+        <!-- Component 1: logxpy -->
+        <div id="logxpy-section" class="component-section active">
+            <div class="component-header logxpy">
+                <h2>🔧 logxpy - Logging Library</h2>
+                <p>Zero-dependency structured logging for Python 3.12+</p>
+                <div class="stats-grid">
+                    <div class="stat-box logxpy">
+                        <div class="label">Lines of Code</div>
+                        <div class="value">~2000</div>
+                    </div>
+                    <div class="stat-box logxpy">
+                        <div class="label">Dependencies</div>
+                        <div class="value">0</div>
+                    </div>
+                    <div class="stat-box logxpy">
+                        <div class="label">Python</div>
+                        <div class="value">3.12+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Quick Start:</strong> <code>pip install logxpy</code> | <code>from logxpy import log, start_action</code>
+            </div>
+
+            <!-- Basic Message Methods -->
+            <div class="section">
+                <h2 class="section-title">📤 Basic Message Methods</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>logxpy Prototype</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype">log.debug()</span></td>
+                                <td class="description">DEBUG level message</td>
+                                <td class="example">log.debug("Processing item", item_id=42)</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Extra data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.info()</span></td>
+                                <td class="description">INFO level message</td>
+                                <td class="example">log.info("User logged in", user="john")</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Extra data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.success()</span></td>
+                                <td class="description">SUCCESS level message</td>
+                                <td class="example">log.success("Operation completed")</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Extra data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.note()</span></td>
+                                <td class="description">NOTE level message</td>
+                                <td class="example">log.note("Checkpoint reached")</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Extra data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.warning()</span></td>
+                                <td class="description">WARNING level message</td>
+                                <td class="example">log.warning("Low memory", percent=15)</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Extra data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.error()</span></td>
+                                <td class="description">ERROR level message</td>
+                                <td class="example">log.error("Connection failed", code=500)</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Error context</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.critical()</span></td>
+                                <td class="description">CRITICAL level message</td>
+                                <td class="example">log.critical("System crash", code=1)</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Critical message<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Context data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.exception()</span></td>
+                                <td class="description">Log exception with traceback</td>
+                                <td class="example">try: risky() except: log.exception("Failed")</td>
+                                <td class="param-info"><span class="param-name">msg</span>: <span class="param-type">str</span><br>Error message<br><span class="param-name">exc_info</span>: <span class="param-type">bool</span><br>Include traceback</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Actions & Contexts -->
+            <div class="section">
+                <h2 class="section-title">⚡ Actions & Contexts</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>logxpy Prototype</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype">start_action()</span></td>
+                                <td class="description">Start nested action context</td>
+                                <td class="example">with start_action("http:request"): fetch()</td>
+                                <td class="param-info"><span class="param-name">action_type</span>: <span class="param-type">str</span><br>Action name<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Context data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">start_task()</span></td>
+                                <td class="description">Start top-level task</td>
+                                <td class="example">with start_task("main"): run_app()</td>
+                                <td class="param-info"><span class="param-name">action_type</span>: <span class="param-type">str</span><br>Task name<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Context data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">current_action()</span></td>
+                                <td class="description">Get current action context</td>
+                                <td class="example">action = current_action()</td>
+                                <td class="param-info"><em>No params</em><br>Returns current Action</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">aaction()</span></td>
+                                <td class="description">Async action context</td>
+                                <td class="example">async with aaction("fetch"): await get()</td>
+                                <td class="param-info"><span class="param-name">action_type</span>: <span class="param-type">str</span><br>Action name<br><span class="param-name">**fields</span>: <span class="param-type">Any</span><br>Context data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Type Methods -->
+            <div class="section">
+                <h2 class="section-title">📊 Data Type Methods</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>logxpy Prototype</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype">log.color()</span></td>
+                                <td class="description">Log RGB/hex colors</td>
+                                <td class="example">log.color((255, 0, 0), "Theme")</td>
+                                <td class="param-info"><span class="param-name">value</span>: <span class="param-type">tuple|str</span><br>Color value<br><span class="param-name">title</span>: <span class="param-type">str</span><br>Description</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.currency()</span></td>
+                                <td class="description">Log currency with precision</td>
+                                <td class="example">log.currency("19.99", "USD")</td>
+                                <td class="param-info"><span class="param-name">amount</span>: <span class="param-type">str|float</span><br>Amount<br><span class="param-name">code</span>: <span class="param-type">str</span><br>Currency code</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.datetime()</span></td>
+                                <td class="description">Log datetime in multiple formats</td>
+                                <td class="example">log.datetime(dt, "StartTime")</td>
+                                <td class="param-info"><span class="param-name">dt</span>: <span class="param-type">datetime</span><br>Datetime object<br><span class="param-name">title</span>: <span class="param-type">str</span><br>Description</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.enum()</span></td>
+                                <td class="description">Log enum with name/value</td>
+                                <td class="example">log.enum(Status.ACTIVE, "UserStatus")</td>
+                                <td class="param-info"><span class="param-name">value</span>: <span class="param-type">Enum</span><br>Enum value<br><span class="param-name">title</span>: <span class="param-type">str</span><br>Description</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.system_info()</span></td>
+                                <td class="description">Log OS/platform info</td>
+                                <td class="example">log.system_info()</td>
+                                <td class="param-info"><em>No params</em></td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.memory_status()</span></td>
+                                <td class="description">Log memory statistics</td>
+                                <td class="example">log.memory_status()</td>
+                                <td class="param-info"><em>No params</em></td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">log.file_text()</span></td>
+                                <td class="description">Log text file contents</td>
+                                <td class="example">log.file_text("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str</span><br>File path</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Decorators -->
+            <div class="section">
+                <h2 class="section-title">🏷️ Decorators</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>logxpy Prototype</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype">@logged</span></td>
+                                <td class="description">Auto log function entry/exit</td>
+                                <td class="example">@logged def process(): pass</td>
+                                <td class="param-info"><span class="param-name">action_type</span>: <span class="param-type">str|None</span><br>Action name<br><span class="param-name">level</span>: <span class="param-type">str</span><br>Log level</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">@timed</span></td>
+                                <td class="description">Auto time function execution</td>
+                                <td class="example">@timed def slow_func(): pass</td>
+                                <td class="param-info"><span class="param-name">metric</span>: <span class="param-type">str|None</span><br>Metric name</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">@retry</span></td>
+                                <td class="description">Auto retry on failure</td>
+                                <td class="example">@retry(attempts=3, delay=1)</td>
+                                <td class="param-info"><span class="param-name">attempts</span>: <span class="param-type">int</span><br>Max attempts<br><span class="param-name">delay</span>: <span class="param-type">float</span><br>Seconds between retries</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Output Configuration -->
+            <div class="section">
+                <h2 class="section-title">🔧 Output Configuration</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>logxpy Prototype</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype">to_file()</span></td>
+                                <td class="description">Log to file</td>
+                                <td class="example">to_file(open("app.log", "w"))</td>
+                                <td class="param-info"><span class="param-name">file</span>: <span class="param-type">file</span><br>File object</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">add_destinations()</span></td>
+                                <td class="description">Add multiple outputs</td>
+                                <td class="example">add_destinations(file, console)</td>
+                                <td class="param-info"><span class="param-name">*destinations</span>: <span class="param-type">ILogger</span><br>Log destinations</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype">write_traceback()</span></td>
+                                <td class="description">Log exception traceback</td>
+                                <td class="example">except: write_traceback()</td>
+                                <td class="param-info"><span class="param-name">logger</span>: <span class="param-type">Logger</span><br>Logger instance<br><span class="param-name">exc_info</span>: <span class="param-type">tuple</span><br>Exception info</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component 2: logxpy-cli-view -->
+        <div id="view-section" class="component-section">
+            <div class="component-header view">
+                <h2>🌳 logxpy-cli-view - Tree Viewer</h2>
+                <p>Render LogXPy logs as beautiful colored ASCII trees</p>
+                <div class="stats-grid">
+                    <div class="stat-box view">
+                        <div class="label">Lines of Code</div>
+                        <div class="value">~500</div>
+                    </div>
+                    <div class="stat-box view">
+                        <div class="label">Dependencies</div>
+                        <div class="value">4</div>
+                    </div>
+                    <div class="stat-box view">
+                        <div class="label">Python</div>
+                        <div class="value">3.9+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Quick Start:</strong> <code>pip install logxpy-cli-view</code> | <code>logxpy-view app.log</code>
+            </div>
+
+            <!-- CLI Commands -->
+            <div class="section">
+                <h2 class="section-title view">💻 CLI Commands</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Command</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Options</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype view">logxpy-view</span></td>
+                                <td class="description">View log as tree</td>
+                                <td class="example">logxpy-view app.log</td>
+                                <td class="param-info">&lt;file&gt;: Log file path</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">--failed</span></td>
+                                <td class="description">Show only failed actions</td>
+                                <td class="example">logxpy-view app.log --failed</td>
+                                <td class="param-info">Filter by status=failed</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">--filter</span></td>
+                                <td class="description">Filter by action name</td>
+                                <td class="example">logxpy-view app.log --filter "db_*"</td>
+                                <td class="param-info">&lt;pattern&gt;: Glob pattern</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">--export</span></td>
+                                <td class="description">Export to format</td>
+                                <td class="example">logxpy-view app.log --export json</td>
+                                <td class="param-info">json|csv|html|logfmt</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">--tail</span></td>
+                                <td class="description">Live log monitoring</td>
+                                <td class="example">logxpy-view app.log --tail</td>
+                                <td class="param-info">Watch for new entries</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">--stats</span></td>
+                                <td class="description">Show statistics</td>
+                                <td class="example">logxpy-view app.log --stats</td>
+                                <td class="param-info">Display task stats</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Filter Functions -->
+            <div class="section">
+                <h2 class="section-title view">🔍 Filter Functions</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype view">filter_by_action_status()</span></td>
+                                <td class="description">Filter by completion status</td>
+                                <td class="example">filter_by_action_status(tasks, "failed")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">status</span>: <span class="param-type">str</span><br>succeeded|failed|started</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">filter_by_action_type()</span></td>
+                                <td class="description">Filter by action name pattern</td>
+                                <td class="example">filter_by_action_type(tasks, "db_*")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">action_type</span>: <span class="param-type">str</span><br>Glob pattern</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">filter_by_duration()</span></td>
+                                <td class="description">Filter by duration range</td>
+                                <td class="example">filter_by_duration(tasks, min_seconds=1.0)</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">min_seconds</span>: <span class="param-type">float</span><br><span class="param-name">max_seconds</span>: <span class="param-type">float</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">filter_by_keyword()</span></td>
+                                <td class="description">Search in values</td>
+                                <td class="example">filter_by_keyword(tasks, "error")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">keyword</span>: <span class="param-type">str</span><br>Search term</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">filter_by_jmespath()</span></td>
+                                <td class="description">JMESPath query filter</td>
+                                <td class="example">filter_by_jmespath(tasks, "[?status=='failed']")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">query</span>: <span class="param-type">str</span><br>JMESPath expression</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Export Functions -->
+            <div class="section">
+                <h2 class="section-title view">📤 Export Functions</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype view">export_json()</span></td>
+                                <td class="description">Export as JSON</td>
+                                <td class="example">export_json(tasks, "out.json")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">file</span>: <span class="param-type">str|file</span><br>Output path/file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">export_csv()</span></td>
+                                <td class="description">Export as CSV</td>
+                                <td class="example">export_csv(tasks, "out.csv")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">file</span>: <span class="param-type">str|file</span><br>Output path/file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">export_html()</span></td>
+                                <td class="description">Export as HTML</td>
+                                <td class="example">export_html(tasks, "out.html")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">file</span>: <span class="param-type">str|file</span><br>Output path/file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">export_logfmt()</span></td>
+                                <td class="description">Export as logfmt</td>
+                                <td class="example">export_logfmt(tasks, "out.log")</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br><span class="param-name">file</span>: <span class="param-type">str|file</span><br>Output path/file</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Core API -->
+            <div class="section">
+                <h2 class="section-title view">🔧 Core API</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype view">tasks_from_iterable()</span></td>
+                                <td class="description">Parse log lines into tasks</td>
+                                <td class="example">tasks = tasks_from_iterable(f)</td>
+                                <td class="param-info"><span class="param-name">lines</span>: <span class="param-type">iterable</span><br>Log lines (JSON)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">render_tasks()</span></td>
+                                <td class="description">Render tasks as ASCII tree</td>
+                                <td class="example">print(render_tasks(tasks))</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br>Task list<br><span class="param-name">options</span>: <span class="param-type">RenderOptions</span><br>Render settings</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">calculate_statistics()</span></td>
+                                <td class="description">Compute task statistics</td>
+                                <td class="example">stats = calculate_statistics(tasks)</td>
+                                <td class="param-info"><span class="param-name">tasks</span>: <span class="param-type">list</span><br>Task list</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype view">tail_logs()</span></td>
+                                <td class="description">Simple tail to stdout</td>
+                                <td class="example">tail_logs("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str</span><br>Log file path</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Component 3: logxy-log-parser -->
+        <div id="parser-section" class="component-section">
+            <div class="component-header parser">
+                <h2>🔍 logxy-log-parser - Log Parser & Analyzer</h2>
+                <p>Python library for parsing, analyzing, and querying LogXPy log files</p>
+                <div class="stats-grid">
+                    <div class="stat-box parser">
+                        <div class="label">Lines of Code</div>
+                        <div class="value">~800</div>
+                    </div>
+                    <div class="stat-box parser">
+                        <div class="label">Dependencies</div>
+                        <div class="value">0</div>
+                    </div>
+                    <div class="stat-box parser">
+                        <div class="label">Python</div>
+                        <div class="value">3.12+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Quick Start:</strong> <code>pip install logxy-log-parser</code> | <code>from logxy_log_parser import parse_log</code>
+            </div>
+
+            <!-- Simple API -->
+            <div class="section">
+                <h2 class="section-title parser">⚡ Simple API (One-Liners)</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Function</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype parser">parse_log()</span></td>
+                                <td class="description">Parse log file</td>
+                                <td class="example">entries = parse_log("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str|Path</span><br>Log file path</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">parse_line()</span></td>
+                                <td class="description">Parse single line</td>
+                                <td class="example">entry = parse_line(json_str)</td>
+                                <td class="param-info"><span class="param-name">line</span>: <span class="param-type">str</span><br>JSON log line</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">check_log()</span></td>
+                                <td class="description">Parse + validate</td>
+                                <td class="example">result = check_log("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str|Path</span><br>Log file path</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">analyze_log()</span></td>
+                                <td class="description">Full analysis</td>
+                                <td class="example">report = analyze_log("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str|Path</span><br>Log file path</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Core Classes -->
+            <div class="section">
+                <h2 class="section-title parser">📦 Core Classes</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Key Methods</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype parser">LogFile</span></td>
+                                <td class="description">File handle + real-time monitoring</td>
+                                <td class="example">logfile = LogFile.open("app.log")</td>
+                                <td class="param-info">open(), entry_count, contains_error(), watch()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">LogParser</span></td>
+                                <td class="description">Parse log files</td>
+                                <td class="example">parser = LogParser("app.log")</td>
+                                <td class="param-info">parse(), parse_stream(), build_task_tree()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">LogEntries</span></td>
+                                <td class="description">Collection with filtering/export</td>
+                                <td class="example">logs = parser.parse()</td>
+                                <td class="param-info">to_json(), to_csv(), to_html(), to_dataframe()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">LogFilter</span></td>
+                                <td class="description">Chainable filters</td>
+                                <td class="example">errors = LogFilter(logs).by_level("error")</td>
+                                <td class="param-info">by_level(), by_time_range(), by_action_type()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">LogAnalyzer</span></td>
+                                <td class="description">Performance/error analysis</td>
+                                <td class="example">analyzer = LogAnalyzer(logs)</td>
+                                <td class="param-info">slowest_actions(), error_summary(), duration_by_action()</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">TaskTree</span></td>
+                                <td class="description">Hierarchical task tree</td>
+                                <td class="example">tree = parser.build_task_tree()</td>
+                                <td class="param-info">root, find_node(), to_dict(), visualize()</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- LogFile API -->
+            <div class="section">
+                <h2 class="section-title parser">🔴 LogFile API (Real-time)</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype parser">LogFile.open()</span></td>
+                                <td class="description">Open and validate</td>
+                                <td class="example">logfile = LogFile.open("app.log")</td>
+                                <td class="param-info"><span class="param-name">path</span>: <span class="param-type">str|Path</span><br>Log file path</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">entry_count</span></td>
+                                <td class="description">Get entry count (fast)</td>
+                                <td class="example">count = logfile.entry_count</td>
+                                <td class="param-info">Property - returns int</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">contains_error()</span></td>
+                                <td class="description">Check for errors</td>
+                                <td class="example">if logfile.contains_error():</td>
+                                <td class="param-info">Returns bool</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">watch()</span></td>
+                                <td class="description">Iterate new entries</td>
+                                <td class="example">for entry in logfile.watch():</td>
+                                <td class="param-info"><span class="param-name">interval</span>: <span class="param-type">float</span><br>Check interval (sec)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">wait_for_message()</span></td>
+                                <td class="description">Wait for message</td>
+                                <td class="example">entry = logfile.wait_for_message("ready", 30)</td>
+                                <td class="param-info"><span class="param-name">text</span>: <span class="param-type">str</span><br>Message text<br><span class="param-name">timeout</span>: <span class="param-type">float</span><br>Seconds</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">wait_for_error()</span></td>
+                                <td class="description">Wait for error</td>
+                                <td class="example">error = logfile.wait_for_error(60)</td>
+                                <td class="param-info"><span class="param-name">timeout</span>: <span class="param-type">float</span><br>Seconds to wait</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Filter Methods -->
+            <div class="section">
+                <h2 class="section-title parser">🔍 Filter Methods</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype parser">by_level()</span></td>
+                                <td class="description">Filter by log level</td>
+                                <td class="example">by_level("error", "warning")</td>
+                                <td class="param-info"><span class="param-name">*levels</span>: <span class="param-type">str</span><br>Log levels</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">by_message()</span></td>
+                                <td class="description">Filter by message text</td>
+                                <td class="example">by_message("database")</td>
+                                <td class="param-info"><span class="param-name">pattern</span>: <span class="param-type">str</span><br>Message pattern</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">by_time_range()</span></td>
+                                <td class="description">Filter by time range</td>
+                                <td class="example">by_time_range("2024-01-01", "2024-12-31")</td>
+                                <td class="param-info"><span class="param-name">start</span>: <span class="param-type">str|datetime</span><br><span class="param-name">end</span>: <span class="param-type">str|datetime</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">by_task_uuid()</span></td>
+                                <td class="description">Filter by task UUID</td>
+                                <td class="example">by_task_uuid("abc-123")</td>
+                                <td class="param-info"><span class="param-name">*uuids</span>: <span class="param-type">str</span><br>Task UUIDs</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">by_action_type()</span></td>
+                                <td class="description">Filter by action type</td>
+                                <td class="example">by_action_type("db_*")</td>
+                                <td class="param-info"><span class="param-name">*types</span>: <span class="param-type">str</span><br>Action type patterns</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">by_duration()</span></td>
+                                <td class="description">Filter by duration</td>
+                                <td class="example">by_duration(min=1.0, max=10.0)</td>
+                                <td class="param-info"><span class="param-name">min</span>: <span class="param-type">float</span><br><span class="param-name">max</span>: <span class="param-type">float</span><br>Seconds</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">with_traceback()</span></td>
+                                <td class="description">Entries with tracebacks</td>
+                                <td class="example">with_traceback()</td>
+                                <td class="param-info">No params</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">failed_actions()</span></td>
+                                <td class="description">Failed actions only</td>
+                                <td class="example">failed_actions()</td>
+                                <td class="param-info">No params</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">slow_actions()</span></td>
+                                <td class="description">Slow actions only</td>
+                                <td class="example">slow_actions(threshold=5.0)</td>
+                                <td class="param-info"><span class="param-name">threshold</span>: <span class="param-type">float</span><br>Seconds</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Export Methods -->
+            <div class="section">
+                <h2 class="section-title parser">📤 Export Methods</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Description</th>
+                                <th>Example</th>
+                                <th>Params</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="prototype parser">to_json()</span></td>
+                                <td class="description">Export as JSON</td>
+                                <td class="example">logs.to_json("out.json")</td>
+                                <td class="param-info"><span class="param-name">file</span>: <span class="param-type">str|Path</span><br>Output file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">to_csv()</span></td>
+                                <td class="description">Export as CSV</td>
+                                <td class="example">logs.to_csv("out.csv")</td>
+                                <td class="param-info"><span class="param-name">file</span>: <span class="param-type">str|Path</span><br>Output file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">to_html()</span></td>
+                                <td class="description">Export as HTML</td>
+                                <td class="example">logs.to_html("out.html")</td>
+                                <td class="param-info"><span class="param-name">file</span>: <span class="param-type">str|Path</span><br>Output file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">to_markdown()</span></td>
+                                <td class="description">Export as Markdown</td>
+                                <td class="example">logs.to_markdown("out.md")</td>
+                                <td class="param-info"><span class="param-name">file</span>: <span class="param-type">str|Path</span><br>Output file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="prototype parser">to_dataframe()</span></td>
+                                <td class="description">Export as pandas DataFrame</td>
+                                <td class="example">df = logs.to_dataframe()</td>
+                                <td class="param-info">Requires pandas (optional)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>log-x-py API Reference | Component 1: logxpy | Component 2: logxpy-cli-view | Component 3: logxy-log-parser</p>
+            <p>Python 3.12+ Structured Logging Ecosystem</p>
+        </footer>
+    </div>
+
+    <script>
+        function showComponent(component) {
+            // Hide all sections
+            document.querySelectorAll('.component-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.component-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected section
+            document.getElementById(component + '-section').classList.add('active');
+
+            // Add active class to selected tab
+            document.querySelector('.component-tab.' + component).classList.add('active');
+        }
+    </script>
+</body>
+</html>

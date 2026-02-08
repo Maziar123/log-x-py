@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "log-x-py"
+version = "0.1.0"
+description = "Zero-dependency structured logging with beautiful tree visualization"
+requires-python = ">=3.12"
+
+[tool.setuptools]
+packages = []
+
+# MyPy configuration
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+follow_imports = "silent"
+show_column_numbers = true
+show_error_codes = true
+
+# Add logxpy to mypy path
+mypy_path = "logxpy"
+
+# Pylint configuration (via pylint.toml or pyproject.toml)
+[tool.pylint.MASTER]
+init-hook = "import sys; sys.path.insert(0, 'logxpy')"
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",  # Missing docstring
+    "C0103",  # Invalid name
+    "C0301",  # Line too long (handled by ruff/black)
+    "R0903",  # Too few public methods
+    "W0613",  # Unused argument
+    # example_09_comprehensive.py specific suppressions
+    "R0913",  # Too many arguments (logged decorator has 11 params)
+    "C0413",  # Wrong import position (logxpy import after sys.path.insert)
+    "C0415",  # Import outside toplevel (lazy imports in example functions)
+]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "D",   # pydocstyle
+    "UP",  # pyupgrade
+]
+ignore = [
+    "D100",  # Missing docstring in public module
+    "D102",  # Missing docstring in public method
+    "D103",  # Missing docstring in public function
+    "D104",  # Missing docstring in public package
+    "D105",  # Missing docstring in magic method
+    "D107",  # Missing docstring in __init__
+    "D203",  # 1 blank line required before class docstring
+    "D212",  # Multi-line docstring summary should start at the first line
+    "D213",  # Multi-line docstring summary should start at the second line
+    "D400",  # First line should end with a period
+    "D415",  # First line should end with a period, question mark, or exclamation point
+    "ANN",   # Missing type annotations (handled separately)
+    "EXE001", # Shebang present but file is not executable
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

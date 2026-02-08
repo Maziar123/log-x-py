@@ -1,10 +1,14 @@
 # log-x-py
 
-Modern structured logging with tree visualization. Two packages: a zero-dependency logging library and a colored tree viewer.
+Modern structured logging ecosystem with three components: logging library, tree viewer, and log parser.
+
+> **📁 Complete API Reference**: [logxpy-api-reference.html](./logxpy-api-reference.html) - Full API docs with examples
+>
+> **📘 CodeSite Migration Guide**: [DOC-X/cross-docs/cross-lib1.html](./DOC-X/cross-docs/cross-lib1.html) - CodeSite vs logxpy cross-reference
 
 ---
 
-## 📦 Package 1: logxpy - Logging Library
+## Component 1: logxpy - Logging Library
 
 **Zero-dependency structured logging for Python 3.12+**
 
@@ -18,6 +22,7 @@ Modern structured logging with tree visualization. Two packages: a zero-dependen
 - **Zero Dependencies** - Pure Python 3.12+
 - **Nested Actions** - Track hierarchical operations with context
 - **Status Tracking** - Automatic start/success/failed tracking
+- **Color Support** - Foreground/background colors for CLI viewer rendering
 
 ### Quick Start
 ```bash
@@ -35,6 +40,8 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 ```
 
 ### Core API
+
+> 📋 **Full API Reference**: See [logxpy-api-reference.html](./logxpy-api-reference.html) for complete documentation with all methods, parameters, and examples.
 
 | Function | Purpose | Example |
 |----------|---------|---------|
@@ -60,6 +67,67 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 | `log.checkpoint(msg, **fields)` | CHECKPOINT | `log.checkpoint("step1")` |
 | `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
 
+### LoggerX Data Type Methods (Clean API)
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.color(value, title)` | Log RGB/hex colors | `log.color((255, 0, 0), "Theme")` |
+| `log.currency(amount, code)` | Log currency with precision | `log.currency("19.99", "USD")` |
+| `log.datetime(dt, title)` | Log datetime in multiple formats | `log.datetime(dt, "StartTime")` |
+| `log.enum(enum_value, title)` | Log enum with name/value | `log.enum(Status.ACTIVE)` |
+| `log.ptr(obj, title)` | Log object identity | `log.ptr(my_object)` |
+| `log.variant(value, title)` | Log any value with type info | `log.variant(data, "Input")` |
+| `log.sset(s, title)` | Log set/frozenset | `log.sset({1, 2, 3}, "Tags")` |
+| `log.system_info()` | Log OS/platform info | `log.system_info()` |
+| `log.memory_status()` | Log memory statistics | `log.memory_status()` |
+| `log.memory_hex(data)` | Log bytes as hex dump | `log.memory_hex(buffer)` |
+| `log.stack_trace(limit)` | Log current call stack | `log.stack_trace(limit=10)` |
+| `log.file_hex(path)` | Log file as hex dump | `log.file_hex("data.bin")` |
+| `log.file_text(path)` | Log text file contents | `log.file_text("app.log")` |
+| `log.stream_hex(stream)` | Log binary stream as hex | `log.stream_hex(bio)` |
+| `log.stream_text(stream)` | Log text stream contents | `log.stream_text(io)` |
+
+### Color and Style Methods (for CLI Viewer)
+
+These methods create **colored blocks or lines** when viewed with logxpy-cli-view:
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.set_foreground(color)` | Set foreground color | `log.set_foreground("cyan")` |
+| `log.set_background(color)` | Set background color | `log.set_background("yellow")` |
+| `log.reset_foreground()` | Reset foreground color | `log.reset_foreground()` |
+| `log.reset_background()` | Reset background color | `log.reset_background()` |
+| `log.colored(msg, fg, bg)` | One-shot colored message | `log.colored("Important!", "red", "yellow")` |
+
+**Available colors**: black, red, green, yellow, blue, magenta, cyan, white, light_gray, dark_gray, light_red, light_green, light_blue, light_yellow, light_magenta, light_cyan
+
+**Example: Creating colored blocks**
+```python
+from logxpy import log
+
+# Set colors for subsequent messages
+log.set_foreground("cyan")
+log.info("This renders with cyan text")
+log.reset_foreground()
+
+# One-shot colored message for highlighted blocks
+log.colored(
+    "╔════════════════════════════════════╗\n"
+    "║  ⚠️  IMPORTANT HIGHLIGHTED BLOCK  ║\n"
+    "╚════════════════════════════════════╝",
+    foreground="black",
+    background="yellow"
+)
+```
+
+### log() Callable (Flexible Shortcut)
+
+| Usage | Equivalent To | Example |
+|-------|---------------|---------|
+| `log("msg")` | `log.info("msg")` | `log("Starting")` |
+| `log("title", data)` | `log.send("title", data)` | `log("User", {"id": 1})` |
+| `log(data)` | `log.send(auto_title, data)` | `log({"key": "val"})` |
+
 ### Decorators
 
 | Decorator | Purpose | Example |
@@ -68,6 +136,15 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 | `@timed(metric)` | Timing-only decorator | `@timed("db.query")` |
 | `@retry(attempts, delay)` | Retry with backoff | `@retry(attempts=5)` |
 | `@log_call(action_type)` | Log function calls | `@log_call(action_type="func")` |
+
+### Category System
+
+| Class/Function | Purpose | Example |
+|----------------|---------|---------|
+| `CategorizedLogger` | Logger with category prefix | `cat_log = CategorizedLogger("database")` |
+| `category_context(name)` | Context manager for category | `with category_context("db"):` |
+| `Category(name)` | Global category manager | `Category("database")` |
+| `log.with_category(name)` | Create categorized logger | `db_log = log.with_category("database")` |
 
 ### System Message Types
 
@@ -83,7 +160,7 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 
 ---
 
-## 🌲 Package 2: logxpy-cli-view - Colored Tree Viewer
+## Component 2: logxpy-cli-view - Colored Tree Viewer
 
 **Render LogXPy logs as a beautiful colored ASCII tree**
 
@@ -94,12 +171,13 @@ with start_action(action_type="http:request", method="POST", path="/api/users"):
 - **ANSI Colors** - Color-coded values (numbers: cyan, booleans: magenta, errors: red)
 - **Emoji Icons** - Visual indicators for action types (💾 database, 🔌 API, 🔐 auth)
 - **Tree Structure** - Unicode box-drawing characters (├── └── │)
+- **Color Block Rendering** - Supports `logxpy:foreground` and `logxpy:background` fields
 - **Flexible** - ASCII mode, depth limiting, color/emoji toggles
 
 ### Quick Start
 ```bash
 # View logs with full colors
-logxpy-cli-view app.log
+logxpy-view app.log
 
 # Or use the standalone script
 python examples-log-view/view_tree.py app.log
@@ -139,9 +217,81 @@ python examples-log-view/view_tree.py app.log
 
 ---
 
+## Component 3: logxy-log-parser - Log Parser & Analyzer
+
+**Python library for parsing, analyzing, and querying LogXPy log files**
+
+![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
+
+### Features
+- **Simple API** - One-line parsing: `entries = parse_log("app.log")`
+- **Powerful Filtering** - By level, time, action type, field values
+- **Analysis** - Performance stats, error summaries, task trees
+- **Export** - JSON, CSV, HTML, Markdown, DataFrame
+- **Real-time Monitoring** - Watch logs as they grow
+
+### Quick Start
+```bash
+pip install logxy-log-parser
+```
+
+```python
+from logxy_log_parser import parse_log, check_log, analyze_log
+
+# One-line parsing
+entries = parse_log("app.log")
+
+# Parse + validate
+result = check_log("app.log")
+print(f"Valid: {result.is_valid}, Entries: {result.entry_count}")
+
+# Full analysis
+report = analyze_log("app.log")
+report.print_summary()
+```
+
+### Core Classes
+
+| Class | Purpose |
+|-------|---------|
+| `LogFile` | File handle + real-time monitoring |
+| `LogParser` | Parse log files |
+| `LogEntries` | Collection with filtering/export |
+| `LogFilter` | Chainable filters |
+| `LogAnalyzer` | Performance/error analysis |
+| `TaskTree` | Hierarchical task tree |
+
+### LogFile API (Real-time Monitoring)
+
+| Method | Purpose |
+|--------|---------|
+| `LogFile.open(path)` | Open and validate |
+| `logfile.entry_count` | Get entry count (fast) |
+| `logfile.contains_error()` | Check for errors |
+| `logfile.watch()` | Iterate new entries |
+| `logfile.wait_for_message(text, timeout)` | Wait for message |
+| `logfile.wait_for_error(timeout)` | Wait for error |
+
+### Filter Methods
+
+| Method | Purpose |
+|--------|---------|
+| `by_level(*levels)` | Filter by log level |
+| `by_message(pattern)` | Filter by message text |
+| `by_time_range(start, end)` | Filter by time range |
+| `by_task_uuid(*uuids)` | Filter by task UUID |
+| `by_action_type(*types)` | Filter by action type |
+| `by_field(field, value)` | Filter by field value |
+| `by_duration(min, max)` | Filter by duration |
+| `with_traceback()` | Entries with tracebacks |
+| `failed_actions()` | Failed actions only |
+| `slow_actions(threshold)` | Slow actions only |
+
+---
+
 ## Installation
 
-Install either or both packages:
+Install any or all components:
 
 ```bash
 # Just the logging library (zero dependencies)
@@ -150,8 +300,11 @@ pip install logxpy
 # Just the tree viewer
 pip install logxpy-cli-view
 
-# Both (recommended)
-pip install logxpy logxpy-cli-view
+# Just the log parser
+pip install logxy-log-parser
+
+# All three (recommended)
+pip install logxpy logxpy-cli-view logxy-log-parser
 ```
 
 Or install from source:
@@ -162,38 +315,39 @@ cd logxpy && pip install -e .
 
 # Viewer
 cd logxpy_cli_view && pip install -e .
+
+# Parser
+cd logxy-log-parser && pip install -e .
 ```
+
+---
 
 ## Live Output Example
 
 **Terminal Output (with actual ANSI colors):**
 
 ```
-<span style="color:#FF00FF">92769c9b-d4e9c-4f71-8065-b91db2d54e1c</span>
-├── 🖥️ server:incoming_connection/2 14:14:30
-│   ├── ip: <span style="color:#00FFFF">192.168.1.100</span>
-│   └── port: <span style="color:#00FFFF">8080</span>
-├── 🔌 http:request/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+56ffc3bf-08f7-4f71-8065-b91db2d54e1c
+├── 🔌 http:request/1 ⇒ ▶️ started 14:30:00
 │   ├── method: POST
 │   └── path: /api/users
-├── 🔐 auth:verify/2/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
-│   ├── user_id: <span style="color:#00FFFF">123</span>
-│   └── 🔐 auth:check/2/2 14:30:00
-│   └── valid: <span style="color:#FF00FF">True</span>
-├── 💾 database:query/3/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
+├── 🔐 auth:verify/2/1 ⇒ ▶️ started 14:30:00
+│   ├── user_id: 123
+│   └── valid: True
+├── 💾 database:query/3/1 ⇒ ▶️ started 14:30:00
 │   ├── table: users
 │   └── 💾 database:result/3/2 14:30:01
-│   ├── rows: <span style="color:#00FFFF">10</span>
-│   └── duration_ms: <span style="color:#00FFFF">45</span>
-└── 🔌 http:request/4 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
+│   ├── rows: 10
+│   └── duration_ms: 45
+└── 🔌 http:request/4 ⇒ ✔️ succeeded 14:30:01
 ```
 
 **Color Legend:**
-- <span style="color:#00FFFF">**Cyan**</span> = Numbers
-- <span style="color:#FF00FF">**Magenta**</span> = Booleans, UUIDs
-- <span style="color:#1E90FF">**Bright Blue**</span> = Started status, Field keys
-- <span style="color:#00FF00">**Bright Green**</span> = Succeeded status
-- <span style="color:#FF4444">**Bright Red**</span> = Failed status
+- **Cyan** = Numbers
+- **Magenta** = Booleans, UUIDs
+- **Bright Blue** = Started status, Field keys
+- **Bright Green** = Succeeded status
+- **Bright Red** = Failed status
 
 ---
 
@@ -202,7 +356,7 @@ cd logxpy_cli_view && pip install -e .
 ```bash
 cd examples-log-view
 python example_01_basic.py
-python view_tree.py example_01_basic.log
+logxpy-view example_01_basic.log
 ```
 
 ## Complete Cheat Sheet
@@ -210,428 +364,33 @@ python view_tree.py example_01_basic.log
 | Feature | Syntax/Example | Description |
 |---------|----------------|-------------|
 | **Commands** | | |
-| Basic view | `python view_tree.py file.log` | Full color + emoji + Unicode |
-| ASCII mode | `python view_tree.py file.log --ascii` | Plain text, no Unicode/emoji |
-| No colors | `python view_tree.py file.log --no-colors` | Remove ANSI colors |
-| No emojis | `python view_tree.py file.log --no-emojis` | Remove emoji icons |
-| Depth limit | `python view_tree.py file.log --depth-limit 3` | Max nesting levels |
-| Help | `python view_tree.py --help` | Show all options |
-| **Tree Characters** | | |
-| Fork | `├──` | Has siblings below |
-| Last | `└──` | Final child |
-| Vertical | `│   ` | Continuation line |
-| Thin | `┆   ` | Deep nesting (>4 levels) |
-| **Status Indicators** | | |
-| Started | `⇒ ▶️ started` | Action began (bright blue) |
-| Succeeded | `⇒ ✔️ succeeded` | Completed (bright green) |
-| Failed | `⇒ ✖️ failed` | Error (bright red) |
-| **Colors** | | |
-| Numbers | `42` (cyan) | int, float |
-| Booleans | `True` (magenta) | bool |
-| Keys | `user_id:` (bright blue) | Field names |
-| Error strings | `"error"` (bright red) | Contains "error"/"fail" |
-| Success strings | `"success"` (bright green) | Contains "success"/"complete" |
-| Regular strings | `"text"` (white) | Default strings |
-| Timestamps | `14:30:00` (dim gray) | HH:MM:SS format |
-| UUIDs | `abc123-...` (bright magenta) | Task identifiers |
-| None/null | `None` (dim) | Null values |
-| **Emojis** | | |
-| ⚡ | Generic action | Default for all actions |
-| 💾 | `database`, `db:`, `query` | Database operations |
-| 🔌 | `http`, `api`, `request` | HTTP/API calls |
-| 🔐 | `auth`, `login` | Authentication |
-| 💳 | `payment`, `charge` | Payment operations |
-| 🖥️ | `server` | Server operations |
-| 🔄 | `pipeline`, `etl` | Data pipelines |
-| 🔥 | `error`, `fail` | Errors |
-| 🌐 | `network`, `connect` | Network operations |
-| ⏱️ | Duration indicator | Shown after completion |
-| **Task Levels** | | |
-| `/1` | Root level | First action |
-| `/2/1` | Child of 2nd | 1st sub-action |
-| `/3/2/1` | 3 levels | 3rd→2nd→1st |
-| `/3/3/3/3/3/3/3` | 7 levels | Deep nesting |
-| `...×49` | 49 levels | Maximum tested depth |
-| **Duration Format** | | |
-| `< 1ms` | Sub-millisecond | Very fast (dim) |
-| `145ms` | Milliseconds | 0-999ms (cyan) |
-| `2.5s` | Seconds | 1-59s (cyan) |
-| `1m 30s` | Minutes | 60+ seconds (cyan) |
-| **Separators** | | |
-| Header | `────────────` (top) | File info + entry count |
-| Footer | `────────────` (bottom) | End marker |
-| Blank lines | Between tasks | Visual spacing |
-| **Special Values** | | |
-| Empty list | `[]` | Empty collection |
-| Empty dict | `{}` | Empty object |
-| Unicode | `世界 🌍` | Full Unicode support |
-| Large numbers | `1000000000` | No formatting |
-| Scientific | `1.23e-10` | Exponential notation |
-| Infinity | `None` (serialized) | Special float |
-| **Python 3.12+** | | |
-| Type alias | `type LogEntry = dict[str, Any]` | PEP 695 |
-| Pattern match | `match value: case int(): ...` | PEP 634 |
-| Walrus | `if x := get(): ...` | PEP 572 |
-| Slots | `@dataclass(slots=True)` | -40% memory |
-| StrEnum | `class Color(StrEnum): ...` | PEP 663 |
-| Union | `str \| Path` | New syntax |
-| **Examples** | | |
-| 01 Basic | 6 entries | Simple messages |
-| 02 Actions | 15 entries | Nested operations |
-| 03 Errors | 12 entries | Error handling |
-| 04 API | 40 entries | HTTP simulation |
-| 05 Pipeline | 32 entries | ETL workflow |
-| 06 Deep | 102 entries | 7-level nesting |
-| 07 Types | 42 entries | All data types |
-| 08 Ultra Deep | 662 entries | 25-49 level nesting |
+| Basic view | `logxpy-view file.log` | Full color + emoji + Unicode |
+| ASCII mode | `logxpy-view file.log --ascii` | Plain text, no Unicode/emoji |
+| No colors | `logxpy-view file.log --no-colors` | Remove ANSI colors |
+| No emojis | `logxpy-view file.log --no-emojis` | Remove emoji icons |
+| Depth limit | `logxpy-view file.log --depth-limit 3` | Max nesting levels |
+| Help | `logxpy-view --help` | Show all options |
 
-## Output Format
-
-The viewer displays **colorized** structured logs with emojis, Unicode tree characters, and smart color coding:
-
-### Color Showcase (Actual HTML Colors)
-
-- <span style="color:#00FFFF">**42**</span> - Numbers (Cyan)
-- <span style="color:#FF00FF">**True**</span> - Booleans (Magenta)
-- <span style="color:#1E90FF">**user_id:**</span> - Field Keys (Bright Blue)
-- <span style="color:#FF4444">**"error"**</span> - Error Strings (Bright Red)
-- <span style="color:#00FF00">**"success"**</span> - Success Strings (Bright Green)
-- <span style="color:#FF00FF">**92769c9b-...**</span> - Task UUIDs (Bright Magenta)
-
-### Live Terminal Output (with ANSI colors)
-
-When viewed in a terminal, logs display with **full ANSI colors**:
-
-```
-──────────────────────────────────────────────────────────────────────
-🌲 Log Tree: example_06_deep_nesting.log
-──────────────────────────────────────────────────────────────────────
-
-Total entries: 102
-
-<span style="color:#FF00FF">92769c9b-d4e9c-4f71-8065-b91db2d54e1c</span>
-├── 🖥️ level_1:server/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   └── depth: <span style="color:#00FFFF">7</span>
-├── 🖥️ server:incoming_connection/2 14:14:30
-│   ├── ip: <span style="color:#00FFFF">192.168.1.100</span>
-│   └── port: <span style="color:#00FFFF">8080</span>
-├── 🖥️ server:assign_worker/3 14:14:30
-│   ├── worker_id: worker_05
-│   ├── 🔌 level_2:http_handler/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   └── depth: <span style="color:#00FFFF">2</span>
-│   ├── 🔌 http:received/4/2 14:14:30
-│   │   ├── method: POST
-│   │   └── path: /api/users/123
-│   ├── 🔌 http:parse/4/3 14:14:30
-│   │   ├── content_length: <span style="color:#00FFFF">1024</span>
-│   │   ├── ⚡ level_3:validation/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   │   └── depth: <span style="color:#00FFFF">3</span>
-│   │   ├── ⚡ validation:headers/4/4/2 14:14:30
-│   │   │   └── count: <span style="color:#00FFFF">12</span>
-│   │   ├── ⚡ validation:body/4/4/3 14:14:30
-│   │   │   ├── content_type: application/json
-│   │   │   ├── size: <span style="color:#00FFFF">1024</span>
-│   │   │   ├── 🔐 level_4:auth/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   │   │   └── depth: <span style="color:#00FFFF">4</span>
-│   │   │   ├── 🔐 auth:validate_token/4/4/4/2 14:14:30
-│   │   │   │   └── token_id: tok_abc123
-│   │   │   ├── 🔐 auth:check_permissions/4/4/4/3 14:14:30
-│   │   │   │   ├── user_id: user_123
-│   │   │   │   ├── ⚡ level_5:cache/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   │   │   │   └── depth: <span style="color:#00FFFF">5</span>
-│   │   │   │   ├── ⚡ cache:lookup/4/4/4/4/2 14:14:30
-│   │   │   │   │   └── key: user:data:123
-│   │   │   │   ├── ⚡ cache:miss/4/4/4/4/3 14:14:30
-│   │   │   │   │   ├── reason: expired
-│   │   │   │   │   ├── 💾 level_6:database/4/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   │   │   │   ┆   └── depth: <span style="color:#00FFFF">6</span>
-│   │   │   │   │   ├── 💾 db:connect/4/4/4/4/4/2 14:14:30
-│   │   │   │   │   ┆   └── connection: postgres://localhost
-│   │   │   │   │   ├── 💾 db:query/4/4/4/4/4/3 14:14:30
-│   │   │   │   │   ┆   ├── sql: SELECT * FROM records
-│   │   │   │   │   ┆   ├── ⚡ level_7:operation/4/4/4/4/4/4/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:14:30
-│   │   │   │   │   ┆   ┆   └── depth: <span style="color:#00FFFF">7</span>
-│   │   │   │   │   ┆   ├── ⚡ level_7:start/4/4/4/4/4/4/2 14:14:30
-│   │   │   │   │   ┆   ┆   └── info: <span style="color:#00FF00">Deepest level reached</span>
-│   │   │   │   │   ┆   ├── ⚡ level_7:processing/4/4/4/4/4/4/3 14:14:30
-│   │   │   │   │   ┆   ┆   └── data: Final computation
-│   │   │   │   │   ┆   ├── ⚡ level_7:complete/4/4/4/4/4/4/4 14:14:30
-│   │   │   │   │   ┆   ┆   └── result: <span style="color:#00FF00">SUCCESS</span>
-│   │   │   │   │   ┆   └── ⚡ level_7:operation/4/4/4/4/4/4/5 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-│   │   │   │   │   ├── 💾 db:result/4/4/4/4/4/5 14:14:30
-│   │   │   │   │   ┆   └── rows: <span style="color:#00FFFF">42</span>
-│   │   │   │   │   └── 💾 level_6:database/4/4/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-│   │   │   │   ├── ⚡ cache:update/4/4/4/4/5 14:14:30
-│   │   │   │   │   ├── key: user:data:123
-│   │   │   │   │   └── ttl: <span style="color:#00FFFF">3600</span>
-│   │   │   │   └── ⚡ level_5:cache/4/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-│   │   │   ├── 🔐 auth:success/4/4/4/5 14:14:30
-│   │   │   │   ├── user: alice
-│   │   │   │   └── roles: [<span style="color:#FF00FF">admin</span>, <span style="color:#FF00FF">user</span>]
-│   │   │   └── 🔐 level_4:auth/4/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-│   │   ├── ⚡ validation:complete/4/4/5 14:14:30
-│   │   │   └── status: <span style="color:#00FF00">valid</span>
-│   │   └── ⚡ level_3:validation/4/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-│   ├── 🔌 http:response/4/5 14:14:30
-│   │   ├── status: <span style="color:#00FFFF">200</span>
-│   │   └── duration_ms: <span style="color:#00FFFF">150</span>
-│   └── 🔌 level_2:http_handler/4/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-├── 🖥️ server:connection_closed/5 14:14:30
-│   └── duration_ms: <span style="color:#00FFFF">200</span>
-└── 🖥️ level_1:server/6 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:14:30
-```
-
-### Color Legend
-
-| Element | ANSI Color | Example |
-|---------|------------|---------|
-| **Numbers** | `\033[36m` (Cyan) | <span style="color:#00FFFF">42</span>, <span style="color:#00FFFF">3.14</span>, <span style="color:#00FFFF">8080</span> |
-| **Booleans** | `\033[35m` (Magenta) | <span style="color:#FF00FF">True</span>, <span style="color:#FF00FF">False</span> |
-| **Field Keys** | `\033[94m` (Bright Blue) | <span style="color:#1E90FF">user_id:</span>, <span style="color:#1E90FF">status:</span> |
-| **Error strings** | `\033[91m` (Bright Red) | <span style="color:#FF4444">"Failed"</span>, <span style="color:#FF4444">"error"</span> |
-| **Success strings** | `\033[92m` (Bright Green) | <span style="color:#00FF00">"completed"</span>, <span style="color:#00FF00">"SUCCESS"</span> |
-| **Regular strings** | `\033[37m` (White) | "alice", "GET" |
-| **Timestamps** | `\033[90m` (Dim Gray) | 14:14:30 |
-| **Task UUIDs** | `\033[95m` (Bright Magenta) | <span style="color:#FF00FF">56ffc3bf-08f7-...</span> |
-| **Status: Started** | `\033[94m` (Bright Blue) | <span style="color:#1E90FF">▶️ started</span> |
-| **Status: Succeeded** | `\033[92m` (Bright Green) | <span style="color:#00FF00">✔️ succeeded</span> |
-| **Status: Failed** | `\033[91m` (Bright Red) | <span style="color:#FF4444">✖️ failed</span> |
-
-### Color Coding
-
-The viewer uses **8 ANSI colors** for smart value highlighting:
-
-| Type | ANSI Code | Color | Example |
-|------|-----------|-------|---------|
-| **Numbers** | `\033[36m` | 🔵 Cyan | `42`, `3.14`, `1000` |
-| **Booleans** | `\033[35m` | 🟣 Magenta | `True`, `False` |
-| **Field Keys** | `\033[94m` | 🔵 Bright Blue | `user_id:`, `status:` |
-| **Error strings** | `\033[91m` | 🔴 Bright Red | `"Failed"`, `"error"` |
-| **Success strings** | `\033[92m` | 🟢 Bright Green | `"completed"`, `"SUCCESS"` |
-| **Regular strings** | `\033[37m` | ⚪ White | `"hello"`, `"active"` |
-| **Timestamps** | `\033[90m` | ⚫ Dim Gray | `14:13:58` |
-| **Task UUIDs** | `\033[95m` | 🟪 Bright Magenta | `56ffc3bf-08f7-...` |
-| **Status: Started** | `\033[94m` | 🔵 Bright Blue | `▶️ started` |
-| **Status: Succeeded** | `\033[92m` | 🟢 Bright Green | `✔️ succeeded` |
-| **Status: Failed** | `\033[91m` | 🔴 Bright Red | `✖️ failed` |
-
-## Examples
-
-### Nested Actions with Status Tracking
-
-```python
-from logxpy import start_action, Message, to_file
-
-to_file(open("demo.log", "w"))
-
-with start_action(action_type="http:request", method="POST", path="/api/users"):
-    with start_action(action_type="auth:verify", user_id=123):
-        Message.log(message_type="auth:check", valid=True)
-
-    with start_action(action_type="database:query", table="users"):
-        Message.log(message_type="database:result", rows=10, duration_ms=45)
-```
-
-**Terminal Output (with actual ANSI colors):**
-
-```
-<span style="color:#FF00FF">a1b2c3d4-e5f6-7890-abcd-ef1234567890</span>
-├── 🔌 http:request/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
-│   ├── method: POST
-│   └── path: /api/users
-├── 🔐 auth:verify/2/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
-│   ├── user_id: <span style="color:#00FFFF">123</span>
-│   ├── 🔐 auth:check/2/2 14:30:00
-│   │   └── valid: <span style="color:#FF00FF">True</span>
-│   └── 🔐 auth:verify/2/3 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:00
-├── 💾 database:query/3/1 ⇒ <span style="color:#1E90FF">▶️ started</span> 14:30:00
-│   ├── table: users
-│   ├── 💾 database:result/3/2 14:30:01
-│   │   ├── rows: <span style="color:#00FFFF">10</span>
-│   │   └── duration_ms: <span style="color:#00FFFF">45</span>
-│   └── 💾 database:query/3/3 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
-└── 🔌 http:request/4 ⇒ <span style="color:#00FF00">✔️ succeeded</span> 14:30:01
-```
-
-**Color coding:**
-- <span style="color:#00FFFF">Cyan</span> = Numbers (123, 10, 45)
-- <span style="color:#FF00FF">Magenta</span> = Booleans (True), UUIDs
-- <span style="color:#1E90FF">Bright Blue</span> = Started status, Field keys
-- <span style="color:#00FF00">Bright Green</span> = Succeeded status, Success strings
-- <span style="color:#FF4444">Bright Red</span> = Failed status, Error strings
-
-### Task Level Format
-
-The `/1/2/3` format shows hierarchical nesting:
-
-```
-/1              ← Root level, 1st action
-/2/1            ← Child of 2nd action, its 1st sub-action
-/3/2/1          ← 3 levels deep
-/3/3/3/3/3/3/3  ← 7 levels deep
-/×25            ← 25 levels (enterprise architecture example)
-/×49            ← 49 levels (maximum tested - recursive scenario)
-```
-
-### All Data Types (Example 07)
-
-```python
-Message.log(
-    message_type="data:test",
-    integer=42,                    # Cyan
-    float_num=3.14159,             # Cyan
-    bool_true=True,                # Magenta
-    string="Hello",                # White
-    unicode="世界 🌍",              # White with Unicode
-    list=[1, 2, 3],                # White (structure)
-    dict={"a": 1, "b": 2},         # White (structure)
-    none_val=None,                 # Dim
-)
-```
-
-See `examples-log-view/` for 8 complete examples.
-
-## CLI Options (logxpy-cli-view)
-
-```bash
-logxpy-cli-view <log_file>                    # Full color + emoji + Unicode
-logxpy-cli-view <log_file> --ascii            # Plain ASCII only
-logxpy-cli-view <log_file> --no-colors        # No ANSI colors
-logxpy-cli-view <log_file> --no-emojis        # No emoji icons
-logxpy-cli-view <log_file> --depth-limit 3    # Limit nesting depth
-logxpy-cli-view --help                        # Show help
-
-# Or using the standalone script
-python examples-log-view/view_tree.py <log_file> [options]
-```
-
-## Output Components
-
-### Header/Footer Separators
-```
-──────────────────────────────────────────────────────────────────────
-🌲 Log Tree: example.log
-──────────────────────────────────────────────────────────────────────
-
-Total entries: 42
-
-[log content]
-
-──────────────────────────────────────────────────────────────────────
-```
-
-### Status Indicators
-- `⇒ ▶️ started` - Action began (bright blue)
-- `⇒ ✔️ succeeded` - Action completed successfully (bright green)
-- `⇒ ✖️ failed` - Action failed (bright red)
-
-### Duration Formatting
-- `< 1ms` - Sub-millisecond (dim)
-- `145ms` - Milliseconds (cyan)
-- `2.5s` - Seconds (cyan)
-- `1m 30s` - Minutes and seconds (cyan)
-
-### Tree Characters
-- `├──` Fork (has siblings below)
-- `└──` Last (final child)
-- `│  ` Vertical continuation
-- `┆  ` Thin vertical (depth > 4)
-
-### Emoji Auto-Detection
-Based on action_type keywords:
-- `database`, `db:`, `query` → 💾
-- `http`, `api`, `request` → 🔌
-- `auth`, `login` → 🔐
-- `payment`, `charge` → 💳
-- `server` → 🖥️
-- `pipeline`, `etl` → 🔄
-- `error`, `fail` → 🔥
-- Default → ⚡
-
-## Python 3.12+ Implementation
-
-### Type Aliases (PEP 695)
-```python
-type LogEntry = dict[str, Any]
-type TaskUUID = str
-type TreeNode = dict[str, Any]
-```
-
-### Pattern Matching (PEP 634)
-```python
-match value:
-    case int() | float():
-        return f"{c[Color.CYAN]}{value}{c[Color.RESET]}"
-    case bool():
-        return f"{c[Color.MAGENTA]}{value}{c[Color.RESET]}"
-    case str() if "error" in key.lower():
-        return f"{c[Color.RED]}{value}{c[Color.RESET]}"
-```
-
-### Walrus Operator (PEP 572)
-```python
-if task_uuid := entry.get("task_uuid"):
-    tasks.setdefault(task_uuid, []).append(entry)
-```
-
-### Dataclasses with Slots (PEP 681)
-```python
-@dataclass(slots=True, frozen=True)
-class Colors:
-    enabled: bool = True
-```
-
-### StrEnum (PEP 663)
-```python
-class Color(StrEnum):
-    CYAN = "\033[36m"
-    MAGENTA = "\033[35m"
-```
-
-**Performance:**
-- 40% less memory (slots)
-- 10% faster (pattern matching vs if/elif)
-- Type-safe throughout
-- Better IDE support
-
-See [PYTHON_312_FEATURES.md](PYTHON_312_FEATURES.md) for complete guide.
-
-## Available Examples
-
-| Example | Description | Lines | Entries |
-|---------|-------------|-------|---------|
-| 01 | Basic logging | 29 | 6 |
-| 02 | Nested actions | 44 | 15 |
-| 03 | Error handling | 35 | 12 |
-| 04 | API server simulation | 82 | 40 |
-| 05 | ETL data pipeline | 65 | 32 |
-| 06 | Deep nesting (7 levels) | 230 | 102 |
-| 07 | All data types | 383 | 42 |
-| 08 | Ultra deep nesting (25-49 levels) | 425 | 662 |
-
-Run all: `./examples-log-view/run_all.sh`
-
-## Documentation
-
-- [examples-log-view/README.md](examples-log-view/README.md) - Examples overview
-- [examples-log-view/VISUAL_GUIDE.md](examples-log-view/VISUAL_GUIDE.md) - Side-by-side code/output
-- [examples-log-view/QUICK_START.md](examples-log-view/QUICK_START.md) - 5-minute guide
-- [PYTHON_312_FEATURES.md](PYTHON_312_FEATURES.md) - Modern Python guide
-- [tutorials/README.md](tutorials/README.md) - Detailed tutorials
+---
 
 ## Project Structure
 
 ```
 log-x-py/
-├── logxpy/                          # Package 1: Core logging library
+├── logxpy/                          # Component 1: Core logging library
 │   ├── logxpy/                      # Main package
 │   ├── setup.py                     # Installation config
 │   └── examples/                    # Library usage examples
 │
-├── logxpy_cli_view/                 # Package 2: CLI tree viewer
+├── logxpy_cli_view/                 # Component 2: CLI tree viewer
 │   ├── src/logxpy_cli_view/         # Main package
 │   ├── pyproject.toml               # Installation config
 │   └── tests/                       # Test suite
+│
+├── logxy-log-parser/                # Component 3: Log parser & analyzer
+│   ├── logxy_log_parser/            # Main package
+│   ├── pyproject.toml               # Installation config
+│   └── examples/                    # Usage examples
 │
 ├── examples-log-view/               # Standalone examples (demo both packages)
 │   ├── view_tree.py                # Simple tree viewer script
@@ -642,12 +401,16 @@ log-x-py/
 │   ├── example_05_data_pipeline.py # ETL pipeline
 │   ├── example_06_deep_nesting.py  # 7-level nesting
 │   ├── example_07_all_data_types.py # All data types
-│   ├── example_08_ultra_deep_nesting.py # 25-49 level nesting
 │   └── run_all.sh                  # Run all examples
 │
 ├── tutorials/                       # Detailed tutorials
-└── README.md                        # This file
+├── README.md                        # This file
+├── AGENTS.md                        # AI agent guide
+├── AI_CONTEXT.md                    # Complete API reference
+└── PROJECT_SUMMARY.md               # Project overview
 ```
+
+---
 
 ## Statistics
 
@@ -655,10 +418,9 @@ log-x-py/
 |-----------|-------|--------------|--------|
 | **logxpy** (library) | ~2000 | 0 | 3.12+ |
 | **logxpy-cli-view** (viewer) | ~500 | 4 (jmespath, iso8601, colored, toolz) | 3.9+ |
-| **Examples** | ~1000 | - | 3.12+ |
+| **logxy-log-parser** (parser) | ~800 | 0 (optional: pandas, rich) | 3.12+ |
 
-- **Max Nesting**: 49 levels (verified)
-- **Performance**: -40% memory, +10% speed (dataclasses + slots + pattern matching)
+---
 
 ## Use Cases
 
@@ -667,21 +429,25 @@ log-x-py/
 **Production**: Monitor performance, track errors, audit trails
 **Documentation**: Generate examples, show API flows, training materials
 
+---
+
 ## License
 
 MIT License
+
+---
 
 ## Credits & Attribution
 
 This project is a fork and modernization of two excellent libraries:
 
 ### logxpy (Logging Library)
-**Forked from [Eliot](https://github.com/itamarst/eliot)** by Itamar Turner-Trauring  
+**Forked from [Eliot](https://github.com/itamarst/eliot)** by Itamar Turner-Trauring
 - Original: Structured logging for complex & distributed systems
 - Changes: Modernized for Python 3.12+, renamed to logxpy, enhanced API
 
 ### logxpy-cli-view (Tree Viewer)
-**Forked from [eliottree](https://github.com/jonathanj/eliottree)** by Jonathan Jacobs  
+**Forked from [eliottree](https://github.com/jonathanj/eliottree)** by Jonathan Jacobs
 - Original: Render Eliot logs as ASCII trees
 - Changes: Modernized codebase, renamed to logxpy-cli-view, added new features
 

@@ -1,0 +1,136 @@
+"""
+LogXPy Log Parser & Analyzer
+
+A Python library for parsing, analyzing, and querying LogXPy log files.
+
+SIMPLE ONE-LINE API (recommended for logxpy logs):
+    >>> from logxy_log_parser import parse_log, check_log, analyze_log
+    >>> 
+    >>> # One line to parse
+    >>> entries = parse_log("app.log")
+    >>> 
+    >>> # One line to parse + validate  
+    >>> result = check_log("app.log")
+    >>> 
+    >>> # One line to parse + validate + analyze
+    >>> report = analyze_log("app.log")
+    >>> report.print_summary()
+
+FULL API:
+    >>> from logxy_log_parser import LogParser, LogFilter
+    >>> parser = LogParser("app.log")
+    >>> logs = parser.parse()
+    >>> errors = LogFilter(logs).by_level("error")
+    >>> errors.to_html("errors.html")
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+__version__ = "0.1.0"
+
+# SIMPLE ONE-LINE API (import these for easiest use)
+from .simple import (
+    # Core classes
+    LogXPyEntry,
+    ParseResult,
+    CheckResult,
+    LogStats,
+    AnalysisReport,
+    # One-line functions
+    parse_log,
+    parse_line,
+    check_log,
+    analyze_log,
+)
+
+# Core API
+from .analyzer import (
+    ActionStat,
+    DurationStats,
+    ErrorSummary,
+    LogAnalyzer,
+)
+from .core import LogEntry, LogParser
+from .filter import LogEntries, LogFilter
+from .monitor import LogFile, LogFileError
+from .tree import TaskNode, TaskTree
+from .types import ActionStatus, Level, TaskLevel
+from .utils import (
+    extract_task_uuid,
+    format_timestamp,
+    level_from_message_type,
+    merge_fields,
+    parse_duration,
+    parse_timestamp,
+)
+
+__all__ = [
+    # Version
+    "__version__",
+    # SIMPLE API (one-line parsing)
+    "parse_log",
+    "parse_line",
+    "check_log",
+    "analyze_log",
+    "LogXPyEntry",
+    "ParseResult",
+    "CheckResult",
+    "LogStats",
+    "AnalysisReport",
+    # Core
+    "LogEntry",
+    "LogParser",
+    # Monitoring
+    "LogFile",
+    "LogFileError",
+    # Filtering
+    "LogEntries",
+    "LogFilter",
+    # Analysis
+    "LogAnalyzer",
+    "ActionStat",
+    "DurationStats",
+    "ErrorSummary",
+    # Tree
+    "TaskNode",
+    "TaskTree",
+    # Types
+    "Level",
+    "ActionStatus",
+    "TaskLevel",
+    # Utils
+    "parse_timestamp",
+    "format_timestamp",
+    "parse_duration",
+    "level_from_message_type",
+    "extract_task_uuid",
+    "merge_fields",
+]
+
+# Optional pandas support
+try:
+    import pandas as _pd  # type: ignore  # noqa: F401
+
+    _pandas_available = True
+except ImportError:
+    _pandas_available = False
+
+# Optional rich support
+try:
+    import rich as _rich  # noqa: F401
+
+    _rich_available = True
+except ImportError:
+    _rich_available = False
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy import for optional dependencies."""
+    if name == "to_dataframe" and not _pandas_available:
+        raise ImportError(
+            "pandas is required for DataFrame export. "
+            "Install with: pip install logxy-log-parser[pandas]"
+        )
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

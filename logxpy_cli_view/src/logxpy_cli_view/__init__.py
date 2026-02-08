@@ -6,7 +6,7 @@ Modernized with enhanced features and renamed to logxpy-cli-view.
 
 from logxpy_cli_view._color import color_factory, colored, no_color
 from logxpy_cli_view._compat import catch_errors, deprecated, dump_json_bytes
-from logxpy_cli_view._errors import ConfigError, EliotParseError, JSONParseError
+from logxpy_cli_view._errors import ConfigError, EliotParseError, JSONParseError, LogXPyParseError
 from logxpy_cli_view._export import (
     EXPORT_FORMATS,
     ExportOptions,
@@ -112,6 +112,7 @@ __all__ = [
     "ConfigError",
     "EliotParseError",
     "JSONParseError",
+    "LogXPyParseError",
     # Theme
     "Theme",
     "ThemeMode",

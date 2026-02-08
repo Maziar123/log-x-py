@@ -1,0 +1,97 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "logxy-log-parser"
+version = "0.1.0"
+description = "Parser, analyzer, and query tool for LogXPy structured logs"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "LogXPy Contributors" }
+]
+keywords = [
+    "logging",
+    "parser",
+    "log-analysis",
+    "logxpy",
+    "structured-logging",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+pandas = ["pandas>=2.0"]
+rich = ["rich>=13.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.8",
+    "ruff>=0.1",
+    "pandas>=2.0",
+    "rich>=13.0",
+]
+all = [
+    "logxy-log-parser[pandas,rich]",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/log-x-py"
+Documentation = "https://github.com/yourusername/log-x-py/tree/main/logxy-log-parser"
+Repository = "https://github.com/yourusername/log-x-py"
+Issues = "https://github.com/yourusername/log-x-py/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["logxy_log_parser"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["logxy_log_parser"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--cov=logxy_log_parser",
+    "--cov-report=term-missing",
+]

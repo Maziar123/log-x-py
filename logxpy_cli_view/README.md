@@ -2,7 +2,7 @@
 
 [![Python versions](https://img.shields.io/pypi/pyversions/logxpy-cli-view.svg)](https://pypi.org/project/logxpy-cli-view/)
 
-Render [LogXPy](https://github.com/yourusername/log-x-py) logs as an ASCII tree.
+Render [LogXPy](https://github.com/Maziar123/log-x-py) logs as an ASCII tree.
 
 Forked from [eliottree](https://github.com/jonathanj/eliottree) by Jonathan Jacobs.
 Modernized with new features and integrated with the LogXPy ecosystem.
@@ -95,6 +95,34 @@ Create `~/.config/logxpy-cli-view/config.json`:
 }
 ```
 
+## 🎨 Color Rendering from LogXPy
+
+`logxpy-cli-view` supports rendering foreground/background colors from LogXPy log entries:
+
+```python
+from logxpy import log
+
+# Set colors that will be rendered by the CLI viewer
+log.set_foreground("cyan")
+log.info("This renders with cyan text")
+
+log.set_background("yellow").set_foreground("black")
+log.error("Black text on yellow background")
+
+# One-shot colored message
+log.colored(
+    "╔════════════════════════════════════╗\n"
+    "║  ⚠️  IMPORTANT HIGHLIGHTED BLOCK  ║\n"
+    "╚════════════════════════════════════╝",
+    foreground="black",
+    background="yellow"
+)
+
+log.reset_foreground().reset_background()
+```
+
+When viewed with `logxpy-view`, entries with `logxpy:foreground` and `logxpy:background` fields will render with those colors.
+
 ## Python API
 
 ```python
@@ -120,7 +148,7 @@ render_tasks(
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/log-x-py.git
+git clone https://github.com/Maziar123/log-x-py.git
 cd log-x-py/logxpy_cli_view
 
 # Install in development mode

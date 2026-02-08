@@ -22,13 +22,14 @@ from ._types import Level, Record
 class Logger:
     """LoggerX-compatible logger with fluent API."""
 
-    __slots__ = ("_context", "_level", "_masker", "_name")
+    __slots__ = ("_context", "_level", "_masker", "_name", "_auto_log_file")
 
     def __init__(self, name: str = "root", context: dict[str, Any] | None = None):
         self._level = Level.DEBUG
         self._name = name
         self._context = context or {}
         self._masker = None
+        self._auto_log_file = None
 
     # === Level Methods (fluent - return self) ===
     def debug(self, msg: str, **f: Any) -> Logger:
@@ -59,9 +60,30 @@ class Logger:
         f["logxpy:traceback"] = traceback.format_exc()
         return self._log(Level.ERROR, msg, **f)
 
-    def __call__(self, msg: str, **f: Any) -> Logger:
-        """Shortcut: log("msg") == log.info("msg")"""
-        return self.info(msg, **f)
+    def __call__(self, first: Any = None, second: Any = None, **f: Any) -> Logger:
+        """Flexible shortcut:
+        - log("msg") == log.info("msg")
+        - log("title", data) == log.send("title", data)
+        - log(data) == log.send("Data", data)  # auto-title
+        """
+        if first is None:
+            return self
+        
+        # log("title", data) or log("title", **fields)
+        if second is not None:
+            # If second is a simple type, treat as log.info with extra field
+            if isinstance(second, (str, int, float, bool)):
+                return self.info(str(first), value=second, **f)
+            # Otherwise treat as send
+            return self.send(str(first), second, **f)
+        
+        # log("message") - simple string message
+        if isinstance(first, str):
+            return self.info(first, **f)
+        
+        # log(data) - auto-title based on type
+        title = f"Data:{type(first).__name__}"
+        return self.send(title, first, **f)
 
     # === Universal Send ===
     def send(self, msg: str, data: Any, **f: Any) -> Logger:
@@ -90,6 +112,285 @@ class Logger:
 
     def table(self, data: list[dict], title: str | None = None) -> Logger:
         return self.send(title or "Table", data)  # Basic support
+
+    # === Data Type Methods (Clean API - no 'send_' prefix) ===
+    def color(self, value: Any, title: str | None = None, as_hex: bool = True) -> Logger:
+        """Log color value with RGB/hex formatting."""
+        info: dict[str, Any] = {"original_type": type(value).__name__}
+        if isinstance(value, (tuple, list)) and len(value) >= 3:
+            r, g, b = int(value[0]), int(value[1]), int(value[2])
+            a = int(value[3]) if len(value) > 3 else None
+            info["rgb"] = {"r": r, "g": g, "b": b}
+            if a is not None:
+                info["rgba"] = {"r": r, "g": g, "b": b, "a": a}
+            info["hex"] = f"#{r:02x}{g:02x}{b:02x}"
+        elif isinstance(value, int):
+            r, g, b = (value >> 16) & 0xFF, (value >> 8) & 0xFF, value & 0xFF
+            info["rgb"] = {"r": r, "g": g, "b": b}
+            info["hex"] = f"#{r:02x}{g:02x}{b:02x}"
+        elif isinstance(value, str) and value.startswith('#'):
+            info["hex"] = value.lower()
+            try:
+                h = value.lstrip('#')
+                if len(h) == 6:
+                    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+                    info["rgb"] = {"r": r, "g": g, "b": b}
+            except ValueError:
+                pass
+        else:
+            info["value"] = repr(value)
+        return self.send(title or "Color", info)
+
+    def currency(self, value: Any, currency_code: str = "USD", title: str | None = None) -> Logger:
+        """Log currency value with proper precision."""
+        from decimal import Decimal
+        dec_value = Decimal(str(value)) if not isinstance(value, Decimal) else value
+        info = {
+            "amount": str(dec_value),
+            "amount_float": float(dec_value),
+            "currency": currency_code.upper(),
+            "formatted": f"{currency_code.upper()} {dec_value}",
+        }
+        return self.send(title or "Currency", info)
+
+    def datetime(self, dt: Any = None, title: str | None = None) -> Logger:
+        """Log datetime with multiple formats."""
+        import datetime as _dt
+        if dt is None:
+            dt = _dt.datetime.now()
+        elif isinstance(dt, (int, float)):
+            dt = _dt.datetime.fromtimestamp(dt)
+        elif isinstance(dt, str):
+            dt = _dt.datetime.fromisoformat(dt.replace('Z', '+00:00'))
+        
+        info = {
+            "iso": dt.isoformat(),
+            "timestamp": dt.timestamp(),
+            "year": dt.year, "month": dt.month, "day": dt.day,
+            "hour": dt.hour, "minute": dt.minute, "second": dt.second,
+            "microsecond": dt.microsecond,
+            "timezone": str(dt.tzinfo) if dt.tzinfo else None,
+            "formatted": dt.strftime("%Y-%m-%d %H:%M:%S"),
+            "date": dt.strftime("%Y-%m-%d"),
+            "time": dt.strftime("%H:%M:%S"),
+        }
+        return self.send(title or "DateTime", info)
+
+    def enum(self, value: Any, title: str | None = None) -> Logger:
+        """Log enum value with name and value."""
+        from enum import Enum
+        if not isinstance(value, Enum):
+            return self.send(title or "Enum", {"value": value, "_warning": "Not an Enum"})
+        info = {
+            "name": value.name,
+            "value": value.value,
+            "class": type(value).__name__,
+            "module": type(value).__module__,
+        }
+        return self.send(title or type(value).__name__, info)
+
+    def ptr(self, obj: Any, title: str | None = None) -> Logger:
+        """Log object identity/pointer."""
+        info = {
+            "id": id(obj),
+            "hex_id": hex(id(obj)),
+            "type": type(obj).__name__,
+            "module": type(obj).__module__,
+            "repr": repr(obj)[:200],
+        }
+        return self.send(title or "Pointer", info)
+
+    def variant(self, value: Any, title: str | None = None) -> Logger:
+        """Log any value with type information."""
+        info: dict[str, Any] = {
+            "value": value,
+            "type": type(value).__name__,
+            "module": type(value).__module__,
+            "is_none": value is None,
+            "is_callable": callable(value),
+        }
+        if isinstance(value, (int, float, complex)):
+            info["numeric"] = True
+        elif isinstance(value, str):
+            info["length"] = len(value)
+            info["is_empty"] = len(value) == 0
+        elif isinstance(value, (list, tuple)):
+            info["length"] = len(value)
+            info["item_types"] = list(set(type(item).__name__ for item in value[:10]))
+        elif isinstance(value, dict):
+            info["keys"] = list(value.keys())[:20]
+            info["length"] = len(value)
+        return self.send(title or "Variant", info)
+
+    def sset(self, s: set | frozenset, title: str | None = None, max_items: int = 100) -> Logger:
+        """Log set/frozenset."""
+        items = list(s)[:max_items]
+        info = {
+            "type": type(s).__name__,
+            "total_items": len(s),
+            "items_shown": len(items),
+            "truncated": len(s) > max_items,
+            "items": items,
+        }
+        return self.send(title or "Set", info)
+
+    # === System & Memory Methods ===
+    def system_info(self, title: str | None = None) -> Logger:
+        """Log system information."""
+        import platform
+        info = {
+            "system": platform.system(),
+            "release": platform.release(),
+            "version": platform.version(),
+            "machine": platform.machine(),
+            "processor": platform.processor(),
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
+            "node": platform.node(),
+        }
+        return self.send(title or "System Info", info)
+
+    def memory_status(self, title: str | None = None) -> Logger:
+        """Log memory status."""
+        try:
+            import psutil
+            mem = psutil.virtual_memory()
+            info = {
+                "total": mem.total,
+                "available": mem.available,
+                "used": mem.used,
+                "free": mem.free,
+                "percent": mem.percent,
+                "_source": "psutil",
+            }
+        except ImportError:
+            import sys
+            info = {"_warning": "psutil not installed", "_fallback": "sys info only"}
+            try:
+                import resource
+                usage = resource.getrusage(resource.RUSAGE_SELF)
+                info["max_rss"] = usage.ru_maxrss
+            except ImportError:
+                pass
+        return self.send(title or "Memory Status", info)
+
+    def memory_hex(self, data: bytes, title: str | None = None, max_size: int = 256) -> Logger:
+        """Log bytes as hex dump."""
+        if not isinstance(data, bytes):
+            return self.warning("memory_hex requires bytes", type=type(data).__name__)
+        truncated = len(data) > max_size
+        display = data[:max_size]
+        hex_lines = []
+        for i in range(0, len(display), 16):
+            chunk = display[i:i+16]
+            hex_part = " ".join(f"{b:02x}" for b in chunk)
+            ascii_part = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+            hex_lines.append(f"{i:04x}: {hex_part:<48} {ascii_part}")
+        info = {
+            "total_size": len(data),
+            "dumped_size": len(display),
+            "truncated": truncated,
+            "hex_dump": "\n".join(hex_lines),
+            "hex_string": display.hex(),
+        }
+        return self.send(title or "Memory Hex", info)
+
+    def stack_trace(self, title: str | None = None, limit: int = 10) -> Logger:
+        """Log current stack trace."""
+        import traceback
+        stack = traceback.format_stack(limit=limit)
+        info = {
+            "stack_frames": len(stack),
+            "trace": "".join(stack),
+            "trace_list": [line.strip() for line in stack if line.strip()],
+        }
+        return self.send(title or "Stack Trace", info)
+
+    # === File & Stream Methods ===
+    def file_hex(self, path: Any, title: str | None = None, max_size: int = 1024) -> Logger:
+        """Log file contents as hex dump."""
+        from pathlib import Path
+        p = Path(path)
+        if not p.exists():
+            return self.send(title or "File Hex", {"_error": f"File not found: {p}"})
+        try:
+            with open(p, "rb") as f:
+                data = f.read(max_size)
+            hex_lines = []
+            for i in range(0, len(data), 16):
+                chunk = data[i:i+16]
+                hex_part = " ".join(f"{b:02x}" for b in chunk)
+                ascii_part = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+                hex_lines.append(f"{i:08x}: {hex_part:<48} {ascii_part}")
+            info = {
+                "filename": str(p),
+                "total_size": p.stat().st_size,
+                "dumped_size": len(data),
+                "truncated": p.stat().st_size > max_size,
+                "hex_dump": "\n".join(hex_lines),
+                "hex_string": data.hex(),
+            }
+            return self.send(title or "File Hex", info)
+        except Exception as e:
+            return self.send(title or "File Hex", {"_error": str(e), "filename": str(p)})
+
+    def file_text(self, path: Any, title: str | None = None, max_lines: int = 100, encoding: str = "utf-8") -> Logger:
+        """Log text file contents."""
+        from pathlib import Path
+        p = Path(path)
+        if not p.exists():
+            return self.send(title or "Text File", {"_error": f"File not found: {p}"})
+        try:
+            with open(p, "r", encoding=encoding, errors="replace") as f:
+                lines = [line.rstrip('\n\r') for i, line in enumerate(f) if i < max_lines]
+            total_lines = sum(1 for _ in open(p, "r", encoding=encoding, errors="replace"))
+            info = {
+                "filename": str(p),
+                "total_lines": total_lines,
+                "lines_shown": len(lines),
+                "truncated": len(lines) < total_lines,
+                "encoding": encoding,
+                "content": lines,
+                "text_preview": "\n".join(lines[:10]),
+            }
+            return self.send(title or "Text File", info)
+        except Exception as e:
+            return self.send(title or "Text File", {"_error": str(e), "filename": str(p)})
+
+    def stream_hex(self, stream: Any, title: str | None = None, max_size: int = 1024) -> Logger:
+        """Log binary stream as hex dump."""
+        try:
+            data = stream.read(max_size)
+            hex_lines = []
+            for i in range(0, len(data), 16):
+                chunk = data[i:i+16]
+                hex_part = " ".join(f"{b:02x}" for b in chunk)
+                ascii_part = "".join(chr(b) if 32 <= b < 127 else "." for b in chunk)
+                hex_lines.append(f"{i:08x}: {hex_part:<48} {ascii_part}")
+            info = {
+                "stream_type": type(stream).__name__,
+                "dumped_size": len(data),
+                "hex_dump": "\n".join(hex_lines),
+                "hex_string": data.hex(),
+            }
+            return self.send(title or "Stream Hex", info)
+        except Exception as e:
+            return self.send(title or "Stream Hex", {"_error": str(e)})
+
+    def stream_text(self, stream: Any, title: str | None = None, max_lines: int = 100) -> Logger:
+        """Log text stream contents."""
+        try:
+            lines = [line.rstrip('\n\r') for i, line in enumerate(stream) if i < max_lines]
+            info = {
+                "stream_type": type(stream).__name__,
+                "lines": len(lines),
+                "truncated": len(lines) >= max_lines - 1,
+                "content": lines,
+                "text_preview": "\n".join(lines[:10]),
+            }
+            return self.send(title or "Stream Text", info)
+        except Exception as e:
+            return self.send(title or "Stream Text", {"_error": str(e)})
 
     # === Context (LoggerX features) ===
     def scope(self, **ctx: Any):
@@ -173,8 +474,6 @@ class Logger:
                 if dest == "console":
                     # Console destination setup
                     if format == "rich":
-
-                    if format == "rich":
                         # We can't easily plug async destination into sync logxpy pipeline yet
                         # For now, we assume standard logxpy setup + our extensions.
                         pass
@@ -188,6 +487,118 @@ class Logger:
                     pass
 
         return self
+
+    def init(
+        self,
+        target: str | Path | None = None,
+        *,
+        level: str = "DEBUG",
+        mode: str = "a",
+    ) -> Logger:
+        """Simplified logging initialization.
+        
+        Usage:
+            log.init()                    # Auto stdout (simplest!)
+            log.init("app.log")          # File logging  
+            log.init(level="INFO")       # Stdout with level
+            log.init("app.log", mode="w")      # Overwrite mode
+        
+        Args:
+            target: File path, None for stdout, or omit for auto filename
+            level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+            mode: File mode - 'a' append (default) or 'w' write
+        
+        Returns:
+            self for chaining
+        """
+        from pathlib import Path
+        import sys
+        from inspect import stack
+        from ._output import FileDestination, Logger as OutputLogger
+
+        # Set level
+        self._level = Level[level.upper()]
+
+        if target is None:
+            # Try to auto-detect if called from __main__
+            caller_frame = stack()[1]
+            caller_file = caller_frame.filename
+            if caller_file == '<stdin>':
+                # Interactive - use stdout
+                OutputLogger._destinations.add(FileDestination(file=sys.stdout))
+            else:
+                # Auto-generate log filename from caller script
+                log_path = Path(caller_file).with_suffix('.log')
+                log_path.parent.mkdir(parents=True, exist_ok=True)
+                f = open(log_path, mode, encoding='utf-8', buffering=1)
+                OutputLogger._destinations.add(FileDestination(file=f))
+                self._auto_log_file = log_path  # Store for reference
+        else:
+            # File logging
+            path = Path(target)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            f = open(path, mode, encoding='utf-8', buffering=1)
+            OutputLogger._destinations.add(FileDestination(file=f))
+        
+        return self
+
+    # === Color Methods (for CLI viewer) ===
+    def set_foreground(self, color: str) -> Logger:
+        """Set foreground color for subsequent log entries (viewer hint).
+        
+        Args:
+            color: Color name (red, green, blue, yellow, magenta, cyan, white, black)
+        
+        Example:
+            log.set_foreground("red")
+            log.error("This is red")
+            log.reset_foreground()
+        """
+        self._context["logxpy:foreground"] = color
+        return self
+    
+    def set_background(self, color: str) -> Logger:
+        """Set background color for subsequent log entries (viewer hint).
+        
+        Args:
+            color: Color name (red, green, blue, yellow, magenta, cyan, white, black)
+        
+        Example:
+            log.set_background("yellow")
+            log.warning("This has yellow background")
+            log.reset_background()
+        """
+        self._context["logxpy:background"] = color
+        return self
+    
+    def reset_foreground(self) -> Logger:
+        """Reset foreground color to default."""
+        self._context.pop("logxpy:foreground", None)
+        return self
+    
+    def reset_background(self) -> Logger:
+        """Reset background color to default."""
+        self._context.pop("logxpy:background", None)
+        return self
+    
+    def colored(self, msg: str, foreground: str | None = None, background: str | None = None, **fields: Any) -> Logger:
+        """Log a message with specific foreground/background colors (one-shot).
+        
+        Args:
+            msg: Message to log
+            foreground: Foreground color name
+            background: Background color name
+            **fields: Additional fields
+        
+        Example:
+            log.colored("Important!", foreground="red", background="yellow", priority="high")
+        """
+        # Add color fields temporarily
+        if foreground:
+            fields["logxpy:foreground"] = foreground
+        if background:
+            fields["logxpy:background"] = background
+        return self._log(Level.INFO, msg, **fields)
 
     # === Internal ===
     def _log(self, level: Level, msg: str, **fields: Any) -> Logger:

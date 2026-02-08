@@ -1,210 +1,132 @@
-# 🌲 Log Examples with Beautiful Tree Visualization
+# LogXPy Examples
 
-Seven comprehensive examples showing how to create structured logs with **logxpy** and visualize them as beautiful trees with **colors, emojis, and Unicode**.
+This directory contains example projects demonstrating various LogXPy features.
 
-![Zero Dependencies](https://img.shields.io/badge/dependencies-zero-green.svg) ![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
+## Examples Overview
 
-Inspired by [eliottree](https://github.com/jonathanj/eliottree) but with modern Python 3.12+ features and zero external dependencies.
+| Example | Directory | Description |
+|---------|-----------|-------------|
+| **Basic Examples** | `complete-example-01/` | 7 examples from basic logging to deep nesting |
+| **Minimal Demo** | `compact-color-demo/` | **Ultra-compact** demo with symlink (105 lines total) |
+| **Color Features** | `comp-with-parser/` | Comprehensive example with color rendering |
 
-## Examples
+## 📁 Directories
 
-### Example 01: Basic Logging
-**File:** `example_01_basic.py`
+### compact-color-demo/
 
-Simple log messages demonstrating basic usage.
+**Two ultra-compact demos** demonstrating different approaches:
+
+#### Option A: `compact_color_demo.py` - Deep Tree + @logged + stack_trace()
+```bash
+cd compact-color-demo
+./run_compact.sh
+```
+
+**Key concept:** 
+- **ONE yellow block** (Application Start)
+- **ONE cyan block** (Critical Section)
+- **@logged decorator** - 3 decorated functions
+- **log.stack_trace()** - Error handling
+- **4-level deep nesting** - functions inside functions
+
+```
+🟡 [1] ═══════════════  ← YELLOW BLOCK
+   [2] app:main → started
+    ├── [23] decorator:demo → started
+   [24]   Testing @logged decorator
+    ├── [25] __main__.process_item → started  ← @logged
+    ├── [28] __main__.validate_email → started  ← @logged  
+    ├── [30] __main__.calculate_total → started  ← @logged
+🟦 [35] ═══════════════  ← CYAN BLOCK
+    ...
+    ├── [60] error:test → started
+   [66]   Stack Trace                   ← stack_trace()
+```
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `compact_color_demo.py` | ~120 | Deep nesting + @logged + stack_trace() |
+| `compact_parser.py` | ~75 | Show function tree with depth |
+| `run_compact.sh` | ~40 | Run pipeline |
+
+**Output:** 74 entries, 4-level deep tree, decorators, stack trace
+
+#### Option B: `minimal_color_demo.py` - Color API Features  
+Symlink to `complete-example-01/minimal_color_demo.py`:
+- Shows color API methods (`set_foreground`, `set_background`, `colored`)
+- Linear flow with colors at specific message points
+- Demonstrates 7 feature categories separately
+
+**Why use this folder?** Choose the demo style:
+- **compact_color_demo.py** = Deep tree + @logged decorator + stack_trace()
+- **minimal_color_demo.py** = Color API showcase (linear flow)
+
+### complete-example-01/
+
+Seven progressive examples demonstrating core logging features:
+
+- **example_01_basic.py** - Basic logging concepts
+- **example_02_actions.py** - Nested actions
+- **example_03_errors.py** - Error handling
+- **example_04_api_server.py** - HTTP simulation
+- **example_05_data_pipeline.py** - ETL pipeline
+- **example_06_deep_nesting.py** - 7-level nesting
+- **example_07_all_data_types.py** - All data types
+
+View with `view_tree.py` for colored tree visualization.
+
+### comp-with-parser/
+
+Comprehensive example with **foreground/background color support**:
+
+- **example_09_comprehensive.py** - Full color API demo
+- **run_and_analyze.sh** - Complete pipeline script
+- **parse_comprehensive.py** - Log parser with validation
+- **view_tree_colored.py** - Tree viewer with line numbers & colors
+- **view_log_colored.py** - Log viewer showing color hints
+- **view_line_colored.py** - Single line viewer with custom colors
+
+## 🎨 Color API
+
+```python
+from logxpy import log
+
+# Method 1: Context colors
+log.set_foreground("cyan")
+log.info("Cyan text")
+log.reset_foreground()
+
+# Method 2: Combined
+log.set_foreground("white").set_background("red")
+log.error("White on red")
+log.reset_foreground().reset_background()
+
+# Method 3: One-shot
+def demo_multiline_block_highlight():
+    # Save current colors
+    saved_fg = log._foreground_color
+    saved_bg = log._background_color
+    
+    # Apply highlight colors
+    log.set_foreground("black").set_background("yellow")
+    log.info("╔═══════════════════════════════════════╗\n"
+             "║  ⚠️  IMPORTANT WARNING BLOCK         ║\n"
+             "╚═══════════════════════════════════════╝")
+    
+    # Restore original colors
+    log._foreground_color = saved_fg
+    log._background_color = saved_bg
+```
+
+## 🚀 Quick Start
 
 ```bash
+# Basic examples
+cd complete-example-01
 python example_01_basic.py
 python view_tree.py example_01_basic.log
-```
 
-### Example 02: Actions (Nested Operations)
-**File:** `example_02_actions.py`
-
-Demonstrates nested actions creating a tree structure.
-
-```bash
-python example_02_actions.py
-python view_tree.py example_02_actions.log
-```
-
-### Example 03: Error Handling
-**File:** `example_03_errors.py`
-
-Shows successful and failed operations with error handling.
-
-```bash
-python example_03_errors.py
-python view_tree.py example_03_errors.log
-```
-
-### Example 04: API Server Simulation
-**File:** `example_04_api_server.py`
-
-Realistic API server handling multiple HTTP requests.
-
-```bash
-python example_04_api_server.py
-python view_tree.py example_04_api_server.log
-```
-
-### Example 05: Data Pipeline
-**File:** `example_05_data_pipeline.py`
-
-Complex ETL data pipeline with multiple stages.
-
-```bash
-python example_05_data_pipeline.py
-python view_tree.py example_05_data_pipeline.log
-```
-
-### Example 06: Deep Nesting (7 Levels) ⭐ NEW!
-**File:** `example_06_deep_nesting.py`
-
-Demonstrates deeply nested operations up to 7 levels showing complete tree structure with enter/exit at each level.
-
-**Three patterns:**
-- Functional nesting (Server → HTTP → Validation → Auth → Cache → DB → Level 7)
-- Class-based nesting (Application → Service → Repository → Pool → Connection → Query → Parser)
-- Recursive tree processing (Root → Branches → Leaves → Data → Validate → Transform → Output)
-
-```bash
-python example_06_deep_nesting.py
-python view_tree.py example_06_deep_nesting.log
-```
-
-### Example 07: All Data Types & Objects ⭐ NEW!
-
-**File:** `example_07_all_data_types.py`
-
-Comprehensive test of all data types and structures:
-- **Primitives**: int, float, bool, str, None, Unicode, emojis
-- **Collections**: list, dict, tuple, set (empty, nested, deep)
-- **Complex**: API responses, configs, nested objects
-- **Special**: paths, URLs, SQL, JSON strings, special chars
-- **Edge Cases**: infinity, NaN, very large/tiny numbers
-- **Errors**: validation errors, exceptions, stacktraces
-- **Metrics**: performance stats, timing data
-- **Nested**: 4-level deep actions with complex data
-
-```bash
-python example_07_all_data_types.py
-python view_tree.py example_07_all_data_types.log
-```
-
-Perfect for testing how different data types are displayed!
-
-## Run All Examples
-
-```bash
-# Run all examples
-./run_all.sh
-
-# Run a single example
-./run_single.sh 1  # Replace 1 with 1-7
-```
-
-## Modern Tree Visualization ✨
-
-The `view_tree.py` viewer shows logs as a beautiful, modern tree structure with professional design:
-
-### Features
-
-- 🎨 **Color-coded output** - ANSI colors for status, types, and depth levels
-- 😊 **Emoji support** - Visual icons for quick scanning (✔️ ❌ ⚡ 💾 🌐 🔐 etc.)
-- 📊 **Clean design** - Minimal, professional output
-- 🌲 **Deep nesting** - Enhanced visualization for deeply nested operations (7+ levels)
-- ⏱️ **Smart formatting** - Compact timestamps, color-coded durations
-- 🎯 **Type detection** - Auto-detects database, API, auth, payment operations
-- ⚡ **Zero dependencies** - Pure Python, no external packages required
-- 🔧 **Flexible options** - Colors, emojis, ASCII mode, depth limits
-
-### Visual Indicators
-
-**Status Colors:**
-- ✔️ `succeeded` - Bright green
-- ✖️ `failed` - Bright red  
-- ▶️ `started` - Bright blue
-
-**Type Emojis:**
-- 💾 Database operations
-- 🔌 API/HTTP requests
-- 🔐 Authentication
-- 💳 Payments
-- 🖥️ Server operations
-- 🔄 Pipelines/ETL
-
-**Depth Colors:**
-Automatic color cycling (cyan → blue → magenta → green → yellow) for visual separation of nesting levels.
-
-### Usage Examples
-
-```bash
-# Default mode (colors + emojis)
-python view_tree.py example_01_basic.log
-
-# ASCII mode (plain text, no colors/emojis)
-python view_tree.py example_01_basic.log --ascii
-
-# Disable emojis only
-python view_tree.py example_02_actions.log --no-emojis
-
-# Disable colors only
-python view_tree.py example_03_errors.log --no-colors
-
-# Limit depth for deeply nested logs
-python view_tree.py example_06_deep_nesting.log --depth-limit 5
-```
-
-### Example Output
-
-**With Colors & Emojis:**
-```text
-──────────────────────────────────────────────────────────────────────
-🌲 Log Tree: example_02_actions.log
-──────────────────────────────────────────────────────────────────────
-
-Total entries: 15
-
-bbb84413-578b-429a-8542-c64dcb69cd18
-├── ⚡ order:process/1 ⇒ ▶️ started 13:56:34
-│   ├── order_id: ORD-001
-├── 💬 order:validate/2 13:56:34
-│   ├── items: 3
-│   ├── total: 99.99
-│   ├── 💳 payment:charge/3/1 ⇒ ▶️ started 13:56:34
-│   │   ├── amount: 99.99
-│   ├── 💬 payment:success/3/3 13:56:35
-│   │   ├── transaction_id: txn_123
-│   ├── 💳 payment:charge/3/4 ⇒ ✔️ succeeded 13:56:35 ⏱️45ms
-```
-
-**ASCII Mode:**
-```text
-----------------------------------------------------------------------
-Log Tree: example_01_basic.log
-----------------------------------------------------------------------
-
-Total entries: 6
-
-a0bba8f9-7e90-4d76-8c57-58ce8cb63ed5
-+-- app:startup/1 => started 13:56:30
-    |-- version: 1.0.0
-    |-- environment: production
-```
-
-## Quick Start
-
-```bash
-# Run one example
-python example_01_basic.py
-
-# View with colors and emojis (default)
-python view_tree.py example_01_basic.log
-
-# View in ASCII mode
-python view_tree.py example_01_basic.log --ascii
-
-# View deeply nested with depth limit
-python view_tree.py example_06_deep_nesting.log --depth-limit 5
+# Color features
+cd comp-with-parser
+./run_and_analyze.sh
 ```

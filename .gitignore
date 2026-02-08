@@ -237,3 +237,8 @@ settings.local.json
 .work/
 workspace/
 sandbox/
+
+# ==========================================
+# Generated Log Files (in comp-with-parser)
+# ==========================================
+examples-log-view/comp-with-parser/*.log

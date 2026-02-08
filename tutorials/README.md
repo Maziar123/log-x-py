@@ -245,6 +245,42 @@ pip install -e .
 4. Adapt these patterns to your own applications
 5. Explore the logxpy and logxpy_cli_view documentation
 
+## 🎨 Color Features
+
+LogXPy supports foreground/background colors that render in the CLI viewer:
+
+```python
+from logxpy import log
+
+# Set foreground color
+log.set_foreground("cyan")
+log.info("This is cyan text")
+log.reset_foreground()
+
+# Set background color
+log.set_background("yellow")
+log.warning("Yellow background")
+log.reset_background()
+
+# Combined colors
+log.set_foreground("white").set_background("red")
+log.error("White on red background")
+log.reset_foreground().reset_background()
+
+# One-shot colored message with multiline highlight
+log.colored(
+    "╔═══════════════════════════════════╗\n"
+    "║  ⚠️  IMPORTANT HIGHLIGHTED BLOCK  ║\n"
+    "╚═══════════════════════════════════╝",
+    foreground="black",
+    background="yellow"
+)
+```
+
+Available colors: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `light_cyan`, `dark_gray`, `light_gray`
+
+For a comprehensive color demo, see: `../examples-log-view/comp-with-parser/`
+
 ## Additional Resources
 
 - **LogXPY Documentation:** `../logxpy/docs/`

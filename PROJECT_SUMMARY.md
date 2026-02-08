@@ -1,151 +1,245 @@
-# 🎉 Project Summary: log-x-py v2.0
+# Project Summary: log-x-py
 
-**Zero-dependency structured logging with beautiful tree visualization using Python 3.12+**
+**Structured logging ecosystem with three components: logging library, tree viewer, and log parser**
 
-## 📊 Project Statistics
+## Project Overview
 
-### Code
-- **Tree Viewer**: 499 lines of modern Python 3.12+
-- **Examples**: 7 comprehensive examples (2,500+ lines)
-- **Tutorials**: 5 detailed tutorials
-- **Total Python Code**: 4,000+ lines
-- **Dependencies**: **ZERO!**
+**log-x-py** is a structured logging ecosystem built with Python 3.12+ that provides:
 
-### Documentation
-- **Main README**: Comprehensive guide with visual examples
-- **Visual Guide**: Side-by-side code and log output
-- **Quick Start**: 5-minute getting started guide
-- **Python 3.12+ Features**: Complete modern Python guide
-- **Data Types Guide**: All supported types
-- **Changelog**: Complete version history
+1. **logxpy** - Zero-dependency structured logging library
+2. **logxpy-cli-view** - Colored tree viewer for logs
+3. **logxy-log-parser** - Log parsing, analysis, and monitoring library
 
-### Examples Coverage
-| Example | Lines | Log Entries | Features |
-|---------|-------|-------------|----------|
-| 01 Basic | 29 | 6 | Simple messages |
-| 02 Actions | 44 | 15 | Nested operations |
-| 03 Errors | 35 | 12 | Error handling |
-| 04 API Server | 82 | 40 | HTTP simulation |
-| 05 Data Pipeline | 65 | 32 | ETL process |
-| 06 Deep Nesting | 230 | 102 | 7-level hierarchy |
-| 07 All Data Types | 383 | 42 | 15+ types |
+---
 
-## ✨ Key Features
+## Component 1: logxpy (Logging Library)
 
-### Python 3.12+ Modernization
-- ✅ **Type aliases**: `type LogEntry = dict[str, Any]`
-- ✅ **Pattern matching**: Smart value coloring with `match`/`case`
-- ✅ **Walrus operator**: `if uuid := entry.get("task_uuid")`
-- ✅ **Dataclasses with slots**: 40% less memory
-- ✅ **StrEnum**: Type-safe color/emoji enums
-- ✅ **Modern type hints**: `str | Path`, `int | None`
-- ✅ **Frozen dataclasses**: Immutable configs
+### Location
+- `logxpy/logxpy/` - Core library source code
 
-### Tree Viewer Features
-- 🎨 **Smart coloring**: Cyan (numbers), Magenta (bools), Red (errors)
-- 😊 **Emoji icons**: ⚡ actions, 💾 database, 🔌 API, 🔥 errors
-- 🌲 **Unicode tree**: `├── └── │` with thin lines for deep nesting
-- ⏱️ **Duration formatting**: `< 1ms`, `145ms`, `2.5s`, `1m 30s`
-- 🎯 **Status indicators**: ▶️ started, ✔️ succeeded, ✖️ failed
-- 📊 **Task levels**: Clear hierarchy `/1`, `/2/1`, `/3/2/1`
-- 🔧 **Flexible options**: ASCII mode, no colors, no emojis, depth limit
+### Purpose
+Zero-dependency structured logging that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
 
-### Data Type Support
-- ✅ Primitives: int, float, bool, str, None
-- ✅ Collections: list, dict, tuple, set
-- ✅ Nested: Multi-level dicts, lists of dicts
-- ✅ Unicode: International characters, emojis
-- ✅ Special: Paths, URLs, SQL, JSON strings
-- ✅ Edge cases: infinity, NaN, very large/small numbers
-- ✅ Complex: API responses, configs, stacktraces
+### Key Features
+- **Zero Dependencies** - Pure Python 3.12+
+- **Type Safe** - Full type hints with modern syntax
+- **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
+- **Nested Actions** - Track hierarchical operations with context
+- **Status Tracking** - Automatic start/success/failed tracking
 
-## 📁 Project Structure
+### Python Version
+**3.12+ only** - Uses modern Python features:
+- Type aliases (PEP 695): `type LogEntry = dict[str, Any]`
+- Pattern matching (PEP 634): `match value: case int():`
+- Dataclasses with slots (PEP 681): `@dataclass(slots=True)`
+- StrEnum (PEP 663): Type-safe enums
+- Walrus operator (PEP 572): `if uuid := entry.get("task_uuid")`
+
+### Statistics
+- **Lines of Code**: ~2000
+- **Dependencies**: 0
+- **Python Version**: 3.12+
+
+### Core API
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `Message.log(**fields)` | Log structured message | `Message.log(info="starting")` |
+| `start_action(action_type, **fields)` | Begin hierarchical action | `with start_action("db_query"):` |
+| `start_task(action_type, **fields)` | Create top-level action | `with start_task("process"):` |
+| `log(message_type, **fields)` | Log in current action | `log(message_type="event")` |
+| `to_file(output_file)` | Set log output file | `to_file(open("app.log", "w"))` |
+| `current_action()` | Get current action context | `action = current_action()` |
+| `write_traceback()` | Log exception traceback | `except: write_traceback()` |
+
+### LoggerX Level Methods
+
+| Method | Level | Example |
+|--------|-------|---------|
+| `log.debug(msg, **fields)` | DEBUG | `log.debug("starting", count=5)` |
+| `log.info(msg, **fields)` | INFO | `log.info("user login", user="alice")` |
+| `log.success(msg, **fields)` | SUCCESS | `log.success("completed", total=100)` |
+| `log.note(msg, **fields)` | NOTE | `log.note("checkpoint", step=3)` |
+| `log.warning(msg, **fields)` | WARNING | `log.warning("slow query", ms=5000)` |
+| `log.error(msg, **fields)` | ERROR | `log.error("failed", code=500)` |
+| `log.critical(msg, **fields)` | CRITICAL | `log.critical("system down")` |
+| `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
+
+### Module Structure
 
 ```
-log-x-py/
-├── README.md                       # ⭐ Main documentation (11KB)
-├── PYTHON_312_FEATURES.md          # Modern Python guide (6KB)
-├── CHANGELOG.md                    # Version history (5KB)
-├── PROJECT_SUMMARY.md              # This file
-│
-├── examples-log-view/              # 🎯 Main examples directory
-│   ├── view_tree.py               # ⭐ Tree viewer (499 lines, zero deps)
-│   ├── example_01_basic.py        # Basic logging
-│   ├── example_02_actions.py      # Nested actions
-│   ├── example_03_errors.py       # Error handling
-│   ├── example_04_api_server.py   # API simulation
-│   ├── example_05_data_pipeline.py # ETL pipeline
-│   ├── example_06_deep_nesting.py # 7-level nesting
-│   ├── example_07_all_data_types.py # ⭐ All types (383 lines)
-│   │
-│   ├── README.md                  # Examples overview
-│   ├── QUICK_START.md             # 5-minute guide
-│   ├── VISUAL_GUIDE.md            # ⭐ Code & log examples (700 lines)
-│   ├── EXAMPLE_07_DATA_TYPES.md   # Data types guide
-│   ├── DEEP_NESTING_EXAMPLE.md    # Deep nesting guide
-│   ├── CHANGELOG.md               # Examples changelog
-│   │
-│   ├── run_all.sh                 # Run all examples
-│   └── run_single.sh              # Run one example
-│
-├── tutorials/                      # 📚 Detailed tutorials
-│   ├── tutorial_01_basic_logging.py
-│   ├── tutorial_02_actions_and_context.py
-│   ├── tutorial_03_decorators.py
-│   ├── tutorial_04_error_handling.py
-│   ├── tutorial_05_real_world_api.py
-│   ├── README.md
-│   ├── TUTORIAL_SUMMARY.md
-│   └── view_logs.sh
-│
-├── logxpy/                         # Core logging library
-└── logxpy_cli_view/                # Full-featured CLI viewer
+logxpy/logxpy/
+├── __init__.py          # Main exports
+├── _action.py           # Action context management
+├── _message.py          # Message logging
+├── loggerx.py           # LoggerX class with level methods
+├── _output.py           # Output destinations
+├── decorators.py        # Logging decorators
+├── _validation.py       # Schema validation
+├── category.py          # Category management
+├── data_types.py        # Data type helpers
+├── file_stream.py       # File/stream operations
+├── system_info.py       # System info logging
+└── _traceback.py        # Exception handling
 ```
 
-## 🚀 Quick Start Commands
+---
 
-### Run Examples
-```bash
-cd examples-log-view
+## Component 2: logxpy-cli-view (Tree Viewer)
 
-# Single example
-python example_01_basic.py
-python view_tree.py example_01_basic.log
+### Location
+- `logxpy_cli_view/src/logxpy_cli_view/` - Viewer source code
 
-# Try all data types
-python example_07_all_data_types.py
-python view_tree.py example_07_all_data_types.log
+### Purpose
+Render LogXPy logs as beautiful colored ASCII trees with filtering, export, and monitoring capabilities.
 
-# Deep nesting (7 levels)
-python example_06_deep_nesting.py
-python view_tree.py example_06_deep_nesting.log
+### Key Features
+- **ANSI Colors** - Color-coded values (numbers: cyan, booleans: magenta, errors: red)
+- **Emoji Icons** - Visual indicators (💾 database, 🔌 API, 🔐 auth)
+- **Tree Structure** - Unicode box-drawing characters (├── └── │)
+- **Filtering** - By status, action type, duration, keyword, JMESPath
+- **Export** - JSON, CSV, HTML, logfmt
+- **Live Monitoring** - Tail mode with real-time updates
 
-# Run all examples
-./run_all.sh
+### Python Version
+**3.9+** - Uses modern but widely-compatible Python features.
 
-# Run single example with automatic viewing
-./run_single.sh 7
+### Statistics
+- **Lines of Code**: ~500
+- **Dependencies**: 4 (jmespath, iso8601, colored, toolz)
+- **Python Version**: 3.9+
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `logxpy-view <file>` | View log as tree |
+| `--failed` | Show only failed actions |
+| `--filter "db_*"` | Filter by action name |
+| `--export json` | Export as JSON |
+| `--export csv` | Export as CSV |
+| `--export html` | Export as HTML |
+| `--tail` | Live log monitoring |
+| `--stats` | Show statistics |
+
+### Core API
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `tasks_from_iterable(lines)` | Parse log lines | `tasks = tasks_from_iterable(f)` |
+| `render_tasks(tasks)` | Render as tree | `print(render_tasks(tasks))` |
+| `filter_by_action_status(tasks, status)` | Filter by status | `filter_by_action_status(tasks, "failed")` |
+| `filter_by_action_type(tasks, pattern)` | Filter by action | `filter_by_action_type(tasks, "db_*")` |
+| `filter_by_duration(tasks, min_seconds)` | Filter by duration | `filter_by_duration(tasks, 1.0)` |
+| `export_json(tasks, file)` | Export JSON | `export_json(tasks, "out.json")` |
+| `export_csv(tasks, file)` | Export CSV | `export_csv(tasks, "out.csv")` |
+| `export_html(tasks, file)` | Export HTML | `export_html(tasks, "out.html")` |
+
+### Module Structure
+
+```
+logxpy_cli_view/src/logxpy_cli_view/
+├── __init__.py          # Main exports
+├── _parse.py            # Log parsing
+├── _render.py           # Tree rendering
+├── _color.py            # Color handling
+├── _theme.py            # Theme management
+├── _export.py           # Export functions
+├── filter.py            # Filter functions
+├── _stats.py            # Statistics
+├── _tail.py             # Live monitoring
+├── _patterns.py         # Pattern extraction
+├── format.py            # Formatting utilities
+└── _cli.py              # CLI interface
 ```
 
-### Viewer Options
-```bash
-# Basic (colors + emojis + Unicode)
-python view_tree.py example.log
+---
 
-# ASCII mode
-python view_tree.py example.log --ascii
+## Component 3: logxy-log-parser (Log Parser & Analyzer)
 
-# No colors (for piping)
-python view_tree.py example.log --no-colors
+### Location
+- `logxy-log-parser/logxy_log_parser/` - Parser source code
 
-# Limit depth
-python view_tree.py example.log --depth-limit 3
+### Purpose
+Python library for parsing, analyzing, and querying LogXPy log files with rich export formats and real-time monitoring.
 
-# Help
-python view_tree.py --help
+### Key Features
+- **Simple API** - One-line parsing: `entries = parse_log("app.log")`
+- **Powerful Filtering** - By level, time, action type, field values
+- **Analysis** - Performance stats, error summaries, task trees
+- **Export** - JSON, CSV, HTML, Markdown, DataFrame
+- **Real-time Monitoring** - Watch logs as they grow
+- **Validation** - Quick log file checking
+
+### Python Version
+**3.12+** - Modern Python with optional pandas/rich support.
+
+### Statistics
+- **Lines of Code**: ~800
+- **Dependencies**: 0 (optional: pandas, rich)
+- **Python Version**: 3.12+
+
+### Simple API (One-Liners)
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `parse_log(path)` | Parse log file | `entries = parse_log("app.log")` |
+| `parse_line(line)` | Parse single line | `entry = parse_line(json_str)` |
+| `check_log(path)` | Parse + validate | `result = check_log("app.log")` |
+| `analyze_log(path)` | Full analysis | `report = analyze_log("app.log")` |
+
+### Core Classes
+
+| Class | Purpose |
+|-------|---------|
+| `LogFile` | File handle + real-time monitoring |
+| `LogParser` | Parse log files |
+| `LogEntries` | Collection with filtering/export |
+| `LogFilter` | Chainable filters |
+| `LogAnalyzer` | Performance/error analysis |
+| `TaskTree` | Hierarchical task tree |
+
+### LogFile API (Real-time Monitoring)
+
+| Method | Purpose |
+|--------|---------|
+| `LogFile.open(path)` | Open and validate |
+| `logfile.entry_count` | Get entry count (fast) |
+| `logfile.contains_error()` | Check for errors |
+| `logfile.watch()` | Iterate new entries |
+| `logfile.wait_for_message(text, timeout)` | Wait for message |
+| `logfile.wait_for_error(timeout)` | Wait for error |
+
+### Module Structure
+
+```
+logxy-log-parser/logxy_log_parser/
+├── __init__.py          # Main exports
+├── simple.py            # Simple one-line API
+├── core.py              # LogParser, LogEntry
+├── filter.py            # LogFilter, LogEntries
+├── analyzer.py          # LogAnalyzer
+├── monitor.py           # LogFile (real-time)
+├── tree.py              # TaskTree, TaskNode
+├── types.py             # Type definitions
+├── export.py            # Export functions
+└── utils.py             # Helper functions
 ```
 
-## 📈 Performance Benefits
+---
+
+## Project Statistics
+
+### Overall Statistics
+
+| Component | Lines | Dependencies | Python |
+|-----------|-------|--------------|--------|
+| **logxpy** (library) | ~2000 | 0 | 3.12+ |
+| **logxpy-cli-view** (viewer) | ~500 | 4 | 3.9+ |
+| **logxy-log-parser** (parser) | ~800 | 0 (optional: pandas, rich) | 3.12+ |
+| **Total** | ~3300 | Minimal | - |
+
+### Performance Benefits
 
 | Feature | Improvement | Details |
 |---------|------------|---------|
@@ -155,194 +249,141 @@ python view_tree.py --help
 | Code Size | **-16%** | More concise modern syntax |
 | Type Safety | **100%** | Full type hints |
 
-## 🎨 Visual Example
+---
 
-### Input Code
-```python
-from logxpy import start_action, Message, to_file
+## Project Structure
 
-to_file(open("demo.log", "w"))
-
-with start_action(action_type="http:request", method="POST"):
-    Message.log(message_type="auth:verify", user_id=123, valid=True)
-    with start_action(action_type="database:query"):
-        Message.log(message_type="database:result", rows=10)
 ```
-
-### Output Tree
+log-x-py/
+├── logxpy/                          # Component 1: Core logging library
+│   ├── logxpy/                      # Main package
+│   ├── setup.py                     # Installation config
+│   └── examples/                    # Library usage examples
+│
+├── logxpy_cli_view/                 # Component 2: CLI tree viewer
+│   ├── src/logxpy_cli_view/         # Main package
+│   ├── pyproject.toml               # Installation config
+│   └── tests/                       # Test suite
+│
+├── logxy-log-parser/                # Component 3: Log parser & analyzer
+│   ├── logxy_log_parser/            # Main package
+│   ├── pyproject.toml               # Installation config
+│   └── examples/                    # Usage examples
+│
+├── examples-log-view/               # Standalone examples
+│   ├── view_tree.py                # Simple tree viewer script
+│   ├── example_01_basic.py         # Basic logging
+│   ├── example_02_actions.py       # Nested actions
+│   ├── example_03_errors.py        # Error handling
+│   ├── example_04_api_server.py    # API simulation
+│   ├── example_05_data_pipeline.py # ETL pipeline
+│   ├── example_06_deep_nesting.py  # 7-level nesting
+│   └── example_07_all_data_types.py # All data types
+│
+├── tutorials/                       # Detailed tutorials
+├── README.md                        # Main documentation
+├── README.rst                       # PyPI documentation
+├── AGENTS.md                        # AI agent guide
+├── AI_CONTEXT.md                    # Complete API reference
+└── PROJECT_SUMMARY.md               # This file
 ```
-a1b2c3d4-e5f6-7890-abcd-ef1234567890
-├── 🔌 http:request/1 ⇒ ▶️ started 14:30:00
-│   ├── method: POST
-│   ├── 🔐 auth:verify/2 14:30:00
-│   │   ├── user_id: 123
-│   │   └── valid: True
-│   ├── 💾 database:query/3/1 ⇒ ▶️ started 14:30:00
-│   │   ├── 💾 database:result/3/2 14:30:01
-│   │   │   └── rows: 10
-│   │   └── 💾 database:query/3/3 ⇒ ✔️ succeeded 14:30:01 ⏱️145ms
-│   └── 🔌 http:request/4 ⇒ ✔️ succeeded 14:30:01 ⏱️1.2s
-```
-
-## 🎯 Use Cases
-
-### ✅ Development
-- Debug complex application flows
-- Trace request lifecycles
-- Understand nested operations
-- Visualize error contexts
-
-### ✅ Testing
-- Verify log output formats
-- Test data type handling
-- Validate nested structures
-- Performance analysis
-
-### ✅ Production
-- Real-time log analysis
-- Error tracking and debugging
-- Performance monitoring
-- Audit trail visualization
-
-### ✅ Documentation
-- Generate log examples
-- Show API flows
-- Training materials
-- Technical documentation
-
-## 🏆 Achievements
-
-### Code Quality
-- ✅ **Zero dependencies** - Pure Python 3.12+
-- ✅ **Type safe** - Full type hints throughout
-- ✅ **Modern** - Latest Python features
-- ✅ **Fast** - Optimized with slots, pattern matching
-- ✅ **Clean** - Well-organized, documented
-
-### Documentation
-- ✅ **Comprehensive** - 8 markdown files
-- ✅ **Visual** - Side-by-side code/output examples
-- ✅ **Practical** - 7 working examples
-- ✅ **Clear** - Step-by-step guides
-- ✅ **Complete** - Covers all features
-
-### Testing
-- ✅ **7 Examples** - Cover all major use cases
-- ✅ **15+ Data Types** - Comprehensive type testing
-- ✅ **7 Levels Deep** - Maximum nesting tested
-- ✅ **42 Log Entries** - In data types example alone
-- ✅ **All Features** - Every feature demonstrated
-
-## 📚 Documentation Files
-
-| File | Size | Purpose |
-|------|------|---------|
-| **README.md** | 11KB | Main project documentation |
-| **PYTHON_312_FEATURES.md** | 6KB | Python 3.12+ guide |
-| **VISUAL_GUIDE.md** | 30KB | Code & log examples |
-| **CHANGELOG.md** | 5KB | Version history |
-| **QUICK_START.md** | 4KB | 5-minute guide |
-| **EXAMPLE_07_DATA_TYPES.md** | 6KB | Data types guide |
-| **DEEP_NESTING_EXAMPLE.md** | 3KB | Deep nesting guide |
-| **PROJECT_SUMMARY.md** | This file | Project overview |
-
-**Total Documentation**: ~65KB of comprehensive guides!
-
-## 🎓 Learning Resources
-
-### For Beginners
-1. Read [QUICK_START.md](examples-log-view/QUICK_START.md) - 5 minutes
-2. Run Example 01 - Basic logging
-3. Try viewer options (`--help`, `--ascii`)
-
-### For Developers
-1. Read [README.md](README.md) - Full overview
-2. Study [VISUAL_GUIDE.md](examples-log-view/VISUAL_GUIDE.md) - Code examples
-3. Run all examples - See different patterns
-4. Read [PYTHON_312_FEATURES.md](PYTHON_312_FEATURES.md) - Modern Python
-
-### For Advanced Users
-1. Study Example 06 - Deep nesting patterns
-2. Study Example 07 - All data types
-3. Read view_tree.py source - Implementation details
-4. Extend with custom formatters
-
-## 💡 Best Practices
-
-### Logging
-```python
-# ✅ Good - descriptive action types
-with start_action(action_type="user:authentication:login"):
-    pass
-
-# ✅ Good - include context
-Message.log(
-    message_type="database:query",
-    query="SELECT * FROM users",
-    duration_ms=45
-)
-
-# ❌ Bad - too vague
-with start_action(action_type="process"):
-    pass
-```
-
-### Viewing
-```bash
-# For development - full colors and emojis
-python view_tree.py app.log
-
-# For CI/CD - plain text
-python view_tree.py app.log --no-colors --no-emojis
-
-# For deep logs - limit depth
-python view_tree.py app.log --depth-limit 3
-```
-
-## 🔮 Future Possibilities
-
-### Potential Enhancements
-- Interactive viewer (TUI)
-- Log filtering by action type
-- Time range filtering
-- Export to HTML/JSON
-- Search functionality
-- Log statistics
-- Performance profiling view
-
-### Community
-- Contributions welcome!
-- Modern Python showcase
-- Zero-dependency philosophy
-- Clean, type-safe code
-
-## 🌟 Credits
-
-- **Built with** Python 3.12+
-- **Inspired by** [eliottree](https://github.com/jonathanj/eliottree)
-- **Uses format from** [Eliot](https://github.com/itamarst/eliot)
-- **Dependencies** None! Zero!
-
-## 📝 License
-
-MIT License - Free and open source
 
 ---
 
-## 🎯 Bottom Line
+## Key Concepts
 
-**What**: Beautiful tree visualization for structured logs
+### Log Entry Structure
 
-**How**: Zero dependencies, Python 3.12+, modern features
+```python
+{
+    "task_uuid": "abc123-...",  # Groups related entries
+    "timestamp": "14:30:00",     # HH:MM:SS format
+    "action_type": "http:request",  # Determines emoji
+    "level": "/1",               # Hierarchical level
+    "status": "succeeded",       # started, succeeded, failed
+    "duration_ns": 145000000,    # Nanoseconds
+    # ... additional key-value pairs
+}
+```
 
-**Why**: Fast, type-safe, clean code with great output
+### Task Level Format
 
-**Result**: 499 lines → Beautiful trees with colors, emojis, Unicode
+```
+/1              # Root level, 1st action
+/2/1            # Child of 2nd action, 1st sub-action
+/3/2/1          # 3 levels deep
+/3/3/3/3/3/3/3  # 7 levels deep (maximum tested)
+```
 
-**Status**: ✅ Production Ready | 📦 Zero Dependencies | 🚀 Fast & Modern
+### Emoji Auto-Detection
+
+Based on `action_type` keywords:
+- `database`, `db:`, `query` → 💾
+- `http`, `api`, `request` → 🔌
+- `auth`, `login` → 🔐
+- `payment`, `charge` → 💳
+- `server` → 🖥️
+- `pipeline`, `etl` → 🔄
+- `error`, `fail` → 🔥
+- Default → ⚡
+
+### Color Coding
+
+| Type | Color | ANSI Code |
+|------|-------|-----------|
+| Numbers | Cyan | `\033[36m` |
+| Booleans | Magenta | `\033[35m` |
+| Keys | Bright Blue | `\033[94m` |
+| Error strings | Bright Red | `\033[91m` |
+| Success strings | Bright Green | `\033[92m` |
+| Regular strings | White | `\033[37m` |
+| Timestamps | Dim Gray | `\033[90m` |
+| Task UUIDs | Bright Magenta | `\033[95m` |
 
 ---
 
-**Made with ❤️ using Python 3.12+ features**
+## Design Patterns Used
 
-**Version**: 2.0.0 | **Date**: 2026-02-05 | **Status**: Complete
+1. **Dataclasses with slots** - 40% memory reduction
+2. **StrEnum** - Type-safe enums for colors/emojis
+3. **Pattern matching** - Smart value routing
+4. **Type aliases** - `type LogEntry = dict[str, Any]`
+5. **Frozen configs** - Immutable settings
+
+---
+
+## Use Cases
+
+**Development**: Debug nested operations, trace request flows, visualize errors
+**Testing**: Verify log formats, test data types, validate structures
+**Production**: Monitor performance, track errors, audit trails
+**Documentation**: Generate examples, show API flows, training materials
+
+---
+
+## Credits & Attribution
+
+This project is a fork and modernization of two excellent libraries:
+
+### logxpy (Logging Library)
+**Forked from [Eliot](https://github.com/itamarst/eliot)** by Itamar Turner-Trauring
+- Original: Structured logging for complex & distributed systems
+- Changes: Modernized for Python 3.12+, renamed to logxpy, enhanced API
+
+### logxpy-cli-view (Tree Viewer)
+**Forked from [eliottree](https://github.com/jonathanj/eliottree)** by Jonathan Jacobs
+- Original: Render Eliot logs as ASCII trees
+- Changes: Modernized codebase, renamed to logxpy-cli-view, added new features
+
+### License
+Both original projects are licensed under Apache 2.0. This fork maintains compatibility with the original Eliot log format while providing a modernized API and toolset.
+
+---
+
+## License
+
+MIT License
+
+---
+
+**Version**: 2.0.0 | **Status**: Complete

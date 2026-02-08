@@ -47,4 +47,4 @@ class ConfigError(Exception):
         return f"Config error: {self.message}"
 
 
-__all__ = ["ConfigError", "EliotParseError", "JSONParseError"]
+__all__ = ["ConfigError", "EliotParseError", "JSONParseError", "LogXPyParseError"]

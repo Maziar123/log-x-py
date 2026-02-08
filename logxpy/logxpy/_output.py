@@ -4,6 +4,7 @@ Implementation of hooks and APIs for outputting log messages.
 
 import traceback
 import inspect
+from pathlib import Path
 from threading import Lock
 from functools import wraps
 from io import IOBase
@@ -515,3 +516,31 @@ def to_file(output_file, encoder=None, json_default=json_default):
 
 # The default Logger, used when none is specified:
 _DEFAULT_LOGGER = Logger()
+
+
+def init_file_destination(filepath: str | Path, mode: str = 'a') -> None:
+    """Simplified API: Initialize file logging with just a path.
+    
+    Usage:
+        init_file_destination("app.log")  # Append mode (default)
+        init_file_destination("app.log", "w")  # Write mode (overwrite)
+    
+    This is a convenience wrapper around to_file() that handles:
+    - Opening the file with proper encoding (utf-8)
+    - Creating parent directories if needed
+    - Setting up FileDestination internally
+    
+    Note: The file remains open until program exit. For proper cleanup,
+    use the context manager pattern or call close() on the destination.
+    """
+    from pathlib import Path
+    import atexit
+    
+    path = Path(filepath)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    f = open(path, mode, encoding='utf-8', buffering=1)  # Line buffered
+    to_file(f)
+    
+    # Register cleanup at exit
+    atexit.register(f.close)
