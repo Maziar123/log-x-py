@@ -52,7 +52,7 @@ from .analyzer import (
     ErrorSummary,
     LogAnalyzer,
 )
-from .core import LogEntry, LogParser
+from .core import LogEntry, LogParser, ParseError
 from .filter import LogEntries, LogFilter
 from .monitor import LogFile, LogFileError
 from .tree import TaskNode, TaskTree
@@ -65,6 +65,39 @@ from .utils import (
     parse_duration,
     parse_timestamp,
 )
+
+# Indexing
+from .index import (
+    IndexedLogParser,
+    IndexStats,
+    LogIndex,
+    LogPosition,
+)
+
+# Aggregation
+from .aggregation import (
+    AggregatedStats,
+    LogAggregator,
+    MultiFileAnalyzer,
+    TimeBucket,
+    TimeSeriesAnalyzer,
+)
+
+# Configuration
+from .config import (
+    ConfigManager,
+    ParserConfig,
+    get_config,
+)
+
+# CLI (optional)
+try:
+    from .cli import main as _cli_main
+    main = _cli_main
+    _cli_available = True
+except ImportError:
+    _cli_available = False
+    main = None  # type: ignore
 
 __all__ = [
     # Version
@@ -82,6 +115,7 @@ __all__ = [
     # Core
     "LogEntry",
     "LogParser",
+    "ParseError",
     # Monitoring
     "LogFile",
     "LogFileError",
@@ -107,6 +141,23 @@ __all__ = [
     "level_from_message_type",
     "extract_task_uuid",
     "merge_fields",
+    # Indexing
+    "LogIndex",
+    "IndexedLogParser",
+    "IndexStats",
+    "LogPosition",
+    # Aggregation
+    "AggregatedStats",
+    "LogAggregator",
+    "MultiFileAnalyzer",
+    "TimeBucket",
+    "TimeSeriesAnalyzer",
+    # Configuration
+    "ConfigManager",
+    "ParserConfig",
+    "get_config",
+    # CLI
+    "main",
 ]
 
 # Optional pandas support

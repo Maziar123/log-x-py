@@ -333,3 +333,232 @@ class DataFrameExporter:
             data.append(row)
 
         return pandas.DataFrame(data)
+
+
+class PdfExporter:
+    """Export log entries to PDF format."""
+
+    def __init__(self) -> None:
+        """Initialize PDF exporter."""
+        self._weasyprint_available = self._check_weasyprint()
+
+    def _check_weasyprint(self) -> bool:
+        """Check if WeasyPrint is available.
+
+        Returns:
+            bool: True if WeasyPrint is available.
+        """
+        try:
+            import weasyprint  # type: ignore  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def export(self, entries: LogEntries, file: str | Path, template: str | None = None) -> None:
+        """Export entries to PDF file.
+
+        Args:
+            entries: LogEntries collection to export.
+            file: Output file path.
+            template: Optional HTML template path.
+
+        Raises:
+            ImportError: If WeasyPrint is not installed.
+        """
+        if not self._weasyprint_available:
+            raise ImportError(
+                "WeasyPrint is required for PDF export. "
+                "Install with: pip install logxy-log-parser[pdf]"
+            )
+
+        import weasyprint  # type: ignore
+
+        # First generate HTML
+        html_exporter = HtmlExporter()
+        html_path = Path(file).with_suffix(".html.tmp")
+
+        try:
+            html_exporter.export(entries, html_path, template=template)
+
+            # Convert HTML to PDF
+            weasyprint.HTML(filename=str(html_path)).write_pdf(str(file))
+
+        finally:
+            # Clean up temp HTML file
+            if html_path.exists():
+                html_path.unlink()
+
+
+class CustomTemplateExporter:
+    """Export log entries using custom templates."""
+
+    def export(
+        self,
+        entries: LogEntries,
+        file: str | Path,
+        template_path: str | Path,
+        template_format: str = "html",
+    ) -> None:
+        """Export entries using a custom template.
+
+        Args:
+            entries: LogEntries collection to export.
+            file: Output file path.
+            template_path: Path to template file.
+            template_format: Template format (html, md, txt).
+
+        Raises:
+            ValueError: If template format is not supported.
+        """
+        template_path = Path(template_path)
+        path = Path(file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Read template
+        with open(template_path, encoding="utf-8") as f:
+            template_content = f.read()
+
+        # Collect template variables
+        from .utils import format_timestamp, parse_duration
+
+        # Build entry data
+        entries_data = []
+        for entry in entries:
+            entries_data.append({
+                "timestamp": entry.timestamp,
+                "timestamp_str": format_timestamp(entry.timestamp),
+                "task_uuid": entry.task_uuid,
+                "level": entry.level.value,
+                "message": entry.message or "",
+                "action_type": entry.action_type or "",
+                "action_status": entry.action_status.value if entry.action_status else "",
+                "duration": entry.duration,
+                "duration_str": parse_duration(entry.duration) if entry.duration else "",
+                "fields": entry.fields,
+            })
+
+        # Calculate stats
+        level_counts: dict[str, int] = {}
+        error_count = 0
+        for entry in entries:
+            level_counts[entry.level.value] = level_counts.get(entry.level.value, 0) + 1
+            if entry.is_error:
+                error_count += 1
+
+        # Template variables
+        context = {
+            "entries": entries_data,
+            "count": len(entries),
+            "errors": error_count,
+            "level_counts": level_counts,
+        }
+
+        # Simple template substitution (for advanced templating, use Jinja2)
+        output = template_content
+        for key, value in context.items():
+            placeholder = f"{{{{{key}}}}}"
+            output = output.replace(placeholder, str(value))
+
+        # Write output
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(output)
+
+
+class Jinja2Exporter:
+    """Export log entries using Jinja2 templates."""
+
+    def __init__(self) -> None:
+        """Initialize Jinja2 exporter."""
+        self._jinja2_available = self._check_jinja2()
+
+    def _check_jinja2(self) -> bool:
+        """Check if Jinja2 is available.
+
+        Returns:
+            bool: True if Jinja2 is available.
+        """
+        try:
+            import jinja2  # type: ignore  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
+    def export(
+        self,
+        entries: LogEntries,
+        file: str | Path,
+        template_path: str | Path,
+        context: dict[str, Any] | None = None,
+    ) -> None:
+        """Export entries using Jinja2 template.
+
+        Args:
+            entries: LogEntries collection to export.
+            file: Output file path.
+            template_path: Path to Jinja2 template file.
+            context: Additional template context variables.
+
+        Raises:
+            ImportError: If Jinja2 is not installed.
+        """
+        if not self._jinja2_available:
+            raise ImportError(
+                "Jinja2 is required for custom template export. "
+                "Install with: pip install logxy-log-parser[templates]"
+            )
+
+        import jinja2  # type: ignore
+
+        template_path = Path(template_path)
+        path = Path(file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Setup Jinja2 environment
+        env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(template_path.parent),
+            autoescape=jinja2.select_autoescape(),
+        )
+
+        template = env.get_template(template_path.name)
+
+        # Build context
+        from .utils import format_timestamp, parse_duration
+
+        entries_data = []
+        level_counts: dict[str, int] = {}
+        error_count = 0
+
+        for entry in entries:
+            level_counts[entry.level.value] = level_counts.get(entry.level.value, 0) + 1
+            if entry.is_error:
+                error_count += 1
+
+            entries_data.append({
+                "timestamp": entry.timestamp,
+                "timestamp_str": format_timestamp(entry.timestamp),
+                "task_uuid": entry.task_uuid,
+                "level": entry.level.value,
+                "message": entry.message or "",
+                "action_type": entry.action_type or "",
+                "action_status": entry.action_status.value if entry.action_status else "",
+                "duration": entry.duration,
+                "duration_str": parse_duration(entry.duration) if entry.duration else "",
+                "fields": entry.fields,
+                "entry": entry,  # Full entry access
+            })
+
+        template_context = {
+            "entries": entries_data,
+            "count": len(entries),
+            "errors": error_count,
+            "level_counts": level_counts,
+        }
+
+        if context:
+            template_context.update(context)
+
+        # Render and write
+        output = template.render(**template_context)
+
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(output)

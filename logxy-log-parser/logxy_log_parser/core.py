@@ -68,16 +68,37 @@ class LogEntry:
         Returns:
             LogEntry: New LogEntry instance.
         """
-        # Parse task_level from string like "/1" or "/2/1"
-        level_str = data.get("level", "/")
-        if level_str.startswith("/"):
-            level_parts = level_str[1:].split("/") if level_str != "/" else []
-            task_level = tuple(int(p) for p in level_parts if p)
+        # Parse task_level - handle both array format [1,1] and string format "/1/1"
+        task_level_raw = data.get("task_level")
+        if task_level_raw is not None:
+            if isinstance(task_level_raw, list):
+                # Array format: [1] or [1,1] or [1,1,1]
+                task_level = tuple(int(x) if isinstance(x, (int, float)) else 0
+                                   for x in task_level_raw if x is not None)
+            elif isinstance(task_level_raw, str):
+                # String format: "/1" or "/1/1"
+                if task_level_raw.startswith("/"):
+                    level_parts = task_level_raw[1:].split("/") if task_level_raw != "/" else []
+                    task_level = tuple(int(p) for p in level_parts if p)
+                else:
+                    # Try to split by /
+                    level_parts = task_level_raw.split("/") if task_level_raw else []
+                    task_level = tuple(int(p) for p in level_parts if p)
+            elif isinstance(task_level_raw, (int, float)):
+                task_level = (int(task_level_raw),)
+            else:
+                task_level = ()
         else:
-            task_level = ()
+            # Fallback: try old "level" field for backward compatibility
+            level_str = data.get("level", "/")
+            if isinstance(level_str, str) and level_str.startswith("/"):
+                level_parts = level_str[1:].split("/") if level_str != "/" else []
+                task_level = tuple(int(p) for p in level_parts if p)
+            else:
+                task_level = ()
 
-        # Parse action status
-        action_status = data.get("status")
+        # Parse action status - check both action_status and status fields
+        action_status = data.get("action_status") or data.get("status")
         if action_status:
             try:
                 action_status = ActionStatus(action_status)
@@ -86,23 +107,42 @@ class LogEntry:
         else:
             action_status = None
 
-        # Parse duration
-        duration = data.get("duration_ns")
-        if duration is not None:
-            duration = duration / 1e9  # Convert nanoseconds to seconds
+        # Parse duration - check multiple possible field names
+        duration = None
+        for field in ("duration_ns", "logxpy:duration", "eliot:duration", "duration"):
+            if field in data:
+                duration_val = data[field]
+                if duration_val is not None:
+                    if field == "duration_ns":
+                        duration = duration_val / 1e9  # Convert nanoseconds to seconds
+                    else:
+                        # Already in seconds or unknown format
+                        duration = float(duration_val) if not isinstance(duration_val, bool) else None
+                    break
 
-        # Extract fields (all other keys)
-        field_keys = {
+        # Extract known fields (everything else goes to fields dict)
+        # Note: "level" field is for log level, not task level - keep it in fields if not a known level
+        known_fields = {
             "task_uuid",
             "timestamp",
-            "level",
+            "task_level",
             "message_type",
             "message",
             "action_type",
+            "action_status",
             "status",
             "duration_ns",
+            "logxpy:duration",
+            "eliot:duration",
+            "duration",
+            # logxpy specific
+            "logxpy:traceback",
+            "exception",
+            "reason",
+            # Keep log level in entries for reference but don't store in fields
+            "level",
         }
-        fields = {k: v for k, v in data.items() if k not in field_keys}
+        fields = {k: v for k, v in data.items() if k not in known_fields}
 
         # Get timestamp (could be string or number)
         timestamp = data.get("timestamp", 0)
@@ -112,6 +152,8 @@ class LogEntry:
                 timestamp = float(timestamp)
             except ValueError:
                 timestamp = 0
+        elif isinstance(timestamp, (int, float)):
+            timestamp = float(timestamp)
 
         return cls(
             timestamp=timestamp,
@@ -134,7 +176,7 @@ class LogEntry:
         result: LogDict = {
             "task_uuid": self.task_uuid,
             "timestamp": self.timestamp,
-            "level": "/" + "/".join(str(x) for x in self.task_level) if self.task_level else "/",
+            "task_level": list(self.task_level),  # Array format for logxpy
             "message_type": self.message_type,
         }
 
@@ -143,7 +185,7 @@ class LogEntry:
         if self.action_type:
             result["action_type"] = self.action_type
         if self.action_status:
-            result["status"] = self.action_status.value
+            result["action_status"] = self.action_status.value
         if self.duration is not None:
             result["duration_ns"] = int(self.duration * 1e9)
 
@@ -176,6 +218,39 @@ class LogEntry:
         return " ".join(parts)
 
 
+class ParseError:
+    """Represents a parsing error with context."""
+
+    def __init__(self, line_number: int, line: str, error: str):
+        """Initialize parse error.
+
+        Args:
+            line_number: Line number where error occurred.
+            line: The raw line content.
+            error: Error message.
+        """
+        self.line_number = line_number
+        self.line = line
+        self.error = error
+
+    def __str__(self) -> str:
+        """String representation of the error."""
+        preview = self.line[:100] + "..." if len(self.line) > 100 else self.line
+        return f"Line {self.line_number}: {self.error}\n  {preview}"
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert error to dictionary.
+
+        Returns:
+            dict[str, Any]: Error dictionary.
+        """
+        return {
+            "line_number": self.line_number,
+            "line": self.line[:200],  # Truncate for safety
+            "error": self.error,
+        }
+
+
 class LogParser:
     """Parse LogXPy JSON log files.
 
@@ -190,6 +265,16 @@ class LogParser:
         """
         self._source = source
         self._entries: list[LogEntry] | None = None
+        self._errors: list[ParseError] = []
+
+    @property
+    def errors(self) -> list[ParseError]:
+        """Get list of parsing errors.
+
+        Returns:
+            list[ParseError]: List of parse errors encountered.
+        """
+        return self._errors.copy()
 
     def parse(self) -> list[LogEntry]:
         """Parse entire source into LogEntries.
@@ -249,16 +334,21 @@ class LogParser:
             list[LogEntry]: All parsed entries.
         """
         entries: list[LogEntry] = []
+        self._errors = []
+        line_number = 0
+
         for line in file_obj:
-            line = line.strip()
-            if not line:
+            line_number += 1
+            line_stripped = line.strip()
+            if not line_stripped:
                 continue
             try:
-                data = json.loads(line)
+                data = json.loads(line_stripped)
                 entries.append(LogEntry.from_dict(data))
-            except (json.JSONDecodeError, ValueError, KeyError):
-                # Skip malformed lines
-                continue
+            except json.JSONDecodeError as e:
+                self._errors.append(ParseError(line_number, line_stripped, f"JSON decode error: {e}"))
+            except (ValueError, KeyError, TypeError) as e:
+                self._errors.append(ParseError(line_number, line_stripped, f"Parse error: {e}"))
         return entries
 
     def _parse_stream_file(self, file_obj: Any) -> Iterator[LogEntry]:
@@ -270,15 +360,17 @@ class LogParser:
         Yields:
             LogEntry: Each parsed entry.
         """
+        line_number = 0
         for line in file_obj:
-            line = line.strip()
-            if not line:
+            line_number += 1
+            line_stripped = line.strip()
+            if not line_stripped:
                 continue
             try:
-                data = json.loads(line)
+                data = json.loads(line_stripped)
                 yield LogEntry.from_dict(data)
             except (json.JSONDecodeError, ValueError, KeyError):
-                # Skip malformed lines
+                # Skip malformed lines in stream mode (no error tracking)
                 continue
 
     def __len__(self) -> int:

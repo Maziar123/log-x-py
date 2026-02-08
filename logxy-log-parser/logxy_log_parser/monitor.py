@@ -345,7 +345,12 @@ class LogFile:
 
         return entries
 
-    def follow(self, callback: Callable[[LogEntry], None], interval: float = 0.1) -> None:
+    def follow(
+        self,
+        callback: Callable[[LogEntry], None],
+        interval: float = 0.1,
+        filter_func: Callable[[LogEntry], bool] | None = None,
+    ) -> None:
         """Monitor file for new entries and call callback for each new log.
 
         Blocks until interrupted or file is closed.
@@ -353,6 +358,7 @@ class LogFile:
         Args:
             callback: Function to call for each new entry.
             interval: Polling interval in seconds.
+            filter_func: Optional filter function. Only entries matching filter trigger callback.
         """
         self._last_position = self._size
 
@@ -370,7 +376,8 @@ class LogFile:
                             try:
                                 data = json.loads(line)
                                 entry = LogEntry.from_dict(data)
-                                callback(entry)
+                                if filter_func is None or filter_func(entry):
+                                    callback(entry)
                             except (json.JSONDecodeError, ValueError, KeyError):
                                 continue
                     self._last_position = self._size
@@ -378,11 +385,16 @@ class LogFile:
         except KeyboardInterrupt:
             pass
 
-    def watch(self, interval: float = 0.1) -> Iterator[LogEntry]:
+    def watch(
+        self,
+        interval: float = 0.1,
+        filter_func: Callable[[LogEntry], bool] | None = None,
+    ) -> Iterator[LogEntry]:
         """Yield new entries as they are written to the file.
 
         Args:
             interval: Polling interval in seconds.
+            filter_func: Optional filter function. Only matching entries are yielded.
 
         Yields:
             LogEntry: New log entries as they appear.
@@ -403,13 +415,43 @@ class LogFile:
                             try:
                                 data = json.loads(line)
                                 entry = LogEntry.from_dict(data)
-                                yield entry
+                                if filter_func is None or filter_func(entry):
+                                    yield entry
                             except (json.JSONDecodeError, ValueError, KeyError):
                                 continue
                     self._last_position = self._size
                 time.sleep(interval)
         except KeyboardInterrupt:
             pass
+
+    def watch_filtered(
+        self,
+        level: str | None = None,
+        message: str | None = None,
+        task_uuid: str | None = None,
+        interval: float = 0.1,
+    ) -> Iterator[LogEntry]:
+        """Watch file with built-in filters.
+
+        Args:
+            level: Filter by log level.
+            message: Filter by message content (substring match).
+            task_uuid: Filter by task UUID.
+            interval: Polling interval in seconds.
+
+        Yields:
+            LogEntry: Matching new log entries.
+        """
+        def filter_func(entry: LogEntry) -> bool:
+            if level and entry.level.value != level.lower():
+                return False
+            if message and entry.message and message.lower() not in entry.message.lower():
+                return False
+            if task_uuid and entry.task_uuid != task_uuid:
+                return False
+            return True
+
+        yield from self.watch(interval=interval, filter_func=filter_func)
 
     def wait_for(self, **criteria: Any) -> LogEntry | None:
         """Wait for an entry matching criteria to appear.
