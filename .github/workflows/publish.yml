@@ -10,10 +10,6 @@ jobs:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
     
-    environment:
-      name: pypi
-      url: https://pypi.org/p/logxpy
-    
     permissions:
       id-token: write  # Required for trusted publishing (OIDC)
     
