@@ -32,6 +32,7 @@ class LogEntry:
     action_status: ActionStatus | None
     duration: float | None
     fields: dict[str, Any]
+    line_number: int = 0  # Line number in the log file (0 if unknown)
 
     @property
     def level(self) -> Level:
@@ -59,7 +60,7 @@ class LogEntry:
         return "message" in self.message_type
 
     @classmethod
-    def from_dict(cls, data: LogDict) -> LogEntry:
+    def from_dict(cls, data: LogDict, line_number: int = 0) -> LogEntry:
         """Create LogEntry from a dictionary.
 
         Args:
@@ -165,6 +166,7 @@ class LogEntry:
             action_status=action_status,
             duration=duration,
             fields=fields,
+            line_number=line_number,
         )
 
     def to_dict(self) -> LogDict:
@@ -344,7 +346,7 @@ class LogParser:
                 continue
             try:
                 data = json.loads(line_stripped)
-                entries.append(LogEntry.from_dict(data))
+                entries.append(LogEntry.from_dict(data, line_number))
             except json.JSONDecodeError as e:
                 self._errors.append(ParseError(line_number, line_stripped, f"JSON decode error: {e}"))
             except (ValueError, KeyError, TypeError) as e:
@@ -368,7 +370,7 @@ class LogParser:
                 continue
             try:
                 data = json.loads(line_stripped)
-                yield LogEntry.from_dict(data)
+                yield LogEntry.from_dict(data, line_number)
             except (json.JSONDecodeError, ValueError, KeyError):
                 # Skip malformed lines in stream mode (no error tracking)
                 continue

@@ -1,66 +1,181 @@
-"""Compatibility utilities for eliot-tree."""
+"""Field name compatibility layer for compact and legacy formats.
+
+Supports both new compact format (ts, tid, mt) and legacy format (timestamp, task_uuid, message_type).
+"""
 
 from __future__ import annotations
 
+import functools
 import json
-import sys
-from functools import wraps
-from typing import Any, Callable, TypeVar, cast
+import warnings
+from typing import Callable, TypeVar
 
-if sys.version_info >= (3, 13):
-    from warnings import deprecated
-else:
-    import warnings
-    from typing import ParamSpec
-
-    P = ParamSpec("P")
-    R = TypeVar("R")
-
-    def deprecated(
-        msg: str,
-        /,
-        *,
-        category: type[Warning] = DeprecationWarning,
-        stacklevel: int = 1,
-    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-        """Mark a function or class as deprecated."""
-        def decorator(func: Callable[P, R]) -> Callable[P, R]:
-            @wraps(func)
-            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-                warnings.warn(msg, category, stacklevel=stacklevel + 1)
-                return func(*args, **kwargs)
-            return wrapper
-        return decorator
+# Field name mappings: compact -> list of possible names (compact first for fast path)
+FIELD_MAP = {
+    "ts": ["ts", "timestamp"],
+    "tid": ["tid", "task_uuid"],
+    "lvl": ["lvl", "task_level"],
+    "mt": ["mt", "message_type"],
+    "at": ["at", "action_type"],
+    "st": ["st", "action_status"],
+    "msg": ["msg", "message"],
+    "dur": ["dur", "duration", "logxpy:duration"],
+    "fg": ["fg", "logxpy:foreground"],
+    "bg": ["bg", "logxpy:background"],
+}
 
 
-F = TypeVar("F", bound=Callable[..., Any])
+def get(data: dict, name: str, default=None):
+    """Get field value, trying compact then legacy names.
+
+    Args:
+        data: Dictionary to search
+        name: Compact field name (e.g., "ts", "tid")
+        default: Default value if not found
+
+    Returns:
+        Field value or default
+
+    Example:
+        >>> entry = {"ts": 123.45, "tid": "Xa.1"}
+        >>> get(entry, "ts")  # 123.45
+        >>> get(entry, "timestamp")  # 123.45 (alias)
+    """
+    for key in FIELD_MAP.get(name, [name]):
+        if key in data:
+            return data[key]
+    return default
 
 
-def dump_json_bytes(
-    obj: Any,
-    dumps: Callable[..., str] = json.dumps,
-) -> bytes:
-    """Serialize obj to JSON formatted UTF-8 encoded bytes."""
-    return dumps(obj).encode("utf-8")
+def has(data: dict, name: str) -> bool:
+    """Check if field exists (compact or legacy).
+
+    Args:
+        data: Dictionary to check
+        name: Compact field name
+
+    Returns:
+        True if field exists
+    """
+    return any(key in data for key in FIELD_MAP.get(name, [name]))
 
 
-def catch_errors(
-    *exceptions: type[Exception],
-    reraise_as: type[Exception] | None = None,
-    default: Any = None,
-) -> Callable[[F], F]:
-    """Decorator to catch and optionally rewrap exceptions."""
+def get_message_type(task: dict) -> str | None:
+    """Get message type, handling both formats.
+
+    Returns compact value (e.g., "info" not "loggerx:info").
+    """
+    mt = get(task, "mt")
+    if mt and ":" in mt:
+        # Legacy format "loggerx:info" -> "info"
+        return mt.split(":")[-1]
+    return mt
+
+
+def get_timestamp(task: dict) -> float | None:
+    """Get timestamp as float."""
+    ts = get(task, "ts")
+    if ts is None:
+        return None
+    if isinstance(ts, str):
+        from datetime import datetime
+        try:
+            return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
+        except ValueError:
+            return float(ts)
+    return float(ts)
+
+
+# Export all compact field names for convenience
+TS = "ts"
+TID = "tid"
+LVL = "lvl"
+MT = "mt"
+AT = "at"
+ST = "st"
+MSG = "msg"
+DUR = "dur"
+FG = "fg"
+BG = "bg"
+
+
+# =============================================================================
+# Compatibility Utilities
+# =============================================================================
+
+F = TypeVar("F", bound=Callable)
+
+
+def deprecated(message: str) -> Callable[[F], F]:
+    """Decorator to mark a function/class as deprecated.
+
+    Args:
+        message: Deprecation message to display
+
+    Returns:
+        Decorator function
+    """
     def decorator(func: F) -> F:
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            try:
-                return func(*args, **kwargs)
-            except exceptions as e:
-                if reraise_as is not None:
-                    raise reraise_as(f"Error in {func.__name__}: {e}") from e
-                return default
-        return cast("F", wrapper)
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            warnings.warn(
+                f"{func.__name__} is deprecated. {message}",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            return func(*args, **kwargs)
+        return wrapper  # type: ignore
     return decorator
 
 
-__all__ = ["catch_errors", "deprecated", "dump_json_bytes"]
+def catch_errors(func: F) -> F:
+    """Decorator to catch and log errors.
+
+    Args:
+        func: Function to wrap
+
+    Returns:
+        Wrapped function that catches exceptions
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            warnings.warn(f"Error in {func.__name__}: {e}", RuntimeWarning)
+            return None
+    return wrapper  # type: ignore
+
+
+def dump_json_bytes(data: dict) -> bytes:
+    """Serialize data to JSON bytes.
+
+    Args:
+        data: Dictionary to serialize
+
+    Returns:
+        JSON-encoded bytes
+    """
+    return json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
+
+
+__all__ = [
+    "get",
+    "has",
+    "get_message_type",
+    "get_timestamp",
+    "TS",
+    "TID",
+    "LVL",
+    "MT",
+    "AT",
+    "ST",
+    "MSG",
+    "DUR",
+    "FG",
+    "BG",
+    "FIELD_MAP",
+    "deprecated",
+    "catch_errors",
+    "dump_json_bytes",
+]

@@ -2,13 +2,13 @@
 12_complex_banking.py - Complex Banking Transaction System
 Demonstrates 7-level nested structure with financial operations
 """
-
-import sys
+from pathlib import Path
 import time
 
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 
 # ============================================================================

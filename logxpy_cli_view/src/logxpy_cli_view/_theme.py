@@ -54,6 +54,8 @@ class Theme:
     tree_color2: Callable[[str], str] = field(default=lambda x: x)
     # Processing error color
     error: Callable[[str], str] = field(default=lambda x: x)
+    # Line number color
+    line_number: Callable[[str], str] = field(default=lambda x: x)
 
     @classmethod
     def create(
@@ -104,6 +106,7 @@ class DarkBackgroundTheme(Theme):
             tree_color0=color_fn("white", attrs=["dim"]),
             tree_color1=color_fn("blue", attrs=["dim"]),
             tree_color2=color_fn("magenta", attrs=["dim"]),
+            line_number=color_fn("cyan", attrs=["dim"]),
         )
 
 
@@ -126,6 +129,7 @@ class LightBackgroundTheme(Theme):
             tree_color0=color_fn("dark_gray", attrs=["dim"]),
             tree_color1=color_fn("blue", attrs=["dim"]),
             tree_color2=color_fn("magenta", attrs=["dim"]),
+            line_number=color_fn("cyan", attrs=["dim"]),
         )
 
 

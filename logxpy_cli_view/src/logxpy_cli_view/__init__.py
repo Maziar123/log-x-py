@@ -38,6 +38,7 @@ from logxpy_cli_view._render import (
     get_children,
     message_fields,
     message_name,
+    render_oneline,
     render_tasks,
     track_exceptions,
 )

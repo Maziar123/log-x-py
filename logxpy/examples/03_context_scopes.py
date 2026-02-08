@@ -6,10 +6,11 @@ Demonstrates:
 - log.ctx(): Fluent context builder
 - Nested scopes
 """
-import sys
+from pathlib import Path
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 def process_item(item_id):
     # This log will inherit 'request_id' and 'user' from the scope

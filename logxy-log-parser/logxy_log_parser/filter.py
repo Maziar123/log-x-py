@@ -2,6 +2,7 @@
 Filtering functionality for logxy-log-parser.
 
 Contains LogEntries collection and LogFilter for chainable filtering operations.
+Uses boltons for efficient grouping and iteration utilities.
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .core import LogEntry
-from .utils import parse_timestamp
+from .utils import bucketize, parse_timestamp
 
 
 class LogEntries:
@@ -143,18 +144,19 @@ class LogEntries:
     def group_by(self, key: str) -> dict[str, LogEntries]:
         """Group entries by a field value.
 
+        Uses boltons' bucketize for efficient grouping.
+
         Args:
             key: Field name to group by.
 
         Returns:
             dict[str, LogEntries]: Mapping of value to LogEntries.
         """
-        groups: dict[str, list[LogEntry]] = {}
-        for entry in self._entries:
-            value = str(entry.get(key, ""))
-            if value not in groups:
-                groups[value] = []
-            groups[value].append(entry)
+        def _get_key(entry: LogEntry) -> str:
+            return str(entry.get(key, ""))
+
+        # Use boltons bucketize for efficient grouping
+        groups = bucketize(self._entries, _get_key)
         return {k: LogEntries(v) for k, v in groups.items()}
 
     # Export methods (delegates to export module)

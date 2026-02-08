@@ -58,12 +58,21 @@ from .monitor import LogFile, LogFileError
 from .tree import TaskNode, TaskTree
 from .types import ActionStatus, Level, TaskLevel
 from .utils import (
+    bucketize,
+    chunked,
     extract_task_uuid,
+    first,
+    flatten,
     format_timestamp,
+    is_iterable,
     level_from_message_type,
     merge_fields,
+    pairwise,
     parse_duration,
     parse_timestamp,
+    subdict,
+    unique,
+    windowed,
 )
 
 # Indexing
@@ -141,6 +150,16 @@ __all__ = [
     "level_from_message_type",
     "extract_task_uuid",
     "merge_fields",
+    "subdict",
+    # boltons utilities (re-exported)
+    "bucketize",
+    "chunked",
+    "first",
+    "flatten",
+    "is_iterable",
+    "pairwise",
+    "unique",
+    "windowed",
     # Indexing
     "LogIndex",
     "IndexedLogParser",

@@ -1,54 +1,18 @@
 # LogXPy Log Parser & Analyzer
 
-A Python library for parsing, analyzing, and querying LogXPy log files with rich export formats, powerful filtering capabilities, and real-time monitoring.
+A Python library for parsing, analyzing, and querying LogXPy log files with rich export formats, powerful filtering capabilities, real-time monitoring, indexing, and time-series analysis.
 
-## Overview
+## Features
 
-LogXPy creates structured JSON logs with hierarchical task trees. This library makes it easy to:
-- **Parse** LogXPy log files (JSON Lines format)
-- **Query** logs with powerful filters
-- **Analyze** performance, errors, and patterns
-- **Export** to multiple formats (JSON, CSV, HTML, Markdown, terminal)
-- **Monitor** log files in real-time as they grow
-- **Validate** and check log file contents without full parsing
-
-## LogXPy Log Format Reference
-
-### Core Fields (Every Log Entry)
-| Field | Type | Description |
-|-------|------|-------------|
-| `timestamp` | float | Unix timestamp with microseconds |
-| `task_uuid` | string | Unique identifier for the transaction/action tree |
-| `task_level` | array | Hierarchical level position e.g., `[1]`, `[1,1]`, `[1,1,1]` |
-| `message_type` | string | Log level: `loggerx:debug`, `loggerx:info`, `loggerx:success`, `loggerx:warning`, `loggerx:error`, `loggerx:critical` |
-
-### Action Fields (Optional)
-| Field | Type | Description |
-|-------|------|-------------|
-| `action_type` | string | Function/class name (e.g., `UserService.authenticate`) |
-| `action_status` | string | `started`, `succeeded`, or `failed` |
-| `eliot:duration` / `logxpy:duration` | float | Execution time in seconds |
-
-### Common Custom Fields
-- `message` - Human-readable log message
-- `exception` / `reason` - Error information
-- `logxpy:traceback` - Full exception traceback
-- Application-specific fields (e.g., `user_id`, `order_id`)
-
-### Sample Log Entry
-```json
-{
-  "timestamp": 1770277798.506508,
-  "task_uuid": "311585e4-1c52-4691-95e2-65f7295abe8a",
-  "task_level": [1],
-  "order_id": 12345,
-  "user_id": 789,
-  "action_type": "__main__.OrderService.process_order",
-  "action_status": "started"
-}
-```
-
----
+- **Simple One-Line API** - Parse entire files in one call
+- **Indexing System** - Fast lookups for large log files
+- **Powerful Filtering** - By level, time, action type, field values
+- **Time Series Analysis** - Anomaly detection, heatmaps, burst detection
+- **Aggregation** - Multi-file analysis and aggregation
+- **Analysis** - Performance stats, error summaries, task trees
+- **Export** - JSON, CSV, HTML, Markdown, DataFrame
+- **Real-time Monitoring** - Watch logs as they grow
+- **CLI Tools** - Query, analyze, view, and visualize logs
 
 ## Installation
 
@@ -56,280 +20,204 @@ LogXPy creates structured JSON logs with hierarchical task trees. This library m
 pip install logxy-log-parser
 ```
 
----
-
 ## Quick Start
 
+### Simple One-Line API
+
 ```python
-from logxy_log_parser import LogParser, LogFilter
+from logxy_log_parser import parse_log, check_log, analyze_log
 
-# Parse a log file
-parser = LogParser("path/to/logfile.log")
+# One-line parsing
+entries = parse_log("app.log")
+print(f"Parsed {len(entries)} entries")
 
-# Get all entries
-logs = parser.parse()
+# Parse + validate
+result = check_log("app.log")
+print(f"Valid: {result.is_valid}, Entries: {result.entry_count}")
 
-# Filter by level
-errors = LogFilter(logs).by_level("error")
-
-# Filter by time range
-recent = LogFilter(logs).by_time_range("2024-01-01", "2024-12-31")
-
-# Export to HTML
-errors.to_html("errors.html")
-
-# Export to CSV
-recent.to_csv("recent_logs.csv")
+# Full analysis
+report = analyze_log("app.log")
+report.print_summary()
 ```
 
----
+### Core Classes
 
-## Quick Start
-
-### 1. Basic Parsing and Filtering
 ```python
-from logxy_log_parser import LogParser, LogFilter
+from logxy_log_parser import LogParser, LogFilter, LogAnalyzer, LogFile
 
-# Parse a log file
-parser = LogParser("path/to/logfile.log")
+# Parse log file
+parser = LogParser("app.log")
 logs = parser.parse()
 
-# Filter by level
-errors = LogFilter(logs).by_level("error")
+# Chain filters
+result = (LogFilter(logs)
+    .by_level("error", "warning")
+    .by_time_range("2024-01-01", "2024-12-31")
+    .slow_actions(1.0))
 
-# Filter by time range
-recent = LogFilter(logs).by_time_range("2024-01-01", "2024-12-31")
+result.to_html("slow_errors.html")
 
-# Export to HTML
-errors.to_html("errors.html")
+# Analyze
+analyzer = LogAnalyzer(logs)
+for action in analyzer.slowest_actions(10):
+    print(f"{action.action_type}: {action.duration:.3f}s")
 
-# Export to CSV
-recent.to_csv("recent_logs.csv")
+# Real-time monitoring
+logfile = LogFile.open("app.log")
+for entry in logfile.watch():
+    print(f"{entry.level}: {entry.message}")
 ```
 
-### 2. Real-time Monitoring with LogFile
+## Simple API (One-Liners)
+
+| Function | Purpose | Returns |
+|----------|---------|---------|
+| `parse_log(source)` | Parse log file | `ParseResult` |
+| `parse_line(line)` | Parse single line | `LogXPyEntry` or `None` |
+| `check_log(source)` | Parse + validate | `CheckResult` |
+| `analyze_log(source)` | Full analysis | `AnalysisReport` |
+
+## LogFile API (Real-time Monitoring)
+
+The `LogFile` class provides fast file operations without full parsing:
+
 ```python
 from logxy_log_parser import LogFile
 
-# Open and validate a log file
+# Open and validate
 logfile = LogFile.open("app.log")
 
 if logfile is None:
     print("Invalid log file")
     return
 
-# Get current entry count (fast, without full parsing)
+# Fast operations
 print(f"Total entries: {logfile.entry_count}")
+print(f"File size: {logfile.size} bytes")
 
-# Check if file contains specific content
+# Check for content
 if logfile.contains_error():
     print("Errors found!")
 
-if logfile.contains(message="database", level="error"):
+if logfile.contains(level="error", message="database"):
     print("Database errors found!")
 
-# Monitor for new entries
-for entry in logfile.watch():
-    print(f"{entry.level}: {entry.message}")
-```
+# Find entries
+first_error = logfile.find_first(level="error")
+all_errors = logfile.find_all(level="error")
+last_10 = logfile.tail(10)
 
-### 3. Wait for Specific Events
-```python
-from logxy_log_parser import LogFile
-
-logfile = LogFile("app.log")
-
-# Wait for application to start
+# Wait for specific events
 entry = logfile.wait_for_message("Application started", timeout=30)
 if entry:
     print("Application is ready!")
 
-# Wait for an error to occur
 error = logfile.wait_for_error(timeout=60)
 if error:
     print(f"Error detected: {error.message}")
 ```
 
----
+### LogFile Methods
 
-## API Design
+| Method | Purpose |
+|--------|---------|
+| `LogFile.open(path)` | Open and validate |
+| `logfile.entry_count` | Get entry count (fast, no full parse) |
+| `logfile.size` | Get file size in bytes |
+| `logfile.is_valid` | Check if valid LogXPy file |
+| `logfile.refresh()` | Update and return new entry count |
+| `logfile.contains(**criteria)` | Check if contains matching entries |
+| `logfile.contains_message(text)` | Check if contains message text |
+| `logfile.contains_error()` | Check if contains errors |
+| `logfile.contains_level(level)` | Check if contains level |
+| `logfile.find_first(**criteria)` | Find first matching entry |
+| `logfile.find_last(**criteria)` | Find last matching entry |
+| `logfile.find_all(**criteria)` | Find all matching entries |
+| `logfile.tail(n)` | Get last N entries |
+| `logfile.watch()` | Iterate new entries (generator) |
+| `logfile.wait_for(**criteria)` | Wait for matching entry |
+| `logfile.wait_for_message(text, timeout)` | Wait for message |
+| `logfile.wait_for_error(timeout)` | Wait for error |
 
-### Core Classes
+## LogFilter Methods
 
-#### `LogFile` - File Handle & Real-time Monitoring
-```python
-class LogFile:
-    """Handle and monitor log files with real-time updates."""
+All filter methods return `LogEntries` for chaining:
 
-    # Open and validate
-    @classmethod
-    def open(path: str | Path) -> LogFile | None
-
-    # File state (real-time, updates as file grows)
-    @property
-    def entry_count(self) -> int       # Number of valid log entries
-    @property
-    def size(self) -> int              # File size in bytes
-    @property
-    def is_valid(self) -> bool         # Valid LogXPy log file
-
-    def refresh(self) -> int           # Update and return new count
-
-    # Search functions (fast, without full parsing)
-    def contains(self, **criteria) -> bool
-    def contains_message(self, text: str) -> bool
-    def contains_error(self) -> bool
-    def contains_level(self, level: str) -> bool
-
-    def find_first(self, **criteria) -> LogEntry | None
-    def find_last(self, **criteria) -> LogEntry | None
-    def find_all(self, **criteria) -> list[LogEntry]
-
-    def tail(self, n: int = 10) -> list[LogEntry]
-
-    # Real-time monitoring
-    def watch(self, interval: float = 0.1) -> Iterator[LogEntry]
-    def follow(self, callback: Callable, interval: float = 0.1) -> None
-
-    def wait_for(self, **criteria) -> LogEntry | None
-    def wait_for_message(self, text: str, timeout: float) -> LogEntry | None
-    def wait_for_error(self, timeout: float) -> LogEntry | None
-
-    # Integration
-    def get_parser(self) -> LogParser
-```
-
-#### `LogParser`
-```python
-class LogParser:
-    """Parse LogXPy log files."""
-
-    def __init__(self, source: str | Path | TextIO | list[dict])
-    def parse(self) -> LogEntries
-    def parse_stream(self) -> Iterator[LogEntry]
-
-    # Task tree reconstruction
-    def build_task_tree(self) -> TaskTree
-    def get_task(self, task_uuid: str) -> Task
-```
-
-#### `LogEntries` (Collection)
-```python
-class LogEntries:
-    """Collection of log entries with filtering and export."""
-
-    def __len__(self) -> int
-    def __iter__(self) -> Iterator[LogEntry]
-    def __getitem__(self, key) -> LogEntry
-
-    # Statistics
-    def count(self) -> int
-    def count_by_level(self) -> dict[str, int]
-    def count_by_type(self) -> dict[str, int]
-    def duration_stats(self) -> DurationStats
-
-    # Export
-    def to_json(self, file: str | Path) -> None
-    def to_csv(self, file: str | Path) -> None
-    def to_html(self, file: str | Path) -> None
-    def to_markdown(self, file: str | Path) -> None
-    def to_dataframe(self) -> pd.DataFrame
-
-    # Display
-    def pretty_print(self) -> None
-    def tree_view(self) -> None
-    def table_view(self) -> None
-```
-
-#### `LogFilter`
-```python
-class LogFilter:
-    """Filter log entries by various criteria."""
-
-    def __init__(self, entries: LogEntries)
-
-    # Filters (chainable)
-    def by_level(self, *levels: str) -> LogEntries
-    def by_message(self, pattern: str, regex: bool = False) -> LogEntries
-    def by_time_range(self, start: str | datetime, end: str | datetime) -> LogEntries
-    def by_task_uuid(self, *uuids: str) -> LogEntries
-    def by_action_type(self, *types: str) -> LogEntries
-    def by_field(self, field: str, value: Any) -> LogEntries
-    def by_duration(self, min: float = 0, max: float = float('inf')) -> LogEntries
-    def by_nesting_level(self, min: int = 1, max: int = 99) -> LogEntries
-    def with_traceback(self) -> LogEntries
-    def failed_actions(self) -> LogEntries
-    def slow_actions(self, threshold: float = 1.0) -> LogEntries
-
-    # Combinations
-    def and_(self, *filters: Callable) -> LogEntries
-    def or_(self, *filters: Callable) -> LogEntries
-    def not_(self, filter: Callable) -> LogEntries
-```
-
-#### `LogAnalyzer`
-```python
-class LogAnalyzer:
-    """Perform advanced analysis on log entries."""
-
-    def __init__(self, entries: LogEntries)
-
-    # Performance analysis
-    def slowest_actions(self, n: int = 10) -> list[ActionStat]
-    def duration_by_action(self) -> dict[str, DurationStats]
-    def time_distribution(self) -> TimeDistribution
-
-    # Error analysis
-    def error_summary(self) -> ErrorSummary
-    def error_patterns(self) -> list[ErrorPattern]
-    def failure_rate_by_action(self) -> dict[str, float]
-
-    # Task analysis
-    def task_duration_stats(self) -> dict[str, DurationStats]
-    def deepest_nesting(self) -> int
-    def orphans(self) -> LogEntries  # Logs without proper parent
-
-    # Timeline analysis
-    def timeline(self, interval: str = "1min") -> Timeline
-    def peak_periods(self, n: int = 5) -> list[TimePeriod]
-
-    # Generate report
-    def generate_report(self, format: str = "html") -> str
-```
-
-#### `TaskTree`
-```python
-class TaskTree:
-    """Hierarchical tree representation of task_uuid actions."""
-
-    def __init__(self, root_task_uuid: str)
-    def root(self) -> TaskNode
-    def find_node(self, task_level: list[int]) -> TaskNode
-    def to_dict(self) -> dict
-    def visualize(self) -> str  # ASCII tree
-```
-
----
-
-## Usage Examples
-
-### Basic Parsing and Filtering
 ```python
 from logxy_log_parser import LogParser, LogFilter
 
-parser = LogParser("application.log")
+parser = LogParser("app.log")
 logs = parser.parse()
 
-# Chain filters
+# Level filters
+errors = LogFilter(logs).by_level("error")
+warnings = LogFilter(logs).warning()
+debug_and_info = LogFilter(logs).debug().info()
+
+# Content filters
+db_logs = LogFilter(logs).by_message("database")
+api_logs = LogFilter(logs).by_action_type("http:*", "api:*")
+
+# Time filters
+recent = LogFilter(logs).by_time_range("2024-01-01", "2024-12-31")
+yesterday = LogFilter(logs).after("2024-01-01").before("2024-01-02")
+
+# Task filters
+task = LogFilter(logs).by_task_uuid("Xa.1")
+deep = LogFilter(logs).by_nesting_level(3, 99)
+
+# Performance filters
+slow = LogFilter(logs).slow_actions(5.0)
+fast = LogFilter(logs).fast_actions(0.001)
+by_duration = LogFilter(logs).by_duration(1.0, 60.0)
+
+# Status filters
+failed = LogFilter(logs).failed_actions()
+succeeded = LogFilter(logs).succeeded_actions()
+with_traceback = LogFilter(logs).with_traceback()
+
+# Chaining
 result = (LogFilter(logs)
     .by_level("error", "warning")
-    .by_time_range("2024-01-01", "2024-01-31")
-    .by_message("database", regex=False))
-
-result.to_html("january_db_issues.html")
+    .by_time_range("2024-01-01", "2024-12-31")
+    .slow_actions(1.0)
+    .limit(10))
 ```
 
-### Performance Analysis
+### All Filter Methods
+
+| Method | Purpose |
+|--------|---------|
+| `by_level(*levels)` | Filter by log level |
+| `debug()` | DEBUG level only |
+| `info()` | INFO level only |
+| `warning()` | WARNING level only |
+| `error()` | ERROR level only |
+| `critical()` | CRITICAL level only |
+| `by_message(pattern)` | Filter by message text |
+| `by_action_type(*types)` | Filter by action type (wildcards) |
+| `by_field(field, value)` | Filter by field value |
+| `by_field_contains(field, value)` | Filter by field contains |
+| `by_time_range(start, end)` | Filter by time range |
+| `after(timestamp)` | Filter after timestamp |
+| `before(timestamp)` | Filter before timestamp |
+| `by_date(date)` | Filter by date |
+| `by_task_uuid(*uuids)` | Filter by task ID (Sqid) |
+| `by_nesting_level(min, max)` | Filter by depth |
+| `by_duration(min, max)` | Filter by duration |
+| `slow_actions(threshold)` | Slow actions only |
+| `fast_actions(threshold)` | Fast actions only |
+| `with_traceback()` | Entries with tracebacks |
+| `failed_actions()` | Failed actions only |
+| `succeeded_actions()` | Succeeded actions only |
+| `started_actions()` | Started actions only |
+| `filter(predicate)` | Custom filter function |
+| `sort(key, reverse)` | Sort entries |
+| `limit(n)` | Limit number of entries |
+| `unique(key)` | Get unique entries |
+
+## LogAnalyzer Methods
+
 ```python
 from logxy_log_parser import LogParser, LogAnalyzer
 
@@ -338,124 +226,307 @@ logs = parser.parse()
 
 analyzer = LogAnalyzer(logs)
 
-# Find slowest operations
+# Performance analysis
 for action in analyzer.slowest_actions(10):
-    print(f"{action.type}: {action.duration:.3f}s")
+    print(f"{action.action_type}: {action.duration:.3f}s")
 
-# Duration distribution by action type
 durations = analyzer.duration_by_action()
 for action_type, stats in durations.items():
     print(f"{action_type}: avg={stats.mean:.3f}s, max={stats.max:.3f}s")
 
-# Generate full performance report
+# Error analysis
+summary = analyzer.error_summary()
+print(f"Total errors: {summary.total_count}")
+print(f"Most common error: {summary.most_common}")
+
+# Task analysis
+deepest = analyzer.deepest_nesting()
+print(f"Deepest nesting: {deepest} levels")
+
+orphans = analyzer.orphans()
+print(f"Orphan entries: {len(orphans)}")
+
+# Timeline
+timeline = analyzer.timeline(interval="1min")
+for period in timeline.intervals:
+    print(f"{period.start}: {period.count} entries")
+
+# Generate report
 analyzer.generate_report("performance_report.html")
 ```
 
-### Error Analysis
+### All LogAnalyzer Methods
+
+| Method | Purpose | Returns |
+|--------|---------|---------|
+| `slowest_actions(n)` | Get slowest actions | `list[ActionStat]` |
+| `fastest_actions(n)` | Get fastest actions | `list[ActionStat]` |
+| `duration_by_action()` | Duration by action type | `dict[str, DurationStats]` |
+| `percentile_durations(percentile)` | Percentile durations | `dict[str, float]` |
+| `task_duration_stats()` | Task duration statistics | `dict[str, DurationStats]` |
+| `error_summary()` | Error analysis summary | `ErrorSummary` |
+| `error_patterns()` | Find error patterns | `list[ErrorPattern]` |
+| `failure_rate_by_action()` | Failure rate per action | `dict[str, float]` |
+| `most_common_errors(n)` | Most common errors | `list[tuple]` |
+| `deepest_nesting()` | Maximum nesting depth | `int` |
+| `widest_tasks()` | Widest tasks | `list[tuple]` |
+| `orphans()` | Unmatched entries | `LogEntries` |
+| `timeline(interval)` | Timeline data | `Timeline` |
+| `peak_periods(n)` | Busiest time periods | `list[TimePeriod]` |
+| `quiet_periods(n)` | Quietest time periods | `list[TimePeriod]` |
+| `generate_report(format)` | Generate report | `str` (html/text/json) |
+
+## Indexing System
+
+For fast lookups in large log files:
+
 ```python
-from logxy_log_parser import LogParser, LogFilter, LogAnalyzer
+from logxy_log_parser import LogIndex, IndexedLogParser
+
+# Build index for fast lookups
+index = LogIndex.build("app.log")
+
+# Query by task UUID
+positions = index.find_by_task("Xa.1")
+print(f"Found {len(positions)} entries for task Xa.1")
+
+# Query by level
+errors = index.find_by_level("error")
+
+# Query by time range
+recent = index.find_by_time_range(start, end)
+
+# Use indexed parser
+parser = IndexedLogParser("app.log")
+results = parser.query(task_uuid="Xa.1", level="error")
+
+# Get specific task
+task = parser.get_task("Xa.1")
+print(f"Task duration: {task.duration}")
+
+# Get all errors
+errors = parser.get_errors()
+```
+
+### Index Methods
+
+| Class/Method | Purpose |
+|--------------|---------|
+| `LogIndex.build(path)` | Build index |
+| `index.stats` | Index statistics |
+| `index.find_by_task(uuid)` | Find by task UUID |
+| `index.find_by_level(level)` | Find by level |
+| `index.find_by_time_range(start, end)` | Find by time range |
+| `index.query(**criteria)` | Query with criteria |
+| `index.get_lines(positions)` | Get log lines from positions |
+| `index.save(path)` | Save index to file |
+| `index.load(path)` | Load index from file |
+| `index.is_stale()` | Check if index is stale |
+| `IndexedLogParser(path)` | Indexed parser |
+| `parser.query(**criteria)` | Query with criteria |
+| `parser.get_task(task_uuid)` | Get specific task |
+| `parser.get_errors()` | Get all errors |
+| `parser.get_time_range(start, end)` | Get by time range |
+
+## Time Series Analysis
+
+```python
+from logxy_log_parser import LogParser, TimeSeriesAnalyzer
 
 parser = LogParser("app.log")
 logs = parser.parse()
 
-# Get all errors with tracebacks
-errors = LogFilter(logs).by_level("error").with_traceback()
+analyzer = TimeSeriesAnalyzer(logs)
 
-# Analyze error patterns
-analyzer = LogAnalyzer(errors)
-summary = analyzer.error_summary()
+# Bucket by interval
+buckets = analyzer.bucket_by_interval(60)
+for bucket in buckets:
+    print(f"{bucket.start}: {bucket.count} entries, {bucket.error_rate:.1%} errors")
 
-print(f"Total errors: {summary.total_count}")
-print(f"Unique error types: {summary.unique_types}")
-print(f"Most common error: {summary.most_common}")
+# Detect anomalies
+for anomaly in analyzer.detect_anomalies(window_size=10, threshold=2.0):
+    print(f"Anomaly at {anomaly.timestamp}: {anomaly.description}")
 
-# Show failed actions
-failed = LogFilter(logs).failed_actions()
-for entry in failed:
-    print(f"{entry.action_type} failed: {entry.reason}")
+# Error rate trend
+trend = analyzer.error_rate_trend(60)
+for timestamp, rate in trend:
+    print(f"{timestamp}: {rate:.1%} error rate")
+
+# Level distribution
+dist = analyzer.level_distribution(60)
+print(f"Distribution: {dist}")
+
+# Activity heatmap
+heatmap = analyzer.activity_heatmap()
+for hour, count in sorted(heatmap.items()):
+    print(f"{hour:02d}:00 - {count} entries")
+
+# Burst detection
+bursts = analyzer.burst_detection(threshold=1.5, min_interval=5)
+for burst in bursts:
+    print(f"Burst from {burst.start} to {burst.end}: {burst.count} entries")
 ```
 
-### Task Tracing
+### Time Series Methods
+
+| Method | Purpose | Returns |
+|--------|---------|---------|
+| `bucket_by_interval(seconds)` | Bucket by time interval | `list[TimeBucket]` |
+| `detect_anomalies(window, threshold)` | Detect anomalies | `list[Anomaly]` |
+| `error_rate_t(interval)` | Error rate over time | `list[tuple]` |
+| `level_distribution(interval)` | Level distribution | `dict` |
+| `activity_heatmap(hour_granularity)` | Activity heatmap | `dict` |
+| `burst_detection(threshold, min_interval)` | Detect bursts | `list[Burst]` |
+
+## Aggregation & Multi-File Analysis
+
 ```python
-from logxy_log_parser import LogParser
+from logxy_log_parser import LogAggregator, MultiFileAnalyzer
 
-parser = LogParser("app.log")
-task_tree = parser.build_task_tree()
+files = ["app1.log", "app2.log", "app3.log"]
 
-# Get all logs for a specific transaction
-task = parser.get_task("311585e4-1c52-4691-95e2-65f7295abe8a")
+# Aggregate multiple files
+aggregator = LogAggregator(files)
+result = aggregator.aggregate()
+print(f"Total entries: {len(result)}")
 
-# Visualize the task hierarchy
-print(task.tree_view())
+# Multi-file analysis
+multi = MultiFileAnalyzer(files)
+analysis = multi.analyze_all()
+print(f"Files analyzed: {analysis.file_count}")
 
-# Get total task duration
-print(f"Total duration: {task.duration:.3f}s")
+# Time series across files
+ts = multi.time_series_analysis(interval_seconds=3600)
 ```
 
-### Export to DataFrame
-```python
-from logxy_log_parser import LogParser
-import pandas as pd
+## CLI Commands
 
-parser = LogParser("app.log")
-logs = parser.parse()
+The library includes CLI tools for common operations:
 
-df = logs.to_dataframe()
-
-# Now use pandas for analysis
-df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-errors_by_hour = df[df['message_type'] == 'loggerx:error'].groupby(
-    df['timestamp'].dt.hour
-).size()
-
-errors_by_hour.plot(kind='bar')
-```
-
----
-
-## Command Line Interface (Future)
+### logxy-query - Query log files
 
 ```bash
 # Basic query
-logxy-query app.log --level error --output errors.html
+logxy-query app.log --level error --output errors.json
 
 # Time range filter
-logxy-query app.log --start "2024-01-01" --end "2024-01-31" --output january.json
+logxy-query app.log --start "2024-01-01" --end "2024-12-31"
 
-# Performance report
-logxy-analyze app.log --report performance --format html
-
-# Task tracing
-logxy-trace app.log --task-uuid 311585e4-1c52-4691-95e2-65f7295abe8a
-
-# Slow operations
+# Duration filter
 logxy-query app.log --min-duration 1.0 --sort duration --limit 20
+
+# Multiple filters
+logxy-query app.log --level error --action-type "db:*" --failed
+
+# With regex action type
+logxy-query app.log --action-type "db:.*" --action-type-regex
+
+# Sort and limit
+logxy-query app.log --sort timestamp --reverse --limit 100
 ```
 
----
+### logxy-analyze - Analyze and generate reports
 
-## Dependencies
+```bash
+# Performance report
+logxy-analyze app.log --slowest 20 --format html --output report.html
 
-- **Required**: Python 3.12+
-- **Optional**:
-  - `pandas` - for DataFrame export
-  - `rich` - for enhanced terminal output
-  - `click` / `typer` - for CLI (future)
+# Error analysis
+logxy-analyze app.log --errors --format json --output errors.json
 
----
+# Timeline analysis
+logxy-analyze app.log --timeline --interval 1h
+
+# Action statistics
+logxy-analyze app.log --actions
+
+# Full analysis
+logxy-analyze app.log --report performance --format html
+```
+
+### logxy-view - View with colors
+
+```bash
+# View with level filter
+logxy-view app.log --level error
+
+# Follow mode (tail -f)
+logxy-view app.log --follow
+
+# Specific task
+logxy-view app.log --task Xa.1
+
+# No colors
+logxy-view app.log --no-color
+```
+
+### logxy-tree - Visualize task tree
+
+```bash
+# Show tree for specific task
+logxy-tree app.log --task Xa.1
+
+# ASCII format
+logxy-tree app.log --format ascii
+
+# No colors
+logxy-tree app.log --no-color
+```
+
+## Log Format Reference
+
+### Core Fields (Every Log Entry)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ts` | float | Unix timestamp with microseconds |
+| `tid` | string | Task ID (Sqid format) |
+| `lvl` | array | Hierarchical level position e.g. `[1]`, `[1,1]` |
+| `mt` | string | Message type: `info`, `success`, `error`, etc. |
+
+### Action Fields (Optional)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `at` | string | Action type (e.g., `UserService.authenticate`) |
+| `st` | string | `started`, `succeeded`, or `failed` |
+| `dur` | float | Execution time in seconds |
+
+### Sample Log Entry
+
+```json
+{
+  "ts": 1770277798.506508,
+  "tid": "Xa.1",
+  "lvl": [1],
+  "mt": "info",
+  "at": "http:request",
+  "st": "started"
+}
+```
+
+## Python Version
+
+**3.12+** - Modern Python with optional pandas/rich support.
 
 ## Project Structure
 
 ```
 logxy-log-parser/
 ├── logxy_log_parser/
-│   ├── __init__.py
+│   ├── __init__.py          # Main exports
+│   ├── simple.py            # Simple one-line API
 │   ├── core.py              # LogParser, LogEntry
-│   ├── filter.py            # LogFilter
+│   ├── filter.py            # LogFilter, LogEntries
 │   ├── analyzer.py          # LogAnalyzer
-│   ├── export.py            # Export to various formats
+│   ├── monitor.py           # LogFile (real-time)
 │   ├── tree.py              # TaskTree, TaskNode
+│   ├── index.py             # LogIndex, IndexedLogParser
+│   ├── aggregation.py       # LogAggregator, TimeSeriesAnalyzer
 │   ├── types.py             # Type definitions
+│   ├── export.py            # Export functions
+│   ├── cli.py               # CLI commands
+│   ├── config.py            # Configuration management
 │   └── utils.py             # Helper functions
 ├── tests/
 │   ├── test_parser.py
@@ -470,8 +541,6 @@ logxy-log-parser/
 ├── pyproject.toml
 └── README.md
 ```
-
----
 
 ## Design Principles
 

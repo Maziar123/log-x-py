@@ -2,13 +2,13 @@
 11_complex_ecommerce.py - Complex E-commerce Order Processing
 Demonstrates 7-level nested structure with multiple classes and cross-code calls
 """
-
-import sys
+from pathlib import Path
 import time
 
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 
 # ============================================================================

@@ -10,7 +10,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any, ClassVar
 
-from logxpy_cli_view._compat import deprecated
+from logxpy_cli_view._compat import deprecated, get
 
 
 def task_name(task: dict[str, Any] | None) -> str | None:
@@ -29,16 +29,16 @@ def task_name(task: dict[str, Any] | None) -> str | None:
     if task is None:
         raise ValueError("Cannot compute task name", task)
 
-    level = ",".join(map(str, task["task_level"]))
-    message_type = task.get("message_type")
+    level = ",".join(map(str, get(task, "lvl", [1])))
+    message_type = get(task, "mt")
 
     if message_type is not None:
         status = ""
     else:
-        message_type = task.get("action_type")
+        message_type = get(task, "at")
         if message_type is None:
             return None
-        status = "/" + task["action_status"]
+        status = "/" + get(task, "st", "")
 
     return f"{message_type}@{level}{status}"
 
@@ -65,19 +65,19 @@ class _TaskNode:
     def __repr__(self) -> str:
         """Human-readable representation of the node."""
         return (
-            f"<{type(self).__name__} {self.task['task_uuid']!r} "
+            f"<{type(self).__name__} {get(self.task, 'tid')!r} "
             f"{self.name!r} children={len(self._children)}>"
         )
 
     @property
     def task_uuid(self) -> str:
         """Get task UUID."""
-        return self.task["task_uuid"]
+        return get(self.task, "tid", "")
 
     @property
     def is_root(self) -> bool:
         """Check if this is a root node (task_level == [1])."""
-        return self.task.get("task_level") == [1]
+        return get(self.task, "lvl") == [1]
 
     @property
     def child_count(self) -> int:
@@ -87,7 +87,7 @@ class _TaskNode:
     @property
     def children(self) -> list[_TaskNode]:
         """Get sorted list of child nodes."""
-        return sorted(self._children.values(), key=lambda n: n.task["task_level"])
+        return sorted(self._children.values(), key=lambda n: get(n.task, "lvl", []))
 
     def copy(self) -> _TaskNode:
         """Make a shallow copy of this node."""
@@ -108,13 +108,13 @@ class _TaskNode:
                 _add_child(children[level], levels)
             else:
                 children[level] = node
-                action_status = node.task.get("action_status")
+                action_status = get(node.task, "st")
                 if action_status == "succeeded":
                     node.success = parent.success = True
                 elif action_status == "failed":
                     node.success = parent.success = False
 
-        _add_child(self, node.task["task_level"])
+        _add_child(self, get(node.task, "lvl", []))
 
 
 def missing_start_task(task_missing_parent: dict[str, Any]) -> dict[str, Any]:
@@ -130,8 +130,8 @@ def missing_start_task(task_missing_parent: dict[str, Any]) -> dict[str, Any]:
     return {
         "action_type": "<missing start task>",
         "action_status": "started",
-        "timestamp": task_missing_parent["timestamp"],
-        "task_uuid": task_missing_parent["task_uuid"],
+        "timestamp": get(task_missing_parent, "ts"),
+        "task_uuid": get(task_missing_parent, "tid"),
         "task_level": [1],
     }
 
@@ -170,7 +170,7 @@ class Tree:
             nodes = ((k, self._nodes[k]) for k in uuids)
         else:
             nodes = self._nodes.items()
-        return sorted(nodes, key=lambda x: x[1].task["timestamp"])
+        return sorted(nodes, key=lambda x: get(x[1].task, "ts", 0))
 
     def merge_tasks(
         self,
@@ -194,10 +194,10 @@ class Tree:
         def _merge_one(
             task: dict[str, Any], create_missing_tasks: bool
         ) -> dict[str, Any] | None:
-            key = task["task_uuid"]
+            key = get(task, "tid")
             node = tasktree.get(key)
             if node is None:
-                if task["task_level"] != [1]:
+                if get(task, "lvl") != [1]:
                     if create_missing_tasks:
                         n = tasktree[key] = _TaskNode(task=missing_start_task(task))
                         n.add_child(_TaskNode(task))

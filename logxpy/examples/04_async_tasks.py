@@ -6,11 +6,12 @@ Demonstrates:
 - @log.logged on async functions
 - Async context propagation
 """
-import sys
+from pathlib import Path
 import asyncio
 from logxpy import log, aaction, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 # 1. Async Decorator
 @log.logged

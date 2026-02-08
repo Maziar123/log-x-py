@@ -6,10 +6,11 @@ Demonstrates:
 - @log.logged: Auto-capturing exceptions
 - silent_errors: Suppressing errors in logs
 """
-import sys
+from pathlib import Path
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 def risky_function():
     raise ValueError("Something went wrong!")

@@ -2,6 +2,7 @@
 Analysis functionality for logxy-log-parser.
 
 Contains LogAnalyzer for statistical and pattern analysis of log entries.
+Uses boltons for efficient grouping and iteration utilities.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from dataclasses import dataclass
 from .core import LogEntry
 from .filter import LogEntries
 from .types import ActionStatus
+from .utils import bucketize
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,18 +108,22 @@ class LogAnalyzer:
         Returns:
             list[ActionStat]: Slowest action statistics.
         """
-        # Group by action type and calculate durations
-        action_durations: dict[str, list[float]] = {}
+        # Filter entries with action_type and duration
+        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
 
-        for entry in self._entries:
-            if entry.action_type and entry.duration is not None:
-                if entry.action_type not in action_durations:
-                    action_durations[entry.action_type] = []
-                action_durations[entry.action_type].append(entry.duration)
+        # Group by action type using boltons bucketize
+        def _get_action_type(entry: LogEntry) -> str:
+            return entry.action_type or ""
+
+        action_groups = bucketize(filtered, _get_action_type)
 
         # Calculate mean duration for each action type
         stats: list[tuple[str, float]] = []
-        for action_type, durations in action_durations.items():
+        action_durations: dict[str, list[float]] = {}
+
+        for action_type, entries in action_groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
+            action_durations[action_type] = durations
             mean_dur = sum(durations) / len(durations)
             stats.append((action_type, mean_dur))
 
@@ -150,18 +156,22 @@ class LogAnalyzer:
         Returns:
             list[ActionStat]: Fastest action statistics.
         """
-        # Group by action type and calculate durations
-        action_durations: dict[str, list[float]] = {}
+        # Filter entries with action_type and duration
+        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
 
-        for entry in self._entries:
-            if entry.action_type and entry.duration is not None:
-                if entry.action_type not in action_durations:
-                    action_durations[entry.action_type] = []
-                action_durations[entry.action_type].append(entry.duration)
+        # Group by action type using boltons bucketize
+        def _get_action_type(entry: LogEntry) -> str:
+            return entry.action_type or ""
+
+        action_groups = bucketize(filtered, _get_action_type)
 
         # Calculate mean duration for each action type
         stats: list[tuple[str, float]] = []
-        for action_type, durations in action_durations.items():
+        action_durations: dict[str, list[float]] = {}
+
+        for action_type, entries in action_groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
+            action_durations[action_type] = durations
             mean_dur = sum(durations) / len(durations)
             stats.append((action_type, mean_dur))
 
@@ -191,16 +201,18 @@ class LogAnalyzer:
         Returns:
             dict[str, DurationStats]: Mapping of action type to stats.
         """
-        action_durations: dict[str, list[float]] = {}
+        # Filter entries with action_type and duration
+        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
 
-        for entry in self._entries:
-            if entry.action_type and entry.duration is not None:
-                if entry.action_type not in action_durations:
-                    action_durations[entry.action_type] = []
-                action_durations[entry.action_type].append(entry.duration)
+        # Group by action type using boltons bucketize
+        def _get_action_type(entry: LogEntry) -> str:
+            return entry.action_type or ""
+
+        action_groups = bucketize(filtered, _get_action_type)
 
         result: dict[str, DurationStats] = {}
-        for action_type, durations in action_durations.items():
+        for action_type, entries in action_groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
             result[action_type] = self._calculate_duration_stats(durations)
 
         return result
@@ -214,22 +226,19 @@ class LogAnalyzer:
         Returns:
             list[ActionStat]: Actions at the specified percentile.
         """
-        action_durations: dict[str, list[float]] = {}
+        # Filter entries with action_type and duration
+        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
 
-        for entry in self._entries:
-            if entry.action_type and entry.duration is not None:
-                if entry.action_type not in action_durations:
-                    action_durations[entry.action_type] = []
-                action_durations[entry.action_type].append(entry.duration)
+        # Group by action type using boltons bucketize
+        def _get_action_type(entry: LogEntry) -> str:
+            return entry.action_type or ""
+
+        action_groups = bucketize(filtered, _get_action_type)
 
         result = []
-        for action_type, durations in action_durations.items():
+        for action_type, entries in action_groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
             if durations:
-                sorted_durations = sorted(durations)
-                idx = int(len(sorted_durations) * percentile / 100)
-                idx = min(idx, len(sorted_durations) - 1)
-                # p95_duration = sorted_durations[idx]  # Available if needed
-
                 result.append(
                     ActionStat(
                         action_type=action_type,
@@ -331,19 +340,16 @@ class LogAnalyzer:
         """
         error_entries = [e for e in self._entries if e.is_error]
 
-        # Group by error type (action type or message prefix)
-        patterns: dict[str, list[LogEntry]] = {}
+        # Group by error type using boltons bucketize
+        def _get_error_type(entry: LogEntry) -> str:
+            return entry.action_type or "message"
 
-        for entry in error_entries:
-            error_type = entry.action_type or "message"
-            if error_type not in patterns:
-                patterns[error_type] = []
-            patterns[error_type].append(entry)
+        error_groups = bucketize(error_entries, _get_error_type)
 
         result = []
-        for error_type, entries in patterns.items():
+        for error_type, entries in error_groups.items():
             timestamps = [e.timestamp for e in entries]
-            example = entries[0].message if entries[0].message else None
+            example = entries[0].message if entries and entries[0].message else None
 
             result.append(
                 ErrorPattern(
@@ -365,22 +371,20 @@ class LogAnalyzer:
         Returns:
             dict[str, float]: Mapping of action type to failure rate (0-1).
         """
-        action_stats: dict[str, dict[str, int]] = {}
+        # Filter entries with action_type
+        filtered = [e for e in self._entries if e.action_type]
 
-        for entry in self._entries:
-            if entry.action_type:
-                if entry.action_type not in action_stats:
-                    action_stats[entry.action_type] = {"total": 0, "failed": 0}
-                action_stats[entry.action_type]["total"] += 1
-                if entry.action_status == ActionStatus.FAILED:
-                    action_stats[entry.action_type]["failed"] += 1
+        # Group by action type using boltons bucketize
+        def _get_action_type(entry: LogEntry) -> str:
+            return entry.action_type or ""
+
+        action_groups = bucketize(filtered, _get_action_type)
 
         result: dict[str, float] = {}
-        for action_type, stats in action_stats.items():
-            if stats["total"] > 0:
-                result[action_type] = stats["failed"] / stats["total"]
-            else:
-                result[action_type] = 0.0
+        for action_type, entries in action_groups.items():
+            total = len(entries)
+            failed = sum(1 for e in entries if e.action_status == ActionStatus.FAILED)
+            result[action_type] = failed / total if total > 0 else 0.0
 
         return result
 
@@ -404,16 +408,18 @@ class LogAnalyzer:
         Returns:
             dict[str, DurationStats]: Mapping of task UUID to stats.
         """
-        task_durations: dict[str, list[float]] = {}
+        # Filter entries with task_uuid and duration
+        filtered = [e for e in self._entries if e.task_uuid and e.duration is not None]
 
-        for entry in self._entries:
-            if entry.task_uuid and entry.duration is not None:
-                if entry.task_uuid not in task_durations:
-                    task_durations[entry.task_uuid] = []
-                task_durations[entry.task_uuid].append(entry.duration)
+        # Group by task UUID using boltons bucketize
+        def _get_task_uuid(entry: LogEntry) -> str:
+            return entry.task_uuid or ""
+
+        task_groups = bucketize(filtered, _get_task_uuid)
 
         result: dict[str, DurationStats] = {}
-        for task_uuid, durations in task_durations.items():
+        for task_uuid, entries in task_groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
             result[task_uuid] = self._calculate_duration_stats(durations)
 
         return result

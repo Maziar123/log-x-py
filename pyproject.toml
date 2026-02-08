@@ -74,3 +74,8 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[dependency-groups]
+dev = [
+    "playwright>=1.58.0",
+]

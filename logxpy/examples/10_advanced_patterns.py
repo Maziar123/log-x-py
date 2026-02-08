@@ -6,13 +6,13 @@ Demonstrates:
 - Custom log levels (via generic log method)
 - Mixing sync and async contexts
 """
-
+from pathlib import Path
 import asyncio
-import sys
 
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 
 # 1. Conditional Logging

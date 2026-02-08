@@ -50,9 +50,16 @@ class TestTaskTree:
         task_uuid = logs[0].task_uuid
         tree = TaskTree.from_entries(logs, task_uuid)
 
-        # Find root node
-        root = tree.find_node(())
+        # The root node should exist - check it directly
+        root = tree.root
         assert root is not None
+        assert root.task_uuid == task_uuid
+
+        # find_node searches by node's task_level, which is the entry's task_level
+        # For root action, this is the first action's entry task_level
+        first_action = next(e for e in logs if e.is_action)
+        found = tree.find_node(first_action.task_level)
+        assert found is not None
 
     def test_deepest_nesting(self, complex_log_path: str) -> None:
         """Test getting deepest nesting level."""

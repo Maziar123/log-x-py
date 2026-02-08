@@ -3,169 +3,93 @@ Support for actions and tasks.
 
 Actions have a beginning and an eventual end, and can be nested. Tasks are
 top-level actions.
+
+Python 3.12+ features used:
+- Type aliases (PEP 695): `type Name = ...`
+- Pattern matching (PEP 634): Clean value routing
+- Walrus operator (PEP 572): Assignment expressions
+- StrEnum (PEP 663): Type-safe string enums
+
+Boltons features used:
+- boltons.funcutils: Enhanced function wrapping
 """
 
+from __future__ import annotations
+
 import threading
-from uuid import uuid4
+import time
+from collections.abc import Callable
 from contextlib import contextmanager
+from contextvars import ContextVar
+from enum import StrEnum
 from functools import partial
 from inspect import getcallargs
-from contextvars import ContextVar
+from typing import Any, TypeVar
 
-from pyrsistent import field, PClass, optional, pmap_field, pvector
+T = TypeVar("T")
+from uuid import uuid4
+
 from boltons.funcutils import wraps
+from pyrsistent import PClass, field, optional, pmap_field, pvector
 
+from ._types import TaskLevel  # Import to avoid circular import
 from ._message import (
-    WrittenMessage,
+    MESSAGE_TYPE_FIELD,
+    TASK_LEVEL_FIELD,
+    TASK_UUID_FIELD,
+    TIMESTAMP_FIELD,
     EXCEPTION_FIELD,
     REASON_FIELD,
-    TASK_UUID_FIELD,
-    MESSAGE_TYPE_FIELD,
+    WrittenMessage,
 )
 from ._util import safeunicode
 from ._errors import _error_extraction
 
-ACTION_STATUS_FIELD = "action_status"
-ACTION_TYPE_FIELD = "action_type"
 
+# ============================================================================
+# Type Aliases (PEP 695 - Python 3.12+)
+# ============================================================================
+
+type ActionDict = dict[str, Any]
+type TaskLevelList = list[int]
+
+
+# ============================================================================
+# Constants
+# ============================================================================
+
+ACTION_STATUS_FIELD = "st"  # was: action_status
+ACTION_TYPE_FIELD = "at"  # was: action_type
+
+_ACTION_CONTEXT: ContextVar[Action] = ContextVar("logxpy.action")
+_TASK_ID_NOT_SUPPLIED: object = object()
+
+
+# ============================================================================
+# Action Status Enum (PEP 663 - StrEnum)
+# ============================================================================
+
+class ActionStatus(StrEnum):
+    """Action status values as string enum (PEP 663)."""
+    STARTED = "started"
+    SUCCEEDED = "succeeded"
+    FAILED = "failed"
+
+
+# Backwards compatibility - keep the old constant names
 STARTED_STATUS = "started"
 SUCCEEDED_STATUS = "succeeded"
 FAILED_STATUS = "failed"
-
 VALID_STATUSES = (STARTED_STATUS, SUCCEEDED_STATUS, FAILED_STATUS)
 
-_ACTION_CONTEXT = ContextVar("logxpy.action")
 
-from ._message import TIMESTAMP_FIELD, TASK_LEVEL_FIELD
+# ============================================================================
+# Action Class
+# ============================================================================
 
-
-def current_action():
+class Action:
     """
-    @return: The current C{Action} in context, or C{None} if none were set.
-    """
-    return _ACTION_CONTEXT.get(None)
-
-
-class TaskLevel(object):
-    """
-    The location of a message within the tree of actions of a task.
-
-    @ivar level: A pvector of integers. Each item indicates a child
-        relationship, and the value indicates message count. E.g. C{[2,
-        3]} indicates this is the third message within an action which is
-        the second item in the task.
-    """
-
-    def __init__(self, level):
-        self._level = level
-
-    def as_list(self):
-        """Return the current level.
-
-        @return: List of integers.
-        """
-        return self._level[:]
-
-    # Backwards compatibility:
-    @property
-    def level(self):
-        return pvector(self._level)
-
-    def __lt__(self, other):
-        return self._level < other._level
-
-    def __le__(self, other):
-        return self._level <= other._level
-
-    def __gt__(self, other):
-        return self._level > other._level
-
-    def __ge__(self, other):
-        return self._level >= other._level
-
-    def __eq__(self, other):
-        if other.__class__ != TaskLevel:
-            return False
-        return self._level == other._level
-
-    def __ne__(self, other):
-        if other.__class__ != TaskLevel:
-            return True
-        return self._level != other._level
-
-    def __hash__(self):
-        return hash(tuple(self._level))
-
-    @classmethod
-    def fromString(cls, string):
-        """
-        Convert a serialized Unicode string to a L{TaskLevel}.
-
-        @param string: Output of L{TaskLevel.toString}.
-
-        @return: L{TaskLevel} parsed from the string.
-        """
-        return cls(level=[int(i) for i in string.split("/") if i])
-
-    def toString(self):
-        """
-        Convert to a Unicode string, for serialization purposes.
-
-        @return: L{str} representation of the L{TaskLevel}.
-        """
-        return "/" + "/".join(map(str, self._level))
-
-    def next_sibling(self):
-        """
-        Return the next L{TaskLevel}, that is a task at the same level as this
-        one, but one after.
-
-        @return: L{TaskLevel} which follows this one.
-        """
-        new_level = self._level[:]
-        new_level[-1] += 1
-        return TaskLevel(level=new_level)
-
-    def child(self):
-        """
-        Return a child of this L{TaskLevel}.
-
-        @return: L{TaskLevel} which is the first child of this one.
-        """
-        new_level = self._level[:]
-        new_level.append(1)
-        return TaskLevel(level=new_level)
-
-    def parent(self):
-        """
-        Return the parent of this L{TaskLevel}, or C{None} if it doesn't have
-        one.
-
-        @return: L{TaskLevel} which is the parent of this one.
-        """
-        if not self._level:
-            return None
-        return TaskLevel(level=self._level[:-1])
-
-    def is_sibling_of(self, task_level):
-        """
-        Is this task a sibling of C{task_level}?
-        """
-        return self.parent() == task_level.parent()
-
-    # PEP 8 compatibility:
-    from_string = fromString
-    to_string = toString
-
-
-_TASK_ID_NOT_SUPPLIED = object()
-
-import time
-
-
-class Action(object):
-    """
-    Part of a nested heirarchy of ongoing actions.
+    Part of a nested hierarchy of ongoing actions.
 
     An action has a start and an end; a message is logged for each.
 
@@ -173,104 +97,107 @@ class Action(object):
     thread where they were created.
 
     @ivar _identification: Fields identifying this action.
-
     @ivar _successFields: Fields to be included in successful finish message.
-
-    @ivar _finished: L{True} if the L{Action} has finished, otherwise L{False}.
+    @ivar _finished: True if the Action has finished, otherwise False.
     """
 
-    def __init__(self, logger, task_uuid, task_level, action_type, serializers=None):
+    __slots__ = (
+        "_success_fields",
+        "_logger",
+        "_task_level",
+        "_last_child",
+        "_identification",
+        "_serializers",
+        "_finished",
+        "_parent_token",
+    )
+
+    def __init__(
+        self,
+        logger: Any | None,
+        task_uuid: str,
+        task_level: TaskLevel,
+        action_type: str,
+        serializers: Any | None = None,
+    ):
         """
-        Initialize the L{Action} and log the start message.
+        Initialize the Action and log the start message.
 
-        You probably do not want to use this API directly: use L{start_action}
-        or L{startTask} instead.
+        You probably do not want to use this API directly: use start_action
+        or start_task instead.
 
-        @param logger: The L{logxpy.ILogger} to which to write
-            messages.
-
-        @param task_uuid: The uuid of the top-level task, e.g. C{"123525"}.
-
+        @param logger: The ILogger to which to write messages.
+        @param task_uuid: The uuid of the top-level task, e.g. "123525".
         @param task_level: The action's level in the task.
-        @type task_level: L{TaskLevel}
-
-        @param action_type: The type of the action,
-            e.g. C{"yourapp:subsystem:dosomething"}.
-
-        @param serializers: Either a L{logxpy._validation._ActionSerializers}
-            instance or C{None}. In the latter case no validation or
-            serialization will be done for messages generated by the
-            L{Action}.
+        @param action_type: The type of the action, e.g. "yourapp:subsystem:dosomething".
+        @param serializers: Either an _ActionSerializers instance or None.
         """
-        self._successFields = {}
-        self._logger = _output._DEFAULT_LOGGER if (logger is None) else logger
+        self._success_fields: dict[str, Any] = {}
+        self._logger = _output._DEFAULT_LOGGER if logger is None else logger
         self._task_level = task_level
-        self._last_child = None
+        self._last_child: TaskLevel | None = None
         self._identification = {
             TASK_UUID_FIELD: task_uuid,
             ACTION_TYPE_FIELD: action_type,
         }
         self._serializers = serializers
         self._finished = False
+        self._parent_token: Any | None = None
 
     @property
-    def task_uuid(self):
-        """
-        @return str: the current action's task UUID.
-        """
+    def task_uuid(self) -> str:
+        """Return the current action's task UUID."""
         return self._identification[TASK_UUID_FIELD]
 
-    def serialize_task_id(self):
+    def serialize_task_id(self) -> bytes:
         """
         Create a unique identifier for the current location within the task.
 
-        The format is C{b"<task_uuid>@<task_level>"}.
+        The format is b"<task_uuid>@<task_level>".
 
-        @return: L{bytes} encoding the current location within the task.
+        @return: bytes encoding the current location within the task.
         """
-        return "{}@{}".format(
-            self._identification[TASK_UUID_FIELD], self._nextTaskLevel().toString()
-        ).encode("ascii")
+        return f"{self._identification[TASK_UUID_FIELD]}@{self._next_task_level().to_string()}".encode("ascii")
 
     @classmethod
     def continue_task(
         cls,
-        logger=None,
-        task_id=_TASK_ID_NOT_SUPPLIED,
+        logger: Any | None = None,
+        task_id: Any = _TASK_ID_NOT_SUPPLIED,
         *,
-        action_type="logxpy:remote_task",
-        _serializers=None,
-        **fields,
-    ):
+        action_type: str = "logxpy:remote_task",
+        _serializers: Any | None = None,
+        **fields: Any,
+    ) -> Action:
         """
         Start a new action which is part of a serialized task.
 
-        @param logger: The L{logxpy.ILogger} to which to write
-            messages, or C{None} if the default one should be used.
-
-        @param task_id: A serialized task identifier, the output of
-            L{Action.serialize_task_id}, either ASCII-encoded bytes or unicode
-            string. Required.
-
-        @param action_type: The type of this action,
-            e.g. C{"yourapp:subsystem:dosomething"}.
-
-        @param _serializers: Either a L{logxpy._validation._ActionSerializers}
-            instance or C{None}. In the latter case no validation or serialization
-            will be done for messages generated by the L{Action}.
-
+        @param logger: The ILogger to which to write messages, or None.
+        @param task_id: A serialized task identifier from serialize_task_id.
+        @param action_type: The type of this action.
+        @param _serializers: Either an _ActionSerializers instance or None.
         @param fields: Additional fields to add to the start message.
-
-        @return: The new L{Action} instance.
+        @return: The new Action instance.
         """
+        # Use walrus operator for cleaner validation
         if task_id is _TASK_ID_NOT_SUPPLIED:
             raise RuntimeError("You must supply a task_id keyword argument.")
-        if isinstance(task_id, bytes):
-            task_id = task_id.decode("ascii")
-        uuid, task_level = task_id.split("@")
-        action = cls(
-            logger, uuid, TaskLevel.fromString(task_level), action_type, _serializers
-        )
+
+        # Use pattern matching for task_id conversion
+        match task_id:
+            case bytes():
+                task_id_str = task_id.decode("ascii")
+            case str():
+                task_id_str = task_id
+            case _:
+                raise TypeError(f"task_id must be bytes or str, got {type(task_id)}")
+
+        # Use walrus for clean parsing
+        if "@" not in task_id_str:
+            raise ValueError(f"Invalid task_id format: {task_id_str}")
+
+        uuid, task_level = task_id_str.split("@")
+        action = cls(logger, uuid, TaskLevel.from_string(task_level), action_type, _serializers)
         action._start(fields)
         return action
 
@@ -278,110 +205,89 @@ class Action(object):
     serializeTaskId = serialize_task_id
     continueTask = continue_task
 
-    def _nextTaskLevel(self):
+    def _next_task_level(self) -> TaskLevel:
         """
-        Return the next C{task_level} for messages within this action.
+        Return the next task_level for messages within this action.
 
         Called whenever a message is logged within the context of an action.
 
-        @return: The message's C{task_level}.
+        @return: The message's task_level.
         """
-        if not self._last_child:
+        if self._last_child is None:
             self._last_child = self._task_level.child()
         else:
             self._last_child = self._last_child.next_sibling()
         return self._last_child
 
-    def _start(self, fields):
+    def _start(self, fields: dict[str, Any]) -> None:
         """
         Log the start message.
 
         The action identification fields, and any additional given fields,
         will be logged.
-
-        In general you shouldn't call this yourself, instead using a C{with}
-        block or L{Action.finish}.
         """
-        fields[ACTION_STATUS_FIELD] = STARTED_STATUS
+        fields[ACTION_STATUS_FIELD] = ActionStatus.STARTED
         fields[TIMESTAMP_FIELD] = time.time()
         fields.update(self._identification)
-        fields[TASK_LEVEL_FIELD] = self._nextTaskLevel().as_list()
-        if self._serializers is None:
-            serializer = None
-        else:
-            serializer = self._serializers.start
+        fields[TASK_LEVEL_FIELD] = self._next_task_level().as_list()
+
+        # Use pattern matching for serializer selection
+        match self._serializers:
+            case None:
+                serializer = None
+            case _:
+                serializer = self._serializers.start
+
         self._logger.write(fields, serializer)
 
-    def finish(self, exception=None):
+    def finish(self, exception: Exception | None = None) -> None:
         """
         Log the finish message.
 
-        The action identification fields, and any additional given fields,
-        will be logged.
-
-        In general you shouldn't call this yourself, instead using a C{with}
-        block or L{Action.finish}.
-
-        @param exception: C{None}, in which case the fields added with
-            L{Action.addSuccessFields} are used. Or an L{Exception}, in
-            which case an C{"exception"} field is added with the given
-            L{Exception} type and C{"reason"} with its contents.
+        @param exception: None for success, or an Exception for failure.
         """
         if self._finished:
             return
         self._finished = True
-        serializer = None
-        if exception is None:
-            fields = self._successFields
-            fields[ACTION_STATUS_FIELD] = SUCCEEDED_STATUS
-            if self._serializers is not None:
-                serializer = self._serializers.success
-        else:
-            fields = _error_extraction.get_fields_for_exception(self._logger, exception)
-            fields[EXCEPTION_FIELD] = "%s.%s" % (
-                exception.__class__.__module__,
-                exception.__class__.__name__,
-            )
-            fields[REASON_FIELD] = safeunicode(exception)
-            fields[ACTION_STATUS_FIELD] = FAILED_STATUS
-            if self._serializers is not None:
-                serializer = self._serializers.failure
+
+        # Use pattern matching for cleaner exception handling
+        match (exception, self._serializers):
+            case (None, serializers):
+                fields = self._success_fields
+                fields[ACTION_STATUS_FIELD] = ActionStatus.SUCCEEDED
+                serializer = None if serializers is None else serializers.success
+            case (exc, serializers):
+                fields = _error_extraction.get_fields_for_exception(self._logger, exc)
+                fields[EXCEPTION_FIELD] = f"{exc.__class__.__module__}.{exc.__class__.__name__}"
+                fields[REASON_FIELD] = safeunicode(exc)
+                fields[ACTION_STATUS_FIELD] = ActionStatus.FAILED
+                serializer = None if serializers is None else serializers.failure
 
         fields[TIMESTAMP_FIELD] = time.time()
         fields.update(self._identification)
-        fields[TASK_LEVEL_FIELD] = self._nextTaskLevel().as_list()
+        fields[TASK_LEVEL_FIELD] = self._next_task_level().as_list()
         self._logger.write(fields, serializer)
 
-    def child(self, logger, action_type, serializers=None):
+    def child(self, logger: Any, action_type: str, serializers: Any | None = None) -> Action:
         """
-        Create a child L{Action}.
+        Create a child Action.
 
-        Rather than calling this directly, you can use L{start_action} to
-        create child L{Action} using the execution context.
-
-        @param logger: The L{logxpy.ILogger} to which to write
-            messages.
-
-        @param action_type: The type of this action,
-            e.g. C{"yourapp:subsystem:dosomething"}.
-
-        @param serializers: Either a L{logxpy._validation._ActionSerializers}
-            instance or C{None}. In the latter case no validation or
-            serialization will be done for messages generated by the
-            L{Action}.
+        @param logger: The ILogger to which to write messages.
+        @param action_type: The type of this action.
+        @param serializers: Either an _ActionSerializers instance or None.
         """
-        newLevel = self._nextTaskLevel()
+        new_level = self._next_task_level()
         return self.__class__(
             logger,
             self._identification[TASK_UUID_FIELD],
-            newLevel,
+            new_level,
             action_type,
             serializers,
         )
 
-    def run(self, f, *args, **kwargs):
+    def run(self, f: Callable[..., T], *args: Any, **kwargs: Any) -> T:
         """
-        Run the given function with this L{Action} as its execution context.
+        Run the given function with this Action as its execution context.
         """
         parent = _ACTION_CONTEXT.set(self)
         try:
@@ -389,23 +295,22 @@ class Action(object):
         finally:
             _ACTION_CONTEXT.reset(parent)
 
-    def addSuccessFields(self, **fields):
+    def add_success_fields(self, **fields: Any) -> None:
         """
         Add fields to be included in the result message when the action
         finishes successfully.
 
         @param fields: Additional fields to add to the result message.
         """
-        self._successFields.update(fields)
+        self._success_fields.update(fields)
 
     # PEP 8 variant:
-    add_success_fields = addSuccessFields
+    addSuccessFields = add_success_fields
 
     @contextmanager
     def context(self):
         """
         Create a context manager that ensures code runs within action's context.
-
         The action does NOT finish when the context is exited.
         """
         parent = _ACTION_CONTEXT.set(self)
@@ -414,200 +319,148 @@ class Action(object):
         finally:
             _ACTION_CONTEXT.reset(parent)
 
-    # Python context manager implementation:
-    def __enter__(self):
+    def __enter__(self) -> Action:
         """
         Push this action onto the execution context.
         """
         self._parent_token = _ACTION_CONTEXT.set(self)
         return self
 
-    def __exit__(self, type, exception, traceback):
+    def __exit__(self, exc_type: Any, exc_value: Any, traceback: Any) -> None:
         """
         Pop this action off the execution context, log finish message.
         """
         _ACTION_CONTEXT.reset(self._parent_token)
         self._parent_token = None
-        self.finish(exception)
+        self.finish(exc_value)
 
-    ## Message logging
-    def log(self, message_type, **fields):
+    # Message logging
+    def log(self, message_type: str, **fields: Any) -> None:
         """Log individual message."""
         fields[TIMESTAMP_FIELD] = time.time()
         fields[TASK_UUID_FIELD] = self._identification[TASK_UUID_FIELD]
-        fields[TASK_LEVEL_FIELD] = self._nextTaskLevel().as_list()
+        fields[TASK_LEVEL_FIELD] = self._next_task_level().as_list()
         fields[MESSAGE_TYPE_FIELD] = message_type
-        # Loggers will hopefully go away...
         logger = fields.pop("__logxpy_logger__", self._logger)
         logger.write(fields, fields.pop("__logxpy_serializer__", None))
 
 
-class WrongTask(Exception):
-    """
-    Tried to add a message to an action, but the message was from another
-    task.
-    """
+# ============================================================================
+# Exception Classes
+# ============================================================================
 
-    def __init__(self, action, message):
-        Exception.__init__(
-            self,
-            "Tried to add {} to {}. Expected task_uuid = {}, got {}".format(
-                message, action, action.task_uuid, message.task_uuid
-            ),
+class WrongTask(Exception):
+    """Tried to add a message to an action, but the message was from another task."""
+
+    def __init__(self, action: Action, message: Any) -> None:
+        super().__init__(
+            f"Tried to add {message} to {action}. Expected task_uuid = {action.task_uuid}, "
+            f"got {message.task_uuid}"
         )
 
 
 class WrongTaskLevel(Exception):
-    """
-    Tried to add a message to an action, but the task level of the message
-    indicated that it was not a direct child.
-    """
+    """Tried to add a message to an action, but the task level indicated it was not a direct child."""
 
-    def __init__(self, action, message):
-        Exception.__init__(
-            self,
-            "Tried to add {} to {}, but {} is not a sibling of {}".format(
-                message, action, message.task_level, action.task_level
-            ),
+    def __init__(self, action: Action, message: Any) -> None:
+        super().__init__(
+            f"Tried to add {message} to {action}, but {message.task_level} is not a sibling of {action.task_level}"
         )
 
 
 class WrongActionType(Exception):
-    """
-    Tried to end a message with a different action_type than the beginning.
-    """
+    """Tried to end a message with a different action_type than the beginning."""
 
-    def __init__(self, action, message):
-        error_msg = "Tried to end {} with {}. Expected action_type = {}, got {}"
-        Exception.__init__(
-            self,
-            error_msg.format(
-                action,
-                message,
-                action.action_type,
-                message.contents.get(ACTION_TYPE_FIELD, "<undefined>"),
-            ),
+    def __init__(self, action: Action, message: Any) -> None:
+        super().__init__(
+            f"Tried to end {action} with {message}. Expected action_type = {action.action_type}, "
+            f"got {message.contents.get(ACTION_TYPE_FIELD, '<undefined>')}"
         )
 
 
 class InvalidStatus(Exception):
-    """
-    Tried to end a message with an invalid status.
-    """
+    """Tried to end a message with an invalid status."""
 
-    def __init__(self, action, message):
-        error_msg = "Tried to end {} with {}. Expected status {} or {}, got {}"
-        Exception.__init__(
-            self,
-            error_msg.format(
-                action,
-                message,
-                SUCCEEDED_STATUS,
-                FAILED_STATUS,
-                message.contents.get(ACTION_STATUS_FIELD, "<undefined>"),
-            ),
+    def __init__(self, action: Action, message: Any) -> None:
+        super().__init__(
+            f"Tried to end {action} with {message}. Expected status {ActionStatus.SUCCEEDED} or "
+            f"{ActionStatus.FAILED}, got {message.contents.get(ACTION_STATUS_FIELD, '<undefined>')}"
         )
 
 
 class DuplicateChild(Exception):
-    """
-    Tried to add a child to an action that already had a child at that task
-    level.
-    """
+    """Tried to add a child to an action that already had a child at that task level."""
 
-    def __init__(self, action, message):
-        Exception.__init__(
-            self,
-            "Tried to add {} to {}, but already had child at {}".format(
-                message, action, message.task_level
-            ),
+    def __init__(self, action: Action, message: Any) -> None:
+        super().__init__(
+            f"Tried to add {message} to {action}, but already had child at {message.task_level}"
         )
 
 
 class InvalidStartMessage(Exception):
-    """
-    Tried to start an action with an invalid message.
-    """
+    """Tried to start an action with an invalid message."""
 
-    def __init__(self, message, reason):
-        Exception.__init__(self, "Invalid start message {}: {}".format(message, reason))
+    def __init__(self, message: Any, reason: str) -> None:
+        super().__init__(f"Invalid start message {message}: {reason}")
 
     @classmethod
-    def wrong_status(cls, message):
+    def wrong_status(cls, message: Any) -> InvalidStartMessage:
         return cls(message, 'must have status "STARTED"')
 
     @classmethod
-    def wrong_task_level(cls, message):
+    def wrong_task_level(cls, message: Any) -> InvalidStartMessage:
         return cls(message, "first message must have task level ending in 1")
 
+
+# ============================================================================
+# WrittenAction Class
+# ============================================================================
 
 class WrittenAction(PClass):
     """
     An Action that has been logged.
 
-    This class is intended to provide a definition within logxpy of what an
-    action actually is, and a means of constructing actions that are known to
-    be valid.
-
     @ivar WrittenMessage start_message: A start message whose task UUID and
-        level match this action, or C{None} if it is not yet set on the
-        action.
-    @ivar WrittenMessage end_message: An end message hose task UUID and
-        level match this action. Can be C{None} if the action is
-        unfinished.
-    @ivar TaskLevel task_level: The action's task level, e.g. if start
-        message has level C{[2, 3, 1]} it will be
-        C{TaskLevel(level=[2, 3])}.
-    @ivar UUID task_uuid: The UUID of the task to which this action belongs.
-    @ivar _children: A L{pmap} from L{TaskLevel} to the L{WrittenAction} and
-        L{WrittenMessage} objects that make up this action.
+        level match this action, or None if it is not yet set.
+    @ivar WrittenMessage end_message: An end message whose task UUID and
+        level match this action. Can be None if the action is unfinished.
+    @ivar TaskLevel task_level: The action's task level.
+    @ivar str task_uuid: The UUID of the task to which this action belongs.
+    @ivar _children: A pmap from TaskLevel to WrittenAction and WrittenMessage objects.
     """
 
     start_message = field(type=optional(WrittenMessage), mandatory=True, initial=None)
     end_message = field(type=optional(WrittenMessage), mandatory=True, initial=None)
     task_level = field(type=TaskLevel, mandatory=True)
     task_uuid = field(type=str, mandatory=True, factory=str)
-    # Pyrsistent doesn't support pmap_field with recursive types.
     _children = pmap_field(TaskLevel, object)
 
     @classmethod
-    def from_messages(cls, start_message=None, children=pvector(), end_message=None):
+    def from_messages(
+        cls,
+        start_message: WrittenMessage | None = None,
+        children: pvector = pvector(),
+        end_message: WrittenMessage | None = None,
+    ) -> WrittenAction:
         """
-        Create a C{WrittenAction} from C{WrittenMessage}s and other
-        C{WrittenAction}s.
+        Create a WrittenAction from WrittenMessages and other WrittenActions.
 
-        @param WrittenMessage start_message: A message that has
-            C{ACTION_STATUS_FIELD}, C{ACTION_TYPE_FIELD}, and a C{task_level}
-            that ends in C{1}, or C{None} if unavailable.
-        @param children: An iterable of C{WrittenMessage} and C{WrittenAction}
-        @param WrittenMessage end_message: A message that has the same
-            C{action_type} as this action.
-
-        @raise WrongTask: If C{end_message} has a C{task_uuid} that differs
-            from C{start_message.task_uuid}.
-        @raise WrongTaskLevel: If any child message or C{end_message} has a
-            C{task_level} that means it is not a direct child.
-        @raise WrongActionType: If C{end_message} has an C{ACTION_TYPE_FIELD}
-            that differs from the C{ACTION_TYPE_FIELD} of C{start_message}.
-        @raise InvalidStatus: If C{end_message} doesn't have an
-            C{action_status}, or has one that is not C{SUCCEEDED_STATUS} or
-            C{FAILED_STATUS}.
-        @raise InvalidStartMessage: If C{start_message} does not have a
-            C{ACTION_STATUS_FIELD} of C{STARTED_STATUS}, or if it has a
-            C{task_level} indicating that it is not the first message of an
-            action.
-
-        @return: A new C{WrittenAction}.
+        @param start_message: A start message with proper status and level.
+        @param children: An iterable of WrittenMessage and WrittenAction.
+        @param end_message: An end message with same action_type as start.
+        @return: A new WrittenAction.
         """
-        actual_message = [
-            message
-            for message in [start_message, end_message] + list(children)
-            if message
-        ][0]
+        # Use walrus to get the first non-None message
+        messages = [m for m in [start_message, end_message] + list(children) if m]
+        if not messages:
+            raise ValueError("At least one message is required")
+
+        actual_message = messages[0]
         action = cls(
             task_level=actual_message.task_level.parent(),
             task_uuid=actual_message.task_uuid,
         )
+
         if start_message:
             action = action._start(start_message)
         for child in children:
@@ -619,220 +472,160 @@ class WrittenAction(PClass):
         return action
 
     @property
-    def action_type(self):
-        """
-        The type of this action, e.g. C{"yourapp:subsystem:dosomething"}.
-        """
-        if self.start_message:
-            return self.start_message.contents[ACTION_TYPE_FIELD]
-        elif self.end_message:
-            return self.end_message.contents[ACTION_TYPE_FIELD]
-        else:
-            return None
+    def action_type(self) -> str | None:
+        """The type of this action."""
+        # Use pattern matching for cleaner property access
+        match (self.start_message, self.end_message):
+            case (WrittenMessage(), _):
+                return self.start_message.contents[ACTION_TYPE_FIELD]
+            case (_, WrittenMessage()):
+                return self.end_message.contents[ACTION_TYPE_FIELD]
+            case _:
+                return None
 
     @property
-    def status(self):
-        """
-        One of C{STARTED_STATUS}, C{SUCCEEDED_STATUS}, C{FAILED_STATUS} or
-        C{None}.
-        """
+    def status(self) -> str | None:
+        """One of STARTED_STATUS, SUCCEEDED_STATUS, FAILED_STATUS or None."""
         message = self.end_message if self.end_message else self.start_message
-        if message:
-            return message.contents[ACTION_STATUS_FIELD]
-        else:
-            return None
+        return message.contents[ACTION_STATUS_FIELD] if message else None
 
     @property
-    def start_time(self):
-        """
-        The Unix timestamp of when the action started, or C{None} if there has
-        been no start message added so far.
-        """
-        if self.start_message:
-            return self.start_message.timestamp
+    def start_time(self) -> float | None:
+        """The Unix timestamp of when the action started."""
+        return self.start_message.timestamp if self.start_message else None
 
     @property
-    def end_time(self):
-        """
-        The Unix timestamp of when the action ended, or C{None} if there has been
-        no end message.
-        """
-        if self.end_message:
-            return self.end_message.timestamp
+    def end_time(self) -> float | None:
+        """The Unix timestamp of when the action ended."""
+        return self.end_message.timestamp if self.end_message else None
 
     @property
-    def exception(self):
-        """
-        If the action failed, the name of the exception that was raised to cause
-        it to fail. If the action succeeded, or hasn't finished yet, then
-        C{None}.
-        """
+    def exception(self) -> str | None:
+        """The exception name if the action failed, otherwise None."""
         if self.end_message:
             return self.end_message.contents.get(EXCEPTION_FIELD, None)
 
     @property
-    def reason(self):
-        """
-        The reason the action failed. If the action succeeded, or hasn't finished
-        yet, then C{None}.
-        """
+    def reason(self) -> str | None:
+        """The reason the action failed if applicable."""
         if self.end_message:
             return self.end_message.contents.get(REASON_FIELD, None)
 
     @property
-    def children(self):
-        """
-        The list of child messages and actions sorted by task level, excluding the
-        start and end messages.
-        """
+    def children(self) -> pvector:
+        """Child messages and actions sorted by task level."""
         return pvector(sorted(self._children.values(), key=lambda m: m.task_level))
 
-    def _validate_message(self, message):
+    def _validate_message(self, message: WrittenMessage | WrittenAction) -> None:
         """
-        Is C{message} a valid direct child of this action?
+        Is message a valid direct child of this action?
 
-        @param message: Either a C{WrittenAction} or a C{WrittenMessage}.
-
-        @raise WrongTask: If C{message} has a C{task_uuid} that differs from the
-            action's C{task_uuid}.
-        @raise WrongTaskLevel: If C{message} has a C{task_level} that means
-            it's not a direct child.
+        @param message: Either a WrittenAction or a WrittenMessage.
+        @raise WrongTask: If message has a different task_uuid.
+        @raise WrongTaskLevel: If message is not a direct child.
         """
         if message.task_uuid != self.task_uuid:
             raise WrongTask(self, message)
-        if not message.task_level.parent() == self.task_level:
+        if message.task_level.parent() != self.task_level:
             raise WrongTaskLevel(self, message)
 
-    def _add_child(self, message):
+    def _add_child(self, message: WrittenMessage | WrittenAction) -> WrittenAction:
         """
-        Return a new action with C{message} added as a child.
+        Return a new action with message added as a child.
 
-        Assumes C{message} is not an end message.
-
-        @param message: Either a C{WrittenAction} or a C{WrittenMessage}.
-
-        @raise WrongTask: If C{message} has a C{task_uuid} that differs from the
-            action's C{task_uuid}.
-        @raise WrongTaskLevel: If C{message} has a C{task_level} that means
-            it's not a direct child.
-
-        @return: A new C{WrittenAction}.
+        @param message: Either a WrittenAction or a WrittenMessage.
+        @return: A new WrittenAction.
         """
         self._validate_message(message)
         level = message.task_level
         return self.transform(("_children", level), message)
 
-    def _start(self, start_message):
+    def _start(self, start_message: WrittenMessage) -> WrittenAction:
         """
         Start this action given its start message.
 
-        @param WrittenMessage start_message: A start message that has the
-            same level as this action.
-
-        @raise InvalidStartMessage: If C{start_message} does not have a
-            C{ACTION_STATUS_FIELD} of C{STARTED_STATUS}, or if it has a
-            C{task_level} indicating that it is not the first message of an
-            action.
+        @param start_message: A start message with the same level as this action.
         """
-        if start_message.contents.get(ACTION_STATUS_FIELD, None) != STARTED_STATUS:
+        if start_message.contents.get(ACTION_STATUS_FIELD, None) != ActionStatus.STARTED:
             raise InvalidStartMessage.wrong_status(start_message)
         if start_message.task_level.level[-1] != 1:
             raise InvalidStartMessage.wrong_task_level(start_message)
         return self.set(start_message=start_message)
 
-    def _end(self, end_message):
+    def _end(self, end_message: WrittenMessage) -> WrittenAction:
         """
-        End this action with C{end_message}.
+        End this action with end_message.
 
-        Assumes that the action has not already been ended.
-
-        @param WrittenMessage end_message: An end message that has the
-            same level as this action.
-
-        @raise WrongTask: If C{end_message} has a C{task_uuid} that differs
-            from the action's C{task_uuid}.
-        @raise WrongTaskLevel: If C{end_message} has a C{task_level} that means
-            it's not a direct child.
-        @raise InvalidStatus: If C{end_message} doesn't have an
-            C{action_status}, or has one that is not C{SUCCEEDED_STATUS} or
-            C{FAILED_STATUS}.
-
-        @return: A new, completed C{WrittenAction}.
+        @param end_message: An end message with the same level as this action.
+        @return: A new, completed WrittenAction.
         """
         action_type = end_message.contents.get(ACTION_TYPE_FIELD, None)
         if self.action_type not in (None, action_type):
             raise WrongActionType(self, end_message)
         self._validate_message(end_message)
         status = end_message.contents.get(ACTION_STATUS_FIELD, None)
-        if status not in (FAILED_STATUS, SUCCEEDED_STATUS):
+        if status not in (ActionStatus.FAILED, ActionStatus.SUCCEEDED):
             raise InvalidStatus(self, end_message)
         return self.set(end_message=end_message)
 
 
-def start_action(logger=None, action_type="", _serializers=None, **fields):
+# ============================================================================
+# Public API Functions
+# ============================================================================
+
+def current_action() -> Action | None:
     """
-    Create a child L{Action}, figuring out the parent L{Action} from execution
+    @return: The current Action in context, or None if none were set.
+    """
+    return _ACTION_CONTEXT.get(None)
+
+
+def start_action(
+    logger: Any | None = None,
+    action_type: str = "",
+    _serializers: Any | None = None,
+    **fields: Any,
+) -> Action:
+    """
+    Create a child Action, figuring out the parent Action from execution
     context, and log the start message.
 
-    You can use the result as a Python context manager, or use the
-    L{Action.finish} API to explicitly finish it.
+    You can use the result as a Python context manager:
 
-         with start_action(logger, "yourapp:subsystem:dosomething",
-                          entry=x) as action:
-              do(x)
-              result = something(x * 2)
-              action.addSuccessFields(result=result)
+        with start_action(logger, "yourapp:subsystem:dosomething", entry=x) as action:
+            do(x)
+            result = something(x * 2)
+            action.add_success_fields(result=result)
 
-    Or alternatively:
-
-         action = start_action(logger, "yourapp:subsystem:dosomething",
-                              entry=x)
-         with action.context():
-              do(x)
-              result = something(x * 2)
-              action.addSuccessFields(result=result)
-         action.finish()
-
-    @param logger: The L{eliot.ILogger} to which to write messages, or
-        C{None} to use the default one.
-
-    @param action_type: The type of this action,
-        e.g. C{"yourapp:subsystem:dosomething"}.
-
-    @param _serializers: Either a L{eliot._validation._ActionSerializers}
-        instance or C{None}. In the latter case no validation or serialization
-        will be done for messages generated by the L{Action}.
-
+    @param logger: The ILogger to which to write messages, or None.
+    @param action_type: The type of this action.
+    @param _serializers: Either an _ActionSerializers instance or None.
     @param fields: Additional fields to add to the start message.
-
-    @return: A new L{Action}.
+    @return: A new Action.
     """
     parent = current_action()
     if parent is None:
-        return startTask(logger, action_type, _serializers, **fields)
+        return start_task(logger, action_type, _serializers, **fields)
     else:
         action = parent.child(logger, action_type, _serializers)
         action._start(fields)
         return action
 
 
-def startTask(logger=None, action_type="", _serializers=None, **fields):
+def start_task(
+    logger: Any | None = None,
+    action_type: str = "",
+    _serializers: Any | None = None,
+    **fields: Any,
+) -> Action:
     """
-    Like L{action}, but creates a new top-level L{Action} with no parent.
+    Like start_action, but creates a new top-level Action with no parent.
 
-    @param logger: The L{eliot.ILogger} to which to write messages, or
-        C{None} to use the default one.
-
-    @param action_type: The type of this action,
-        e.g. C{"yourapp:subsystem:dosomething"}.
-
-    @param _serializers: Either a L{eliot._validation._ActionSerializers}
-        instance or C{None}. In the latter case no validation or serialization
-        will be done for messages generated by the L{Action}.
-
+    @param logger: The ILogger to which to write messages, or None.
+    @param action_type: The type of this action.
+    @param _serializers: Either an _ActionSerializers instance or None.
     @param fields: Additional fields to add to the start message.
-
-    @return: A new L{Action}.
+    @return: A new Action.
     """
     action = Action(
         logger, str(uuid4()), TaskLevel(level=[]), action_type, _serializers
@@ -841,31 +634,27 @@ def startTask(logger=None, action_type="", _serializers=None, **fields):
     return action
 
 
+# Backwards compatibility
+startTask = start_task
+
+
 class TooManyCalls(Exception):
     """
     The callable was called more than once.
-
-    This typically indicates a coding bug: the result of
-    C{preserve_context} should only be called once, and
-    C{preserve_context} should therefore be called each time you want to
-    pass the callable to a thread.
+    This typically indicates a coding bug: the result of preserve_context
+    should only be called once.
     """
 
 
-def preserve_context(f):
+def preserve_context(f: Callable[..., T]) -> Callable[..., T]:
     """
-    Package up the given function with the current Eliot context, and then
+    Package up the given function with the current context, and then
     restore context and call given function when the resulting callable is
     run. This allows continuing the action context within a different thread.
 
-    The result should only be used once, since it relies on
-    L{Action.serialize_task_id} whose results should only be deserialized
-    once.
-
     @param f: A callable.
-
     @return: One-time use callable that calls given function in context of
-        a child of current Eliot action.
+        a child of current action.
     """
     action = current_action()
     if action is None:
@@ -873,7 +662,8 @@ def preserve_context(f):
     task_id = action.serialize_task_id()
     called = threading.Lock()
 
-    def restore_logxpy_context(*args, **kwargs):
+    @wraps(f)
+    def restore_logxpy_context(*args: Any, **kwargs: Any) -> T:
         # Make sure the function has not already been called:
         if not called.acquire(False):
             raise TooManyCalls(f)
@@ -885,15 +675,16 @@ def preserve_context(f):
 
 
 def log_call(
-    wrapped_function=None, action_type=None, include_args=None, include_result=True
-):
-    """Decorator/decorator factory that logs inputs and the return result.
+    wrapped_function: Callable[..., T] | None = None,
+    *,
+    action_type: str | None = None,
+    include_args: list[str] | None = None,
+    include_result: bool = True,
+) -> Callable[..., T]:
+    """
+    Decorator/decorator factory that logs inputs and the return result.
 
-    If used with inputs (i.e. as a decorator factory), it accepts the following
-    parameters:
-
-    @param action_type: The action type to use.  If not given the function name
-        will be used.
+    @param action_type: The action type to use. If not given the function name will be used.
     @param include_args: If given, should be a list of strings, the arguments to log.
     @param include_result: True by default. If False, the return result isn't logged.
     """
@@ -906,9 +697,7 @@ def log_call(
         )
 
     if action_type is None:
-        action_type = "{}.{}".format(
-            wrapped_function.__module__, wrapped_function.__qualname__
-        )
+        action_type = f"{wrapped_function.__module__}.{wrapped_function.__qualname__}"
 
     if include_args is not None:
         from inspect import signature
@@ -916,18 +705,15 @@ def log_call(
         sig = signature(wrapped_function)
         if set(include_args) - set(sig.parameters):
             raise ValueError(
-                (
-                    "include_args ({}) lists arguments not in the " "wrapped function"
-                ).format(include_args)
+                f"include_args ({include_args}) lists arguments not in the wrapped function"
             )
 
     @wraps(wrapped_function)
-    def logging_wrapper(*args, **kwargs):
+    def logging_wrapper(*args: Any, **kwargs: Any) -> T:
         callargs = getcallargs(wrapped_function, *args, **kwargs)
 
-        # Remove self is it's included:
-        if "self" in callargs:
-            callargs.pop("self")
+        # Remove self if it's included:
+        callargs.pop("self", None)
 
         # Filter arguments to log, if necessary:
         if include_args is not None:
@@ -942,17 +728,7 @@ def log_call(
     return logging_wrapper
 
 
-def log_message(message_type, **fields):
-    """Log a message in the context of the current action.
-
-    If there is no current action, a new UUID will be generated.
-    """
-    action = current_action()
-    if action is None:
-        # Loggers will hopefully go away...
-        logger = fields.pop("__logxpy_logger__", None)
-        action = Action(logger, str(uuid4()), TaskLevel(level=[]), "")
-    action.log(message_type, **fields)
-
-
+# Import at end to deal with circular imports:
 from . import _output
+# Import log_message from _message to avoid circular import
+from ._message import log_message

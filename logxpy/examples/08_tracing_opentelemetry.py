@@ -5,11 +5,12 @@ Demonstrates:
 - @log.trace: Decorator for spans
 - log.span(): Context manager for spans
 """
-import sys
+from pathlib import Path
 import asyncio
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 # Note: For this to actually send data to a collector, you need to configure
 # the OTel destination. Without it, it still works but acts as a no-op 

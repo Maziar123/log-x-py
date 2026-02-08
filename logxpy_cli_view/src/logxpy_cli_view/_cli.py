@@ -31,6 +31,7 @@ from logxpy_cli_view import (
     filter_by_task_level,
     filter_by_uuid,
     render_tasks,
+    render_oneline,
     tasks_from_iterable,
 )
 
@@ -67,7 +68,7 @@ def parse_messages(
     keyword: str | None = None,
     min_task_level: int | None = None,
     max_task_level: int | None = None,
-) -> tuple[dict[int, tuple[str, int | str]], Iterator[Any]]:
+) -> tuple[dict[str, int], Iterator[Any]]:
     """
     Parse message dictionaries from inputs into logxpy tasks.
 
@@ -88,7 +89,7 @@ def parse_messages(
         max_task_level: Maximum task level depth
 
     Returns:
-        Tuple of (inventory dict, tasks iterator)
+        Tuple of (inventory dict mapping task_uuid to line_number, tasks iterator)
     """
     def filter_funcs() -> Iterator[Callable[[dict[str, Any]], bool]]:
         if task_uuid is not None:
@@ -115,16 +116,19 @@ def parse_messages(
                 yield filter_by_jmespath(query)
 
     def _parse(
-        files: list[TextIO], inventory: dict[int, tuple[str, int | str]]
+        files: list[TextIO], inventory: dict[str, int]
     ) -> Iterator[dict[str, Any]]:
         for file in files:
-            file_name = getattr(file, "name", "<unknown>")
             for line_number, line in enumerate(file, 1):
                 try:
                     task: dict[str, Any] = json.loads(line)
-                    inventory[id(task)] = file_name, line_number
+                    # Map task_uuid to line_number
+                    task_uuid = task.get("task_uuid")
+                    if task_uuid:
+                        inventory[str(task_uuid)] = line_number
                     yield task
                 except Exception:
+                    file_name = getattr(file, "name", "<unknown>")
                     raise JSONParseError(
                         file_name,
                         line_number,
@@ -135,7 +139,7 @@ def parse_messages(
     if not files:
         files = [text_reader(sys.stdin)]
 
-    inventory: dict[int, tuple[str, int | str]] = {}
+    inventory: dict[str, int] = {}
     return inventory, tasks_from_iterable(
         filter(combine_filters_and(*filter_funcs()), _parse(files, inventory))
     )
@@ -160,6 +164,7 @@ def setup_platform(colorize: bool) -> None:
 
 def display_tasks(
     tasks: Iterable[Any],
+    inventory: dict[str, int] | None,
     color: str,
     colorize_tree: bool,
     ascii: bool,
@@ -169,12 +174,15 @@ def display_tasks(
     human_readable: bool,
     utc_timestamps: bool,
     theme_overrides: dict[str, Any] | None,
+    show_line_numbers: bool = True,
+    format: str = "tree",
 ) -> None:
     """
     Render Eliot tasks to stdout.
 
     Args:
         tasks: Tasks to render
+        inventory: Mapping of task_uuid to line_number
         color: Color mode ('auto', 'always', 'never')
         colorize_tree: Whether to colorize tree lines
         ascii: Use ASCII characters for tree
@@ -184,6 +192,8 @@ def display_tasks(
         human_readable: Format values as human-readable
         utc_timestamps: Use UTC for timestamps
         theme_overrides: Theme override settings
+        show_line_numbers: Whether to show line numbers in output
+        format: Output format ('tree' or 'oneline')
     """
     if color == "auto":
         colorize = sys.stdout.isatty()
@@ -214,10 +224,19 @@ def display_tasks(
         theme_overrides or {},
     )
 
+    if format == "oneline":
+        render_oneline(
+            tasks=tasks,
+            theme=theme,
+            write=write,
+        )
+        return
+
     render_tasks(
         write=write,
         write_err=write_err,
         tasks=tasks,
+        inventory=inventory or {},
         ignored_fields=set(ignored_fields) or None,
         field_limit=field_limit,
         human_readable=human_readable,
@@ -225,6 +244,7 @@ def display_tasks(
         ascii=ascii,
         utc_timestamps=utc_timestamps,
         theme=theme,
+        show_line_numbers=show_line_numbers,
     )
 
 
@@ -369,6 +389,7 @@ def cmd_render(args: argparse.Namespace) -> int:
 
         display_tasks(
             tasks=tasks,
+            inventory=inventory,
             color=args.color,
             colorize_tree=args.colorize_tree,
             theme_name=args.theme_name,
@@ -378,6 +399,8 @@ def cmd_render(args: argparse.Namespace) -> int:
             human_readable=args.human_readable,
             utc_timestamps=args.utc_timestamps,
             theme_overrides=config.get("theme_overrides"),
+            show_line_numbers=args.show_line_numbers,
+            format=args.format,
         )
     except JSONParseError as e:
         stderr.write(
@@ -386,13 +409,19 @@ def cmd_render(args: argparse.Namespace) -> int:
         )
         raise e.exc_info[1].with_traceback(e.exc_info[2])
     except EliotParseError as e:
-        file_name, line_number = inventory.get(
-            id(e.message_dict), ("<unknown>", "<unknown>")
-        )
-        stderr.write(
-            f"LogXPy message parse error, file {file_name}, line {line_number}:\n"
-            f"{pformat(e.message_dict)}\n\n"
-        )
+        # Get task_uuid from message_dict for error reporting
+        task_uuid = e.message_dict.get("task_uuid")
+        if task_uuid and task_uuid in inventory:
+            line_number = inventory[task_uuid]
+            stderr.write(
+                f"LogXPy message parse error, line {line_number}:\n"
+                f"{pformat(e.message_dict)}\n\n"
+            )
+        else:
+            stderr.write(
+                f"LogXPy message parse error:\n"
+                f"{pformat(e.message_dict)}\n\n"
+            )
         raise e.exc_info[1].with_traceback(e.exc_info[2])
 
     return 0
@@ -814,6 +843,20 @@ def _add_render_args(parser: argparse.ArgumentParser) -> None:
         dest="print_current_config",
         action="store_true",
         help="Show the current effective configuration.",
+    )
+    display_group.add_argument(
+        "--no-line-numbers",
+        dest="show_line_numbers",
+        action="store_false",
+        default=True,
+        help="Hide line numbers in the tree output.",
+    )
+    display_group.add_argument(
+        "--format",
+        choices=["tree", "oneline"],
+        default="oneline",
+        dest="format",
+        help="Output format: oneline (default) or tree.",
     )
 
 

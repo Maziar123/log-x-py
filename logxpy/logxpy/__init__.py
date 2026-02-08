@@ -4,8 +4,14 @@ LogXPy: Modern Structured Logging for Python 3.12+
 Forked from Eliot (https://github.com/itamarst/eliot).
 Modernized with Python 3.12+ features: type aliases, pattern matching,
 dataclass slots, and StrEnum.
+
+Enhanced with boltons library for efficient caching, dict operations,
+iteration, and string processing.
 """
 
+from __future__ import annotations
+
+from typing import Any
 from warnings import warn
 
 # Expose the public API:
@@ -103,6 +109,38 @@ from .category import (
     get_category,
 )
 
+# Python 3.12+ & Boltons-Enhanced Utilities
+# Import these after module initialization to avoid circular import issues
+# They are exposed via __getattr__ below
+from ._types import (
+    Level,
+    LevelName,
+    ActionStatusStr,
+    Record,
+    # Compact field names (recommended)
+    TS, TID, LVL, MT, AT, ST, DUR, MSG,
+    # Legacy aliases (backwards compatible)
+    TASK_UUID,
+    TASK_LEVEL,
+    TIMESTAMP,
+    MESSAGE_TYPE,
+    ACTION_TYPE,
+    ACTION_STATUS,
+    DURATION_NS,
+    get_level_name,
+    get_level_value,
+    # Also export TaskLevel from _types (moved to break circular import)
+    TaskLevel,
+)
+# From _action: StrEnum and backward compat constants
+from ._action import (
+    ActionStatus,
+    STARTED_STATUS,
+    SUCCEEDED_STATUS,
+    FAILED_STATUS,
+    VALID_STATUSES,
+)
+
 
 # Backwards compatibility:
 def add_destination(destination):
@@ -122,6 +160,14 @@ def use_asyncio_context():
         stacklevel=2,
     )
 
+
+# Sqid support (ultra-short task IDs)
+from ._sqid import (
+    SqidGenerator,
+    sqid,
+    child_sqid,
+    generate_task_id,
+)
 
 # Backwards compatibilty:
 addDestination = add_destination
@@ -177,7 +223,6 @@ __all__ = [
     "removeDestination",
     "addGlobalFields",
     "FileDestination",
-    "register_exception_extractor",
     "current_action",
     "use_asyncio_context",
     "ValidationError",
@@ -263,11 +308,85 @@ __all__ = [
     "set_category",
     "get_categorized_logger",
     "get_category",
+    # Python 3.12+ & Boltons-Enhanced Utilities
+    "Level",
+    "LevelName",
+    "ActionStatusStr",
+    "Record",
+    # Compact field names
+    "TS", "TID", "LVL", "MT", "AT", "ST", "DUR", "MSG",
+    # Legacy aliases
+    "TASK_UUID",
+    "TASK_LEVEL",
+    "TIMESTAMP",
+    "MESSAGE_TYPE",
+    "ACTION_TYPE",
+    "ACTION_STATUS",
+    "DURATION_NS",
+    "get_level_name",
+    "get_level_value",
+    "ActionStatus",
+    "TaskLevel",
+    "STARTED_STATUS",
+    "SUCCEEDED_STATUS",
+    "FAILED_STATUS",
+    "VALID_STATUSES",
     # Tree viewer compatibility:
     "_parse",
+    # Boltons-enhanced utilities (lazy loaded via __getattr__)
+    "truncate",  # noqa: E0603
+    "strip_ansi_codes",  # noqa: E0603
+    "escape_html_text",  # noqa: E0603
+    "pluralize",  # noqa: E0603
+    "clean_text",  # noqa: E0603
+    "get_first",  # noqa: E0603
+    "is_non_string_iterable",  # noqa: E0603
+    "memoize",  # noqa: E0603
+    "memoize_method",  # noqa: E0603
+    "throttle",  # noqa: E0603
+    "CacheStats",  # noqa: E0603
+    # Sqid support (ultra-short task IDs)
+    "SqidGenerator",
+    "sqid",
+    "child_sqid",
+    "generate_task_id",
 ]
 
 
 from . import _version
 
 __version__ = _version.get_versions()["version"]
+
+
+# ============================================================================
+# Python 3.12+ & Boltons-Enhanced Utilities (Lazy Export)
+# ============================================================================
+# These are exported via __getattr__ to avoid circular import issues
+
+_BOLTONS_UTILITY_MODULES = {
+    # From _base module
+    'truncate': '_base',
+    'strip_ansi_codes': '_base',
+    'escape_html_text': '_base',
+    'pluralize': '_base',
+    'clean_text': '_base',
+    'get_first': '_base',
+    'is_non_string_iterable': '_base',
+    # From _cache module
+    'memoize': '_cache',
+    'memoize_method': '_cache',
+    'throttle': '_cache',
+    'CacheStats': '_cache',
+}
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy import for boltons utilities to avoid circular imports."""
+    if name in _BOLTONS_UTILITY_MODULES:
+        module_name = _BOLTONS_UTILITY_MODULES[name]
+        if module_name == '_base':
+            from . import _base
+            return getattr(_base, name)
+        from . import _cache
+        return getattr(_cache, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

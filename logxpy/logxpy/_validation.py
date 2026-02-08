@@ -25,8 +25,8 @@ from ._action import (
     STARTED_STATUS,
     SUCCEEDED_STATUS,
     FAILED_STATUS,
-    log_message,
 )
+from ._message import log_message
 
 
 class ValidationError(Exception):

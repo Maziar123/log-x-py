@@ -480,7 +480,11 @@ class Logger:
 
                 elif dest.startswith("file://"):
                     path = dest.replace("file://", "")
-                    to_file(open(path, "a"))
+                    # Store file handle to keep it open
+                    if self._auto_log_file:
+                        self._auto_log_file.close()
+                    self._auto_log_file = open(path, "a")
+                    to_file(self._auto_log_file)
 
                 elif dest.startswith("otel"):
                     # Setup OTel
@@ -554,7 +558,7 @@ class Logger:
             log.error("This is red")
             log.reset_foreground()
         """
-        self._context["logxpy:foreground"] = color
+        self._context["fg"] = color
         return self
     
     def set_background(self, color: str) -> Logger:
@@ -568,17 +572,17 @@ class Logger:
             log.warning("This has yellow background")
             log.reset_background()
         """
-        self._context["logxpy:background"] = color
+        self._context["bg"] = color
         return self
     
     def reset_foreground(self) -> Logger:
         """Reset foreground color to default."""
-        self._context.pop("logxpy:foreground", None)
+        self._context.pop("fg", None)
         return self
     
     def reset_background(self) -> Logger:
         """Reset background color to default."""
-        self._context.pop("logxpy:background", None)
+        self._context.pop("bg", None)
         return self
     
     def colored(self, msg: str, foreground: str | None = None, background: str | None = None, **fields: Any) -> Logger:
@@ -595,9 +599,9 @@ class Logger:
         """
         # Add color fields temporarily
         if foreground:
-            fields["logxpy:foreground"] = foreground
+            fields["fg"] = foreground
         if background:
-            fields["logxpy:background"] = background
+            fields["bg"] = background
         return self._log(Level.INFO, msg, **fields)
 
     # === Internal ===
@@ -616,7 +620,7 @@ class Logger:
             timestamp=now(),
             level=level,
             message=msg,
-            message_type=f"loggerx:{level.name.lower()}",
+            message_type=level.name.lower(),  # "info", "success", "error", etc.
             fields=fields,
             context=ctx,
             task_uuid=task_uuid,

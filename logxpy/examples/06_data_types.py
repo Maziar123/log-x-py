@@ -7,18 +7,18 @@ Demonstrates:
 - log.tensor(): NumPy/PyTorch tensors
 - log.send(): Universal sender
 """
-import sys
+from pathlib import Path
 from logxpy import log, to_file
 
 try:
     import pandas as pd
     import numpy as np
 except ImportError:
-    print("Pandas/Numpy not installed, skipping some examples")
     pd = None
     np = None
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 def main():
     print("--- 1. JSON Data ---")

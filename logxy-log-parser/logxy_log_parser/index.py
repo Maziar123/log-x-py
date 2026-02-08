@@ -259,7 +259,7 @@ class LogIndex:
                     try:
                         data = json.loads(line.strip())
                         from .core import LogEntry
-                        entries.append(LogEntry.from_dict(data))
+                        entries.append(LogEntry.from_dict(data, line_num))
 
                         # Stop if we've loaded all requested entries
                         if len(entries) == len(positions):

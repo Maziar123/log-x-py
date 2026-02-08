@@ -174,13 +174,13 @@ class LogFile:
         predicate = self._parse_criteria(**criteria)
 
         with open(self._path, encoding="utf-8") as f:
-            for line in f:
+            for line_number, line in enumerate(f, start=1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    entry = LogEntry.from_dict(data)
+                    entry = LogEntry.from_dict(data, line_number)
                     if predicate(entry):
                         return True
                 except (json.JSONDecodeError, ValueError, KeyError):
@@ -251,13 +251,13 @@ class LogFile:
         predicate = self._parse_criteria(**criteria)
 
         with open(self._path, encoding="utf-8") as f:
-            for line in f:
+            for line_number, line in enumerate(f, start=1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    entry = LogEntry.from_dict(data)
+                    entry = LogEntry.from_dict(data, line_number)
                     if predicate(entry):
                         return entry
                 except (json.JSONDecodeError, ValueError, KeyError):
@@ -278,13 +278,13 @@ class LogFile:
         last_entry: LogEntry | None = None
 
         with open(self._path, encoding="utf-8") as f:
-            for line in f:
+            for line_number, line in enumerate(f, start=1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    entry = LogEntry.from_dict(data)
+                    entry = LogEntry.from_dict(data, line_number)
                     if predicate(entry):
                         last_entry = entry
                 except (json.JSONDecodeError, ValueError, KeyError):
@@ -305,13 +305,13 @@ class LogFile:
         matches: list[LogEntry] = []
 
         with open(self._path, encoding="utf-8") as f:
-            for line in f:
+            for line_number, line in enumerate(f, start=1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    entry = LogEntry.from_dict(data)
+                    entry = LogEntry.from_dict(data, line_number)
                     if predicate(entry):
                         matches.append(entry)
                 except (json.JSONDecodeError, ValueError, KeyError):
@@ -331,13 +331,13 @@ class LogFile:
         entries: list[LogEntry] = []
 
         with open(self._path, encoding="utf-8") as f:
-            for line in f:
+            for line_number, line in enumerate(f, start=1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     data = json.loads(line)
-                    entries.append(LogEntry.from_dict(data))
+                    entries.append(LogEntry.from_dict(data, line_number))
                     if len(entries) > n:
                         entries.pop(0)
                 except (json.JSONDecodeError, ValueError, KeyError):
@@ -366,16 +366,20 @@ class LogFile:
             while True:
                 self.refresh()
                 if self._size > self._last_position:
-                    # Read new lines
+                    # Read new lines - count from beginning to get accurate line numbers
+                    line_number = 0
                     with open(self._path, encoding="utf-8") as f:
-                        f.seek(self._last_position)
                         for line in f:
                             line = line.strip()
                             if not line:
                                 continue
+                            line_number += 1
+                            # Only process lines after our last position
+                            if f.tell() <= self._last_position:
+                                continue
                             try:
                                 data = json.loads(line)
-                                entry = LogEntry.from_dict(data)
+                                entry = LogEntry.from_dict(data, line_number)
                                 if filter_func is None or filter_func(entry):
                                     callback(entry)
                             except (json.JSONDecodeError, ValueError, KeyError):
@@ -405,16 +409,20 @@ class LogFile:
             while True:
                 self.refresh()
                 if self._size > self._last_position:
-                    # Read new lines
+                    # Read new lines - count from beginning to get accurate line numbers
+                    line_number = 0
                     with open(self._path, encoding="utf-8") as f:
-                        f.seek(self._last_position)
                         for line in f:
                             line = line.strip()
                             if not line:
                                 continue
+                            line_number += 1
+                            # Only process lines after our last position
+                            if f.tell() <= self._last_position:
+                                continue
                             try:
                                 data = json.loads(line)
-                                entry = LogEntry.from_dict(data)
+                                entry = LogEntry.from_dict(data, line_number)
                                 if filter_func is None or filter_func(entry):
                                     yield entry
                             except (json.JSONDecodeError, ValueError, KeyError):
@@ -470,15 +478,20 @@ class LogFile:
             while True:
                 self.refresh()
                 if self._size > self._last_position:
+                    # Count from beginning to get accurate line numbers
+                    line_number = 0
                     with open(self._path, encoding="utf-8") as f:
-                        f.seek(self._last_position)
                         for line in f:
                             line = line.strip()
                             if not line:
                                 continue
+                            line_number += 1
+                            # Only process lines after our last position
+                            if f.tell() <= self._last_position:
+                                continue
                             try:
                                 data = json.loads(line)
-                                entry = LogEntry.from_dict(data)
+                                entry = LogEntry.from_dict(data, line_number)
                                 if predicate(entry):
                                     return entry
                             except (json.JSONDecodeError, ValueError, KeyError):

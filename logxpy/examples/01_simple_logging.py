@@ -4,14 +4,15 @@
 Demonstrates:
 - Importing the logger
 - Basic logging methods (info, warn, error)
-- Output to stdout
+- Output to file
 - Structured logging with key-value pairs
 """
-import sys
+from pathlib import Path
 from logxpy import log, to_file
 
-# 1. Setup output to stdout (console)
-to_file(sys.stdout)
+# Setup output to log file
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 def main():
     print("--- 1. Basic Messages ---")

@@ -96,7 +96,7 @@ class AsyncAction:
 
     def _end_record(self, exc: BaseException | None) -> Record:
         status = "failed" if exc else "succeeded"
-        fields = {**self.fields, "logxpy:duration": round(now() - self._start, 6)}
+        fields = {**self.fields, "dur": round(now() - self._start, 6)}
         if exc:
             fields["exception"] = f"{type(exc).__module__}.{type(exc).__name__}"
             fields["reason"] = str(exc)

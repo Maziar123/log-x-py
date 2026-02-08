@@ -5,12 +5,13 @@ Demonstrates:
 - @log.generator: Sync generator tracking
 - @log.aiterator: Async iterator tracking
 """
-import sys
+from pathlib import Path
 import time
 import asyncio
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 # 1. Sync Generator
 @log.generator("Processing items", every=2)

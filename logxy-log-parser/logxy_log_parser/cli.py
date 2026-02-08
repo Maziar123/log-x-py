@@ -155,8 +155,13 @@ def print_entry(entry: Any, show_fields: bool = False) -> None:
     # Format timestamp
     ts_str = format_timestamp(entry.timestamp)
 
+    # Get line number
+    line_no = getattr(entry, "line_number", 0)
+    line_str = f"[{line_no}]" if line_no > 0 else ""
+
     # Build output
     parts = [
+        style(line_str, "bright_black") if line_str else "",
         style(ts_str, "dim"),
         style(level.upper().ljust(8), fg=level_color, bold=level in ("error", "critical")),
     ]
@@ -654,13 +659,14 @@ if CLICK_AVAILABLE:
         if task:
             task_uuid = task
         else:
-            # Use first entry's task UUID
-            task_uuids = extract_task_uuid(entries)
-            if not task_uuids:
+            # Use the task with the most entries (likely the main task)
+            from collections import Counter
+            task_counts = Counter(e.task_uuid for e in entries)
+            if not task_counts:
                 print("No task UUIDs found in log.")
                 return
-            task_uuid = list(task_uuids)[0]
-            print(f"  Using task UUID: {style(task_uuid, 'cyan')}")
+            task_uuid = task_counts.most_common(1)[0][0]
+            print(f"  Using task UUID: {style(task_uuid, 'cyan')} ({task_counts[task_uuid]} entries)")
 
         # Build tree
         try:

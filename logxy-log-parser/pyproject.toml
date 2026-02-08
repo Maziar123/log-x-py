@@ -29,7 +29,7 @@ classifiers = [
     "Topic :: System :: Logging",
 ]
 
-dependencies = []
+dependencies = ["boltons>=24.0.0"]
 
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]

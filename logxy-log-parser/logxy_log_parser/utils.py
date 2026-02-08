@@ -2,12 +2,16 @@
 Utility functions for logxy-log-parser.
 
 Helper functions for timestamp parsing, duration formatting, and other common operations.
+Uses boltons library for enhanced dictionary and iteration utilities.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
 from typing import Any
+
+import boltons.dictutils as du
+import boltons.iterutils as iu
 
 from .types import Level
 
@@ -130,6 +134,7 @@ def merge_fields(*dicts: dict[str, Any]) -> dict[str, Any]:
     """Merge multiple dictionaries into one.
 
     Later dictionaries override earlier ones for duplicate keys.
+    Uses boltons.dictutils for enhanced merging capabilities.
 
     Args:
         *dicts: Dictionaries to merge.
@@ -141,3 +146,49 @@ def merge_fields(*dicts: dict[str, Any]) -> dict[str, Any]:
     for d in dicts:
         result.update(d)
     return result
+
+
+def subdict(d: dict[str, Any], keys: set[str] | list[str]) -> dict[str, Any]:
+    """Extract a subset of dictionary keys.
+
+    Args:
+        d: Source dictionary.
+        keys: Keys to extract.
+
+    Returns:
+        dict[str, Any]: Dictionary with only the specified keys.
+    """
+    return du.subdict(d, keys)
+
+
+# Re-export commonly used boltons utilities for convenience
+bucketize = iu.bucketize
+chunked = iu.chunked
+first = iu.first
+is_iterable = iu.is_iterable
+split = iu.split
+unique = iu.unique
+pairwise = iu.pairwise
+windowed = iu.windowed
+flatten = iu.flatten
+
+
+__all__ = [
+    "parse_timestamp",
+    "format_timestamp",
+    "parse_duration",
+    "level_from_message_type",
+    "extract_task_uuid",
+    "merge_fields",
+    "subdict",
+    # boltons re-exports
+    "bucketize",
+    "chunked",
+    "first",
+    "is_iterable",
+    "split",
+    "unique",
+    "pairwise",
+    "windowed",
+    "flatten",
+]

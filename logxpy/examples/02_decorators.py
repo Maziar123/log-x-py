@@ -6,12 +6,13 @@ Demonstrates:
 - @log.timed: Timing execution
 - @log.retry: Automatic retries
 """
-import sys
+from pathlib import Path
 import time
 import random
 from logxpy import log, to_file
 
-to_file(sys.stdout)
+LOG_FILE = Path(__file__).with_suffix(".log")
+to_file(open(LOG_FILE, "w"))
 
 # 1. @log.logged - The all-in-one decorator
 # Captures entry arguments, exit result, and execution time

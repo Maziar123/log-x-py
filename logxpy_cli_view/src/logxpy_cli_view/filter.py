@@ -10,6 +10,8 @@ from typing import Any
 
 import jmespath
 
+from logxpy_cli_view._compat import get
+
 UTC = timezone.utc
 
 
@@ -40,14 +42,20 @@ def _parse_timestamp(timestamp: float) -> datetime:
 def filter_by_start_date(start_date: datetime) -> Callable[[dict[str, Any]], bool]:
     """Filter tasks with timestamps >= start_date."""
     def _filter(task: dict[str, Any]) -> bool:
-        return _parse_timestamp(task["timestamp"]) >= start_date
+        ts = get(task, "ts")
+        if ts is None:
+            return False
+        return _parse_timestamp(ts) >= start_date
     return _filter
 
 
 def filter_by_end_date(end_date: datetime) -> Callable[[dict[str, Any]], bool]:
     """Filter tasks with timestamps < end_date."""
     def _filter(task: dict[str, Any]) -> bool:
-        return _parse_timestamp(task["timestamp"]) < end_date
+        ts = get(task, "ts")
+        if ts is None:
+            return False
+        return _parse_timestamp(ts) < end_date
     return _filter
 
 
@@ -67,9 +75,9 @@ def filter_by_action_type(pattern: str, regex: bool = False) -> Callable[[dict[s
     if regex:
         compiled = re.compile(pattern)
         def _filter(task: dict[str, Any]) -> bool:
-            return bool(compiled.search(task.get("action_type", "")))
+            return bool(compiled.search(get(task, "at", "")))
         return _filter
-    return filter_by_jmespath(f"action_type == `{pattern}`")
+    return filter_by_jmespath(f"at == `{pattern}` || action_type == `{pattern}`")
 
 
 def filter_by_field_exists(field_path: str) -> Callable[[dict[str, Any]], bool]:
@@ -104,7 +112,7 @@ def filter_by_keyword(keyword: str, case_sensitive: bool = False) -> Callable[[d
 def filter_by_task_level(min_level: int | None = None, max_level: int | None = None) -> Callable[[dict[str, Any]], bool]:
     """Filter tasks by depth level."""
     def _filter(task: dict[str, Any]) -> bool:
-        level = task.get("task_level", [])
+        level = get(task, "lvl", [])
         depth = len(level) if isinstance(level, list) else 1
         if min_level is not None and depth < min_level:
             return False
@@ -117,7 +125,7 @@ def filter_by_task_level(min_level: int | None = None, max_level: int | None = N
 def filter_by_duration(min_seconds: float | None = None, max_seconds: float | None = None) -> Callable[[dict[str, Any]], bool]:
     """Filter tasks by duration."""
     def _filter(task: dict[str, Any]) -> bool:
-        duration = task.get("duration")
+        duration = get(task, "dur")
         if duration is None:
             return False
         if min_seconds is not None and duration < min_seconds:

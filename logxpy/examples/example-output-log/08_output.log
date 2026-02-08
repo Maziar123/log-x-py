@@ -1,5 +1,0 @@
---- OpenTelemetry Tracing Demo ---
-(Requires opentelemetry-sdk installed for actual tracing)
-{"timestamp":1770277931.8948324,"task_uuid":"15d9b257-83c2-492d-940d-e3f37a95634c","task_level":[1],"message_type":"loggerx:info","message":"Parsing request"}
-{"timestamp":1770277931.995422,"task_uuid":"9f6aa6a6-50e3-46f0-ad40-dda499693e15","task_level":[1],"rows":1,"message_type":"loggerx:info","message":"Processing"}
-{"timestamp":1770277931.9955194,"task_uuid":"ce9a572c-70b6-432e-8bb9-56cc1182c02c","task_level":[1],"message_type":"loggerx:success","message":"Request handled"}

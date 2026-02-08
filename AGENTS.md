@@ -5,7 +5,7 @@ Guide for AI agents and assistants working on the log-x-py project.
 ## Project Overview
 
 **log-x-py** is a structured logging ecosystem with three components:
-1. **logxpy** - Zero-dependency structured logging library for Python 3.12+
+1. **logxpy** - Structured logging library with minimal dependencies (boltons, more-itertools)
 2. **logxpy-cli-view** - Colored tree viewer for LogXPy logs
 3. **logxy-log-parser** - Log parsing, analysis, and monitoring library
 
@@ -20,12 +20,14 @@ Guide for AI agents and assistants working on the log-x-py project.
 Modern structured logging that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
 
 ### Key Features
-- **Zero Dependencies** - Pure Python 3.12+
+- **Minimal Dependencies** - Uses boltons & more-itertools (pure Python)
 - **Type Safe** - Full type hints with modern syntax
 - **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
+- **Fluent API** - All methods return self for method chaining
 - **Nested Actions** - Track hierarchical operations with context
 - **Status Tracking** - Automatic start/success/failed tracking
 - **Color Support** - Foreground/background colors for CLI viewer rendering
+- **Sqid Task IDs** - 89% smaller IDs (4 chars vs 36), hierarchical, human-readable
 
 ### Python Version
 **3.12+ only** - Uses modern Python features:
@@ -33,7 +35,8 @@ Modern structured logging that outputs causal chains of actions. Forked from Eli
 - Pattern matching (PEP 634): `match value: case int():`
 - Dataclasses with slots (PEP 681): `@dataclass(slots=True)`
 - StrEnum (PEP 663): Type-safe enums
-- Walrus operator (PEP 572): `if uuid := entry.get("task_uuid")`
+- Walrus operator (PEP 572): `if tid := entry.get("task_uuid")`
+- **Sqid Task IDs** - Hierarchical short IDs (4-12 chars vs 36-char UUID4)
 
 ### Core API
 
@@ -47,7 +50,23 @@ Modern structured logging that outputs causal chains of actions. Forked from Eli
 | `current_action()` | Get current action context | `action = current_action()` |
 | `write_traceback()` | Log exception traceback | `except: write_traceback()` |
 
+### LoggerX - Fluent API
+
+LoggerX provides a **fluent API** where all methods return `self` for method chaining:
+
+```python
+from logxpy import log
+
+# Method chaining
+log.debug("starting").info("processing").success("done")
+
+# All level methods return self
+log.set_foreground("cyan").info("Cyan text").reset_foreground()
+```
+
 ### LoggerX Level Methods
+
+All level methods return `self` for chaining:
 
 | Method | Level | Example |
 |--------|-------|---------|
@@ -58,25 +77,92 @@ Modern structured logging that outputs causal chains of actions. Forked from Eli
 | `log.warning(msg, **fields)` | WARNING | `log.warning("slow query", ms=5000)` |
 | `log.error(msg, **fields)` | ERROR | `log.error("failed", code=500)` |
 | `log.critical(msg, **fields)` | CRITICAL | `log.critical("system down")` |
+| `log.checkpoint(msg, **fields)` | CHECKPOINT (📍 prefix) | `log.checkpoint("step1")` |
 | `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
 
-### Data Type Methods
+### LoggerX Flexible __call__
+
+The `log()` callable provides flexible shortcuts:
+
+| Usage | Equivalent To | Example |
+|-------|---------------|---------|
+| `log("msg")` | `log.info("msg")` | `log("Starting")` |
+| `log("title", data)` | `log.info("title", value=data)` | `log("User", {"id": 1})` |
+| `log(data)` | `log.send(auto_title, data)` | `log({"key": "val"})` |
+
+### LoggerX Data Type Methods
 
 | Method | Purpose | Example |
 |--------|---------|---------|
 | `log.color(value, title)` | Log RGB/hex colors | `log.color((255, 0, 0), "Theme")` |
-| `log.currency(amount, code)` | Log currency | `log.currency("19.99", "USD")` |
-| `log.datetime(dt, title)` | Log datetime | `log.datetime(dt, "StartTime")` |
-| `log.enum(enum_value, title)` | Log enum | `log.enum(Status.ACTIVE)` |
-| `log.variant(value, title)` | Log any value | `log.variant(data, "Input")` |
+| `log.currency(amount, code)` | Log currency with precision | `log.currency("19.99", "USD")` |
+| `log.datetime(dt, title)` | Log datetime in multiple formats | `log.datetime(dt, "StartTime")` |
+| `log.enum(enum_value, title)` | Log enum with name/value | `log.enum(Status.ACTIVE)` |
+| `log.ptr(obj, title)` | Log object identity | `log.ptr(my_object)` |
+| `log.variant(value, title)` | Log any value with type info | `log.variant(data, "Input")` |
+| `log.sset(s, title)` | Log set/frozenset | `log.sset({1, 2, 3}, "Tags")` |
+| `log.df(data, title)` | Log DataFrame | `log.df(df, "Results")` |
+| `log.tensor(data, title)` | Log Tensor | `log.tensor(tensor, "Weights")` |
+| `log.json(data, title)` | Log JSON with formatted output | `log.json({"key": "val"}, "Config")` |
+| `log.img(data, title)` | Log Image | `log.img(image, "Screenshot")` |
+| `log.plot(fig, title)` | Log Plot/Figure | `log.plot(fig, "Chart")` |
+| `log.tree(data, title)` | Log tree structure | `log.tree(data, "Hierarchy")` |
+| `log.table(data, title)` | Log table (list of dicts) | `log.table(rows, "Users")` |
 | `log.system_info()` | Log OS/platform info | `log.system_info()` |
 | `log.memory_status()` | Log memory statistics | `log.memory_status()` |
+| `log.memory_hex(data)` | Log bytes as hex dump | `log.memory_hex(buffer)` |
 | `log.stack_trace(limit)` | Log current call stack | `log.stack_trace(limit=10)` |
 | `log.file_hex(path)` | Log file as hex dump | `log.file_hex("data.bin")` |
 | `log.file_text(path)` | Log text file contents | `log.file_text("app.log")` |
-| `log.memory_hex(data)` | Log bytes as hex dump | `log.memory_hex(buffer)` |
 | `log.stream_hex(stream)` | Log binary stream as hex | `log.stream_hex(bio)` |
 | `log.stream_text(stream)` | Log text stream contents | `log.stream_text(io)` |
+
+### LoggerX Context Management
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.scope(**ctx)` | Nested scope context manager | `with log.scope(user_id=123):` |
+| `log.ctx(**ctx)` | Add context (returns new logger) | `log.ctx(user_id=123).info("...")` |
+| `log.new(name)` | Create child logger | `child_log = log.new("database")` |
+
+**Example:**
+```python
+from logxpy import log
+
+# Context manager for nested scope
+with log.scope(user_id=123, request_id="abc"):
+    log.info("Processing request")  # Includes user_id and request_id
+
+# Fluent context addition
+log.ctx(user_id=123).info("User logged in")
+
+# Create child logger
+db_log = log.new("database")
+db_log.info("Query executed")  # Shows "root.database" as logger name
+```
+
+### LoggerX Initialization
+
+```python
+from logxpy import log
+
+# Auto-generate log filename from caller script (e.g., script.py -> script.log)
+log.init()
+
+# Specify file
+log.init("app.log")
+
+# With level and mode
+log.init("app.log", level="INFO", mode="w")
+
+# Full configuration
+log.configure(
+    level="DEBUG",
+    destinations=["console", "file://app.log"],
+    format="rich",
+    mask_fields=["password", "token"]
+)
+```
 
 ### Color and Style Methods (for CLI Viewer)
 
@@ -92,6 +178,17 @@ These methods create colored blocks or lines when viewed with logxpy-cli-view:
 
 **Available colors**: black, red, green, yellow, blue, magenta, cyan, white, light_gray, dark_gray, light_red, light_green, light_blue, light_yellow, light_magenta, light_cyan
 
+### OpenTelemetry Integration
+
+```python
+from logxpy import log
+
+# OpenTelemetry span context manager
+with log.span("database_query", table="users", sql="SELECT *"):
+    # Your code here
+    results = db.query("SELECT * FROM users")
+```
+
 ### Category System
 
 | Class/Function | Purpose | Example |
@@ -105,9 +202,12 @@ These methods create colored blocks or lines when viewed with logxpy-cli-view:
 
 | Decorator | Purpose | Example |
 |-----------|---------|---------|
-| `@logged(level, ...)` | Universal logging | `@logged(level="DEBUG")` |
-| `@timed(metric)` | Timing-only | `@timed("db.query")` |
+| `@logged(level, ...)` | Universal logging decorator | `@logged(level="DEBUG")` |
+| `@timed(metric)` | Timing-only decorator | `@timed("db.query")` |
 | `@retry(attempts, delay)` | Retry with backoff | `@retry(attempts=5)` |
+| `@generator` | Generator logging | `@generator` |
+| `@aiterator` | Async iterator logging | `@aiterator` |
+| `@trace` | Tracing decorator | `@trace` |
 | `@log_call(action_type)` | Log function calls | `@log_call(action_type="func")` |
 
 ### System Message Types
@@ -115,11 +215,11 @@ These methods create colored blocks or lines when viewed with logxpy-cli-view:
 | Message Type | Purpose |
 |--------------|---------|
 | `logxpy:traceback` | Exception traceback |
-| `loggerx:debug` | Debug messages |
-| `loggerx:info` | Info messages |
-| `loggerx:success` | Success messages |
-| `loggerx:warning` | Warning messages |
-| `loggerx:error` | Error messages |
+| `loggerx:debug` | Debug messages (or just `debug`) |
+| `loggerx:info` | Info messages (or just `info`) |
+| `loggerx:success` | Success messages (or just `success`) |
+| `loggerx:warning` | Warning messages (or just `warning`) |
+| `loggerx:error` | Error messages (or just `error`) |
 | `loggerx:critical` | Critical messages |
 
 ### Color Fields for CLI Viewer
@@ -129,8 +229,10 @@ Log entries can include color hints that are rendered by logxpy-cli-view:
 ```python
 # Set colors in log entry
 {
-    "logxpy:foreground": "cyan",
-    "logxpy:background": "yellow",
+    "fg": "cyan",              # Foreground color (compact)
+    "bg": "yellow",            # Background color (compact)
+    "logxpy:foreground": "cyan",     # Legacy form (also supported)
+    "logxpy:background": "yellow",   # Legacy form (also supported)
     "message": "This renders with cyan on yellow"
 }
 ```
@@ -142,8 +244,10 @@ logxpy/logxpy/
 ├── __init__.py          # Main exports
 ├── _action.py           # Action context management
 ├── _message.py          # Message logging
-├── loggerx.py           # LoggerX class with level methods
+├── _sqid.py             # Hierarchical task ID generation (Sqid)
+├── loggerx.py           # LoggerX class with fluent API
 ├── _output.py           # Output destinations
+├── _cache.py            # Caching utilities
 ├── decorators.py        # Logging decorators
 ├── _validation.py       # Schema validation
 ├── category.py          # Category management with colors
@@ -152,7 +256,7 @@ logxpy/logxpy/
 ├── system_info.py       # System info logging
 ├── _traceback.py        # Exception handling
 ├── _types.py            # Core type definitions
-├── _base.py             # Base utilities
+├── _base.py             # Base utilities (uuid, sqid, now)
 ├── _fmt.py              # Value formatting
 ├── _async.py            # Async support
 └── _mask.py             # Field masking
@@ -166,17 +270,19 @@ logxpy/logxpy/
 - `logxpy_cli_view/src/logxpy_cli_view/` - Viewer source code
 
 ### Purpose
-Render LogXPy logs as beautiful colored ASCII trees with filtering, export, and monitoring capabilities.
+Render LogXPy logs as beautiful colored ASCII trees with filtering, export, statistics, and monitoring capabilities.
 
 ### Key Features
 - **ANSI Colors** - Color-coded values (numbers: cyan, booleans: magenta, errors: red)
 - **Emoji Icons** - Visual indicators (💾 database, 🔌 API, 🔐 auth)
 - **Tree Structure** - Unicode box-drawing characters (├── └── │)
-- **Color Block Rendering** - Supports `logxpy:foreground` and `logxpy:background` fields
-- **Filtering** - By status, action type, duration, keyword, JMESPath
+- **Color Block Rendering** - Supports `fg`/`bg` fields
+- **Powerful Filtering** - By status, action type, duration, keyword, JMESPath, date range
+- **Statistics** - Success/failure rates, duration stats, action type counts
 - **Export** - JSON, CSV, HTML, logfmt
-- **Live Monitoring** - Tail mode with real-time updates
-- **Theme Support** - Dark and light themes
+- **Live Monitoring** - Tail mode with real-time updates and dashboard
+- **Pattern Extraction** - Extract emails, IPs, URLs from logs
+- **Theme Support** - Auto, dark, and light themes
 
 ### Python Version
 **3.9+** - Uses modern but widely-compatible Python features.
@@ -185,28 +291,93 @@ Render LogXPy logs as beautiful colored ASCII trees with filtering, export, and 
 
 | Command | Description |
 |---------|-------------|
-| `logxpy-view <file>` | View log as tree |
-| `--failed` | Show only failed actions |
-| `--succeeded` | Show only succeeded actions |
-| `--filter "pattern"` | Filter by action name |
-| `--export json/csv/html/logfmt` | Export format |
-| `--tail` | Live log monitoring |
-| `--stats` | Show statistics |
-| `--theme dark/light` | Color theme |
+| `logxpy-view render <file>` | View log as tree (default) |
+| `logxpy-view stats <file>` | Show statistics |
+| `logxpy-view export <file>` | Export to format |
+| `logxpy-view tail <file>` | Live log monitoring |
+
+### CLI Options
+
+#### Filtering Options
+| Option | Description |
+|--------|-------------|
+| `--task-uuid <uuid>` | Filter by task UUID (Sqid) |
+| `--select <jmespath>` | JMESPath query (multiple allowed) |
+| `--start <date>` | Filter after ISO8601 date |
+| `--end <date>` | Filter before ISO8601 date |
+| `--status <status>` | Filter by action status (started/succeeded/failed) |
+| `--action-type <pattern>` | Filter by action type (supports wildcards) |
+| `--action-type-regex` | Treat action-type as regex pattern |
+| `--min-duration <seconds>` | Filter by minimum duration |
+| `--max-duration <seconds>` | Filter by maximum duration |
+| `--has-field <name>` | Filter by field existence |
+| `--keyword <text>` | Search in all field values |
+| `--min-level <n>` | Filter by minimum task level (depth) |
+| `--max-level <n>` | Filter by maximum task level (depth) |
+
+#### Output Options
+| Option | Description |
+|--------|-------------|
+| `--format tree\|oneline` | Output format (default: tree) |
+| `--theme auto\|dark\|light` | Color theme (default: auto) |
+| `--field-limit <n>` | Limit field value length |
+| `--no-line-numbers` | Hide line numbers |
+| `--no-color-tree` | Disable tree line coloring |
+| `--ascii` | Use ASCII characters instead of Unicode |
+| `--no-emojis` | Remove emoji icons |
+| `--no-colors` | Disable all colors |
 
 ### Core API
 
+#### Core Functions
 | Function | Purpose | Example |
 |----------|---------|---------|
 | `tasks_from_iterable(lines)` | Parse log lines | `tasks = tasks_from_iterable(f)` |
 | `render_tasks(tasks)` | Render as tree | `print(render_tasks(tasks))` |
+| `render_oneline(tasks)` | Render one-line format | `print(render_oneline(tasks))` |
+
+#### Filter Functions
+| Function | Purpose | Example |
+|----------|---------|---------|
 | `filter_by_action_status(tasks, status)` | Filter by status | `filter_by_action_status(tasks, "failed")` |
-| `filter_by_action_type(tasks, pattern)` | Filter by action | `filter_by_action_type(tasks, "db_*")` |
-| `filter_by_duration(tasks, min_seconds)` | Filter by duration | `filter_by_duration(tasks, 1.0)` |
+| `filter_by_action_type(tasks, pattern)` | Filter by action name | `filter_by_action_type(tasks, "db_*")` |
+| `filter_by_duration(tasks, min, max)` | Filter by duration | `filter_by_duration(tasks, 1.0)` |
 | `filter_by_keyword(tasks, keyword)` | Search values | `filter_by_keyword(tasks, "error")` |
-| `export_json(tasks, file)` | Export JSON | `export_json(tasks, "out.json")` |
-| `export_csv(tasks, file)` | Export CSV | `export_csv(tasks, "out.csv")` |
-| `export_html(tasks, file)` | Export HTML | `export_html(tasks, "out.html")` |
+| `filter_by_jmespath(tasks, query)` | JMESPath query | `filter_by_jmespath(tasks, "[?level=='error']")` |
+| `filter_by_uuid(tasks, *uuids)` | Filter by task UUID | `filter_by_uuid(tasks, "Xa.1")` |
+| `filter_by_start_date(tasks, date)` | Filter by start date | `filter_by_start_date(tasks, "2024-01-01")` |
+| `filter_by_end_date(tasks, date)` | Filter by end date | `filter_by_end_date(tasks, "2024-12-31")` |
+| `filter_by_field_exists(tasks, field)` | Filter by field existence | `filter_by_field_exists(tasks, "error")` |
+
+#### Export Functions
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `export_json(tasks, file)` | Export as JSON | `export_json(tasks, "out.json")` |
+| `export_csv(tasks, file)` | Export as CSV | `export_csv(tasks, "out.csv")` |
+| `export_html(tasks, file)` | Export as HTML | `export_html(tasks, "out.html")` |
+| `export_logfmt(tasks, file)` | Export as logfmt | `export_logfmt(tasks, "out.log")` |
+
+#### Statistics Functions
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `calculate_statistics(tasks)` | Calculate statistics | `stats = calculate_statistics(tasks)` |
+| `print_statistics(stats)` | Print formatted stats | `print_statistics(stats)` |
+| `create_time_series(tasks)` | Create time series data | `ts = create_time_series(tasks)` |
+
+#### Pattern Extraction
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `extract_emails(entries)` | Extract email addresses | `emails = extract_emails(entries)` |
+| `extract_ips(entries)` | Extract IP addresses | `ips = extract_ips(entries)` |
+| `extract_urls(entries)` | Extract URLs | `urls = extract_urls(entries)` |
+| `extract_uuids(entries)` | Extract UUIDs | `uuids = extract_uuids(entries)` |
+
+#### Live Monitoring
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `tail_logs(path)` | Tail log file | `tail_logs("app.log")` |
+| `LiveDashboard()` | Live dashboard class | `LiveDashboard().run()` |
+| `watch_and_aggregate(path)` | Watch and aggregate | `watch_and_aggregate("app.log")` |
 
 ### Color System
 
@@ -253,27 +424,30 @@ logxpy_cli_view/src/logxpy_cli_view/
 - `logxy-log-parser/logxy_log_parser/` - Parser source code
 
 ### Purpose
-Python library for parsing, analyzing, and querying LogXPy log files with rich export formats and real-time monitoring.
+Python library for parsing, analyzing, and querying LogXPy log files with rich export formats, real-time monitoring, indexing, and time-series analysis.
 
 ### Key Features
-- **Simple API** - One-line parsing: `entries = parse_log("app.log")`
+- **Simple One-Line API** - Parse entire files in one call
+- **Indexing System** - Fast lookups for large log files
 - **Powerful Filtering** - By level, time, action type, field values
+- **Time Series Analysis** - Anomaly detection, heatmaps, burst detection
+- **Aggregation** - Multi-file analysis and aggregation
 - **Analysis** - Performance stats, error summaries, task trees
 - **Export** - JSON, CSV, HTML, Markdown, DataFrame
 - **Real-time Monitoring** - Watch logs as they grow
-- **Validation** - Quick log file checking
+- **CLI Tools** - Query, analyze, view, and visualize logs
 
 ### Python Version
 **3.12+** - Modern Python with optional pandas/rich support.
 
 ### Simple API (One-Liners)
 
-| Function | Purpose | Example |
+| Function | Purpose | Returns |
 |----------|---------|---------|
-| `parse_log(path)` | Parse log file | `entries = parse_log("app.log")` |
-| `parse_line(line)` | Parse single line | `entry = parse_line(json_str)` |
-| `check_log(path)` | Parse + validate | `result = check_log("app.log")` |
-| `analyze_log(path)` | Full analysis | `report = analyze_log("app.log")` |
+| `parse_log(source)` | Parse log file | `ParseResult` |
+| `parse_line(line)` | Parse single line | `LogXPyEntry` or `None` |
+| `check_log(source)` | Parse + validate | `CheckResult` |
+| `analyze_log(source)` | Full analysis | `AnalysisReport` |
 
 ### Core Classes
 
@@ -286,6 +460,11 @@ Python library for parsing, analyzing, and querying LogXPy log files with rich e
 | `LogAnalyzer` | Performance/error analysis | `analyzer = LogAnalyzer(logs)` |
 | `TaskTree` | Hierarchical task tree | `tree = parser.build_task_tree()` |
 | `TaskNode` | Node in task tree | `node = tree.root` |
+| `LogIndex` | Fast lookups via indexing | `index = LogIndex.build("app.log")` |
+| `IndexedLogParser` | Parser with index support | `parser = IndexedLogParser("app.log")` |
+| `TimeSeriesAnalyzer` | Time-series analysis | `analyzer = TimeSeriesAnalyzer(logs)` |
+| `LogAggregator` | Multi-file aggregation | `agg = LogAggregator(files)` |
+| `MultiFileAnalyzer` | Cross-file analysis | `multi = MultiFileAnalyzer(files)` |
 
 ### LogFile API (Real-time Monitoring)
 
@@ -297,21 +476,89 @@ Python library for parsing, analyzing, and querying LogXPy log files with rich e
 | `logfile.watch()` | Iterate new entries | `for entry in logfile.watch():` |
 | `logfile.wait_for_message(text, timeout)` | Wait for message | `entry = logfile.wait_for_message("ready", 30)` |
 | `logfile.wait_for_error(timeout)` | Wait for error | `error = logfile.wait_for_error(60)` |
+| `logfile.contains(**criteria)` | Check contains | `logfile.contains(level="error")` |
+| `logfile.find_first(**criteria)` | Find first match | `first = logfile.find_first(level="error")` |
+| `logfile.find_all(**criteria)` | Find all matches | `all_errors = logfile.find_all(level="error")` |
+| `logfile.tail(n)` | Get last N entries | `last = logfile.tail(10)` |
 
-### Filter Methods
+### LogFilter Methods
+
+All filter methods return `LogEntries` for chaining:
 
 | Method | Purpose | Example |
 |--------|---------|---------|
-| `by_level(*levels)` | Filter by log level | `by_level("error", "warning")` |
-| `by_message(pattern)` | Filter by message text | `by_message("database")` |
-| `by_time_range(start, end)` | Filter by time range | `by_time_range("2024-01-01", "2024-12-31")` |
-| `by_task_uuid(*uuids)` | Filter by task UUID | `by_task_uuid("abc-123")` |
-| `by_action_type(*types)` | Filter by action type | `by_action_type("db_*")` |
-| `by_field(field, value)` | Filter by field value | `by_field("user_id", 123)` |
-| `by_duration(min, max)` | Filter by duration | `by_duration(min=1.0)` |
-| `with_traceback()` | Entries with tracebacks | `with_traceback()` |
-| `failed_actions()` | Failed actions only | `failed_actions()` |
-| `slow_actions(threshold)` | Slow actions only | `slow_actions(5.0)` |
+| `by_level(*levels)` | Filter by log level | `.by_level("error", "warning")` |
+| `by_message(pattern)` | Filter by message text | `.by_message("database")` |
+| `by_time_range(start, end)` | Filter by time range | `.by_time_range("2024-01-01", "2024-12-31")` |
+| `by_task_uuid(*uuids)` | Filter by task ID (Sqid) | `.by_task_uuid("Xa.1")` |
+| `by_action_type(*types)` | Filter by action type | `.by_action_type("db:*")` |
+| `by_field(field, value)` | Filter by field value | `.by_field("user_id", 123)` |
+| `by_duration(min, max)` | Filter by duration | `.by_duration(min=1.0)` |
+| `by_nesting_level(min, max)` | Filter by depth | `.by_nesting_level(1, 3)` |
+| `with_traceback()` | Entries with tracebacks | `.with_traceback()` |
+| `failed_actions()` | Failed actions only | `.failed_actions()` |
+| `succeeded_actions()` | Succeeded actions only | `.succeeded_actions()` |
+| `slow_actions(threshold)` | Slow actions only | `.slow_actions(5.0)` |
+| `fast_actions(threshold)` | Fast actions only | `.fast_actions(0.001)` |
+
+### LogAnalyzer Methods
+
+| Method | Purpose | Returns |
+|--------|---------|---------|
+| `slowest_actions(n)` | Get slowest actions | `list[ActionStat]` |
+| `fastest_actions(n)` | Get fastest actions | `list[ActionStat]` |
+| `duration_by_action()` | Duration by action type | `dict[str, DurationStats]` |
+| `error_summary()` | Error analysis summary | `ErrorSummary` |
+| `error_patterns()` | Find error patterns | `list[ErrorPattern]` |
+| `failure_rate_by_action()` | Failure rate per action | `dict[str, float]` |
+| `deepest_nesting()` | Maximum nesting depth | `int` |
+| `orphans()` | Unmatched entries | `LogEntries` |
+| `timeline(interval)` | Timeline data | `Timeline` |
+| `peak_periods(n)` | Busiest time periods | `list[TimePeriod]` |
+| `generate_report(format)` | Generate report | `str` (html/text/json) |
+
+### Indexing System
+
+For fast lookups in large log files:
+
+| Class/Method | Purpose | Example |
+|--------------|---------|---------|
+| `LogIndex.build(path)` | Build index | `index = LogIndex.build("app.log")` |
+| `index.find_by_task(uuid)` | Find by task UUID | `index.find_by_task("Xa.1")` |
+| `index.find_by_level(level)` | Find by level | `index.find_by_level("error")` |
+| `index.find_by_time_range(start, end)` | Find by time range | `index.find_by_time_range(start, end)` |
+| `IndexedLogParser(path)` | Indexed parser | `parser = IndexedLogParser("app.log")` |
+| `parser.query(**criteria)` | Query with criteria | `parser.query(task_uuid="Xa.1")` |
+
+### Time Series Analysis
+
+| Method | Purpose | Returns |
+|--------|---------|---------|
+| `bucket_by_interval(seconds)` | Bucket by time interval | `list[TimeBucket]` |
+| `detect_anomalies(window, threshold)` | Detect anomalies | `list[Anomaly]` |
+| `error_rate_t(interval)` | Error rate over time | `list[tuple]` |
+| `level_distribution(interval)` | Level distribution | `dict` |
+| `activity_heatmap(hour_granularity)` | Activity heatmap | `dict` |
+| `burst_detection(threshold, min_interval)` | Detect bursts | `list[Burst]` |
+
+### Aggregation & Multi-File Analysis
+
+| Class/Method | Purpose | Example |
+|--------------|---------|---------|
+| `LogAggregator(files)` | Aggregate multiple files | `agg = LogAggregator(["f1.log", "f2.log"])` |
+| `aggregator.aggregate()` | Aggregate all files | `result = agg.aggregate()` |
+| `MultiFileAnalyzer(files)` | Analyze multiple files | `multi = MultiFileAnalyzer(files)` |
+| `multi.analyze_all()` | Analyze all files | `multi.analyze_all()` |
+| `multi.time_series_analysis(interval)` | Time series across files | `multi.time_series_analysis(3600)` |
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `logxy-query <file>` | Query log file with filters |
+| `logxy-analyze <file>` | Analyze log file and generate report |
+| `logxy-view <file>` | View log file with colored output |
+| `logxy-tree <file>` | Visualize task tree from log file |
 
 ### Module Structure
 
@@ -324,8 +571,12 @@ logxy-log-parser/logxy_log_parser/
 ├── analyzer.py          # LogAnalyzer
 ├── monitor.py           # LogFile (real-time)
 ├── tree.py              # TaskTree, TaskNode
+├── index.py             # LogIndex, IndexedLogParser
+├── aggregation.py       # LogAggregator, TimeSeriesAnalyzer
 ├── types.py             # Type definitions
 ├── export.py            # Export functions
+├── cli.py               # CLI commands
+├── config.py            # Configuration management
 └── utils.py             # Helper functions
 ```
 
@@ -412,25 +663,84 @@ logxpy-view file.log --no-colors
 logxpy-view file.log --no-emojis
 
 # Limit nesting depth
-logxpy-view file.log --depth-limit 3
+logxpy-view file.log --max-level 3
 ```
 
 ---
 
 ## Key Concepts
 
-### Log Entry Structure
+### Log Entry Structure (Compact Field Names)
+
+LogXPy uses **1-2 character field names** to minimize log size:
 
 ```python
 {
-    "task_uuid": "abc123-...",  # Groups related entries
-    "timestamp": 14:30:00,      # HH:MM:SS format
-    "action_type": "http:request",  # Determines emoji
-    "task_level": [1],           # Hierarchical level (array format)
-    "action_status": "succeeded", # started, succeeded, failed
-    "duration_ns": 145000000,    # Nanoseconds
-    # ... additional key-value pairs
+    "ts": 1770562483.38,      # Timestamp (was: timestamp)
+    "tid": "Xa.1",            # Task ID - Sqid format (was: task_uuid)
+    "lvl": [1],               # Task level hierarchy (was: task_level)
+    "mt": "info",             # Message type (was: message_type)
+    "at": "http:request",     # Action type - determines emoji (was: action_type)
+    "st": "succeeded",        # Action status (was: action_status)
+    "dur": 0.145,             # Duration in seconds (was: duration_ns)
+    "msg": "User logged in",  # Message text (was: message)
+    # ... additional user-defined key-value pairs
 }
+```
+
+**Field Name Mapping:**
+
+| Compact | Legacy | Meaning |
+|---------|--------|---------|
+| `ts` | `timestamp` | Unix timestamp (seconds) |
+| `tid` | `task_uuid` | Task ID (Sqid format) |
+| `lvl` | `task_level` | Hierarchy level array |
+| `mt` | `message_type` | Log level: `info`, `success`, `error`, etc. |
+| `at` | `action_type` | Action type (for emoji): `db:query`, `http:request` |
+| `st` | `action_status` | started/succeeded/failed |
+| `dur` | `duration` | Duration in seconds |
+| `msg` | `message` | Log message text (the actual message) |
+
+**Compact Field Constants:**
+```python
+from logxpy import TS, TID, LVL, MT, AT, ST, DUR, MSG
+
+# Use compact names
+entry[TS] = time.time()
+entry[TID] = sqid()
+entry[MT] = "info"
+```
+
+**Example Log Entry:**
+```json
+{"ts":1770563890.7861168,"tid":"gD.1","lvl":[1],"mt":"info","msg":"Hello, World!"}
+```
+
+### Task ID Format (Sqid)
+
+**Sqids** replace UUID4 with ultra-short hierarchical IDs:
+
+| Format | Example | Length | Use Case |
+|--------|---------|--------|----------|
+| Root | `"Xa.1"` | 4 chars | Top-level task |
+| Child | `"Xa.1.1"` | 6 chars | Nested action |
+| Deep | `"Xa.1.1.2"` | 8 chars | 3 levels deep |
+| UUID4 (legacy) | `"59b00749-eb24-..."` | 36 chars | Distributed mode |
+
+**Benefits:**
+- **89% smaller** than UUID4 (4-12 chars vs 36)
+- **Human readable** - Shows hierarchy in ID
+- **Process-isolated** - PID prefix prevents cross-process collisions
+- **Collision safe** - 238K entries per process before wrap
+
+**Format:** `PID_PREFIX.COUNTER[.CHILD_INDEX...]`
+- `Xa` = 2-char PID prefix (base62)
+- `1` = Entry counter (base62, sequential)
+- `1`, `2` = Child indices for nested actions
+
+**Environment variable for distributed mode:**
+```bash
+LOGXPY_DISTRIBUTED=1  # Forces UUID4 for distributed tracing
 ```
 
 ### Task Level Format
@@ -465,7 +775,7 @@ Based on `action_type` keywords:
 | Success strings | Bright Green | `\033[92m` |
 | Regular strings | White | `\033[37m` |
 | Timestamps | Dim Gray | `\033[90m` |
-| Task UUIDs | Bright Magenta | `\033[95m` |
+| Task IDs (`tid`) | Bright Magenta | `\033[95m` |
 
 ---
 
@@ -479,17 +789,56 @@ Based on `action_type` keywords:
 4. Write logging code
 5. Update `README.md` example table
 
-### Adding a New Color
+### Working with Sqid Task IDs
 
-1. Add to `Color` StrEnum in `view_tree.py`
-2. Update `_format_value()` pattern matching
-3. Update color documentation in README
+**Generate Sqid manually:**
+```python
+from logxpy import sqid, SqidGenerator
 
-### Adding a New Emoji
+# Simple generation
+id = sqid()  # "Xa.1"
 
-1. Add to `EmojiIcon` StrEnum in `view_tree.py`
-2. Add pattern in `get_icon()` method
-3. Update emoji table in README
+# With generator for hierarchy
+gen = SqidGenerator()
+root = gen.generate()       # "Xa.1"
+child = gen.child(root, 1)  # "Xa.1.1"
+```
+
+**Force UUID4 for distributed systems:**
+```python
+import os
+os.environ["LOGXPY_DISTRIBUTED"] = "1"  # Use UUID4
+
+# Or via uuid()
+from logxpy._base import uuid
+task_id = uuid(use_sqid=False)  # UUID4 format
+```
+
+**Parse Sqid hierarchy:**
+```python
+from logxpy._sqid import SqidGenerator
+
+gen = SqidGenerator()
+sqid = "Xa.1.2.1"
+
+level = sqid.count(".")  # 3 = depth
+parent = sqid.rsplit(".", 1)[0]  # "Xa.1.2"
+```
+
+**Using compact field names:**
+```python
+from logxpy import TS, TID, LVL, MT, AT, ST, DUR, MSG
+
+# Instead of:
+entry["timestamp"] = time.time()
+entry["task_uuid"] = sqid()
+entry["message_type"] = "info"
+
+# Use compact names:
+entry[TS] = time.time()      # "ts"
+entry[TID] = sqid()          # "tid"
+entry[MT] = "info"           # "mt"
+```
 
 ---
 
@@ -508,23 +857,94 @@ Based on `action_type` keywords:
 - [logxpy-api-reference.html](logxpy-api-reference.html) - Complete API reference
 - [PROJECT_SUMMARY.md](PROJECT_SUMMARY.md) - Project overview
 - [DOC-X/cross-docs/cross-lib1.html](DOC-X/cross-docs/cross-lib1.html) - CodeSite cross-reference
+- [PLAN_DOCUMENTATION_UPDATE.md](PLAN_DOCUMENTATION_UPDATE.md) - Documentation update plan
+
+---
+
+## Included Dependencies
+
+The project includes two powerful utility libraries for easier and more concise coding:
+
+### 1. more-itertools (v10.8.0)
+
+> 160+ functions extending itertools · The standard "itertools recipes" library
+
+**Key Features:**
+- **Grouping**: `chunked`, `batched`, `bucket`, `distribute`, `split_at`, `grouper`
+- **Lookahead & Inspection**: `spy`, `peekable`, `seekable`, `ilen`, `is_sorted`
+- **Selecting**: `first`, `last`, `one`, `only`, `unique_everseen`, `take`, `tail`
+- **Windowing**: `windowed`, `pairwise`, `sliding_window`
+- **Augmenting**: `intersperse`, `repeat_each`, `padded`, `mark_ends`
+- **Combining**: `collapse`, `flatten`, `interleave`, `roundrobin`
+- **Math & Statistics**: `minmax`, `factor`, `sieve`, `numeric_range`
+- **Combinatorics**: `distinct_permutations`, `partitions`, `powerset`
+
+📖 **Full Reference**: See [DOC/more-itertools-ref.md](DOC/more-itertools-ref.md) for complete API documentation.
+
+---
+
+### 2. boltons (v25.0.0)
+
+> 250+ pure-Python utilities — no dependencies · Battle-tested · 26 modules
+
+**Key Modules:**
+
+| Module | Purpose | Key Functions/Classes |
+|--------|---------|----------------------|
+| `cacheutils` | Caching | `LRU`, `LRI`, `@cached`, `cachedproperty`, `ThresholdCounter` |
+| `debugutils` | Debugging | `pdb_on_exception`, `wrap_trace`, `pdb_on_signal` |
+| `dictutils` | Mapping types | `OrderedMultiDict`, `OneToOne`, `ManyToMany`, `FrozenDict` |
+| `ecoutils` | Environment | `get_profile()`, `get_python_info()` |
+| `fileutils` | Filesystem | `atomic_save`, `mkdir_p`, `iter_find_files`, `FilePerms` |
+| `formatutils` | Format strings | `get_format_args`, `DeferredValue` |
+| `funcutils` | Functions | `wraps`, `FunctionBuilder`, `InstancePartial`, `noop` |
+| `gcutils` | Garbage collect | `GCToggler`, `get_all()` |
+| `ioutils` | I/O helpers | `SpooledBytesIO`, `MultiFileReader` |
+| `iterutils` | Iteration | `remap` ★, `research`, `chunked`, `backoff`, `bucketize` |
+| `jsonutils` | JSON | `JSONLIterator`, `reverse_iter_lines` |
+| `listutils` | Lists | `BarrelList`, `SplayList` |
+| `mathutils` | Math | `clamp`, `ceil`, `floor`, `Bits` |
+| `pathutils` | Paths | `augpath`, `expandpath`, `shrinkuser` |
+| `queueutils` | Priority queues | `HeapPriorityQueue`, `PriorityQueue` |
+| `setutils` | Sets | `IndexedSet`, `complement` |
+| `socketutils` | Sockets | `BufferedSocket`, `NetstringSocket` |
+| `statsutils` | Statistics | `Stats`, `describe`, `format_histogram` |
+
+📖 **Full Reference**: See [DOC/boltons-ref.md](DOC/boltons-ref.md) for complete API documentation.
+
+---
+
+### more-itertools vs boltons.iterutils
+
+| Task | more-itertools | boltons |
+|---|---|---|
+| Chunk | `chunked` | `chunked` |
+| Window | `windowed(step=)` | `windowed(fill=)` |
+| Pairwise | `pairwise` | `pairwise(end=)` |
+| Flatten | `collapse` (deep) | `flatten` (1 level) |
+| Unique | `unique_everseen` | `unique` |
+| Partition | `(falsy, truthy)` | `(truthy, falsy)` ⚠ |
+| Group by | `bucket` (lazy) | `bucketize` (eager dict) |
+| Peek/Seek | `peekable`, `spy`, `seekable` | — |
+| Nested remap | — | `remap` ★ |
+| Backoff | — | `backoff` |
+| Combinatorics | 20+ functions | — |
 
 ---
 
 ## Contributing
 
-1. **Zero dependencies** - Don't add external packages unless necessary
-2. **Python 3.12+ only** - Use modern features
-3. **Type hints** - Required for new code
-4. **Tests** - Add examples for new features
-5. **Documentation** - Update relevant docs
+1. **Python 3.12+ only** - Use modern features
+2. **Type hints** - Required for new code
+3. **Tests** - Add examples for new features
+4. **Documentation** - Update relevant docs
 
 ---
 
 ## Project Goals
 
 - Beautiful, readable log visualization
-- Zero dependencies for core logging library
+- Minimal dependencies (boltons, more-itertools)
 - Modern Python 3.12+ features
 - Type-safe throughout
 - Fast and memory efficient

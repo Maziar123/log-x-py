@@ -1,90 +1,90 @@
-{"timestamp":1770538645.9068553,"task_uuid":"0129b051-87de-4dd6-aa28-39dbcc18c353","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9069247,"task_uuid":"55dd6ef4-5580-4f6f-8bb2-ee1876a89637","task_level":[1],"message_type":"loggerx:info","message":"1. BASIC LEVEL COLORS (Automatic)"}
-{"timestamp":1770538645.9069564,"task_uuid":"839fbc5d-9d0c-4a63-b78f-f9ecfa8d9670","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9069788,"task_uuid":"a2f9e5a4-0dc2-4545-89ab-78b7c1d41d03","task_level":[1],"message_type":"loggerx:debug","message":"This is a DEBUG message - renders in gray"}
-{"timestamp":1770538645.9069977,"task_uuid":"213ada59-6dc2-4237-8a56-e2d149609081","task_level":[1],"message_type":"loggerx:info","message":"This is an INFO message - renders in white"}
-{"timestamp":1770538645.9070168,"task_uuid":"7dfe4587-3fe3-48a2-bc41-0489247f2b83","task_level":[1],"message_type":"loggerx:success","message":"This is a SUCCESS message - renders in bright green"}
-{"timestamp":1770538645.9070349,"task_uuid":"b6d4e40b-0815-440f-ac25-588795ee3db2","task_level":[1],"message_type":"loggerx:note","message":"This is a NOTE message - renders in yellow"}
-{"timestamp":1770538645.9070528,"task_uuid":"1f42308b-d8fb-43da-b6ba-15a580b38f68","task_level":[1],"message_type":"loggerx:warning","message":"This is a WARNING message - renders in bright yellow"}
-{"timestamp":1770538645.9070702,"task_uuid":"7869fdf0-f3d8-4c0a-b04f-17ce1005e9ac","task_level":[1],"message_type":"loggerx:error","message":"This is an ERROR message - renders in red"}
-{"timestamp":1770538645.9070873,"task_uuid":"6478048f-c82c-464e-b00c-afab363e17fa","task_level":[1],"message_type":"loggerx:critical","message":"This is a CRITICAL message - renders in bright red with background"}
-{"timestamp":1770538645.9071045,"task_uuid":"4f9bcb0c-c4ee-4f1b-9c5e-daaead9d12af","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9071214,"task_uuid":"6429f993-f7ed-4dd5-afef-15709cd9623b","task_level":[1],"message_type":"loggerx:info","message":"2. SET FOREGROUND COLOR"}
-{"timestamp":1770538645.9071386,"task_uuid":"c6d115d5-de04-4ff8-9e62-133762aa3e3e","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9071572,"task_uuid":"389595a1-1d1f-4d80-99b3-f0913e96bb6d","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:info","message":"Cyan foreground text"}
-{"timestamp":1770538645.9071763,"task_uuid":"8244c54e-b4d3-4b7b-a863-f89c0c8e15fb","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:debug","message":"Debug message with cyan foreground"}
-{"timestamp":1770538645.9071937,"task_uuid":"9cdcf4b3-1e9b-4a34-b408-bb3e644e807b","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:success","message":"Success message with cyan foreground"}
-{"timestamp":1770538645.9072306,"task_uuid":"cda35dcf-1af9-4049-b25f-8b1d0b3f9ec2","task_level":[1],"logxpy:foreground":"green","message_type":"loggerx:info","message":"Green foreground text"}
-{"timestamp":1770538645.9072516,"task_uuid":"c82c2ebe-611e-49db-a8a5-e2aee8defc39","task_level":[1],"logxpy:foreground":"yellow","message_type":"loggerx:info","message":"Yellow foreground text"}
-{"timestamp":1770538645.9072697,"task_uuid":"5fc1dac7-180c-4241-adac-661500318982","task_level":[1],"logxpy:foreground":"magenta","message_type":"loggerx:info","message":"Magenta foreground text"}
-{"timestamp":1770538645.9072871,"task_uuid":"16e130a4-f93a-4567-b39e-e9b99a0c33ee","task_level":[1],"logxpy:foreground":"red","message_type":"loggerx:info","message":"Red foreground text"}
-{"timestamp":1770538645.907304,"task_uuid":"6788965b-1d68-4d8f-9b38-51e4fe23d49d","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.90733,"task_uuid":"378d0e65-97d7-4b11-8c83-467383087e49","task_level":[1],"message_type":"loggerx:info","message":"3. SET BACKGROUND COLOR"}
-{"timestamp":1770538645.907351,"task_uuid":"cca2e141-3140-4582-a27d-b86d0fc90fa5","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.907369,"task_uuid":"11ad807d-e83c-4016-948b-c14e4cddfd09","task_level":[1],"logxpy:background":"yellow","message_type":"loggerx:info","message":"Yellow background - warning style"}
-{"timestamp":1770538645.9073877,"task_uuid":"e1c29af0-8679-4372-a6e5-2bd34cb30266","task_level":[1],"logxpy:background":"red","message_type":"loggerx:error","message":"Red background - error style"}
-{"timestamp":1770538645.9074056,"task_uuid":"da7812c1-e1db-4cd4-a685-16850d4787e4","task_level":[1],"logxpy:background":"blue","message_type":"loggerx:info","message":"Blue background - info style"}
-{"timestamp":1770538645.907423,"task_uuid":"d0c55658-54a0-4830-8b4e-7e7771b30fc9","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9074402,"task_uuid":"349c3e59-c479-42e9-8984-4c2902ccefbc","task_level":[1],"message_type":"loggerx:info","message":"4. COMBINED FOREGROUND AND BACKGROUND"}
-{"timestamp":1770538645.9074564,"task_uuid":"ce97df1f-6caf-4448-a915-9c3aac9ffc40","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9074736,"task_uuid":"4bd34e31-af40-43b0-a0ae-6e4996ce2263","task_level":[1],"logxpy:foreground":"white","logxpy:background":"red","message_type":"loggerx:error","message":"White on red - critical error style"}
-{"timestamp":1770538645.907493,"task_uuid":"a35d0ba7-0038-46fc-9bc8-fc6eab94003c","task_level":[1],"logxpy:foreground":"black","logxpy:background":"yellow","message_type":"loggerx:warning","message":"Black on yellow - highlight style"}
-{"timestamp":1770538645.907511,"task_uuid":"40595a18-e7a4-4020-a0f6-05d67a909ff4","task_level":[1],"logxpy:foreground":"cyan","logxpy:background":"blue","message_type":"loggerx:info","message":"Cyan on blue - info highlight"}
-{"timestamp":1770538645.907528,"task_uuid":"afd509a2-44e6-4480-8282-dd6856beffb6","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9075444,"task_uuid":"43d6542c-8f1a-46bd-bd22-f606e87031e6","task_level":[1],"message_type":"loggerx:info","message":"5. ONE-SHOT COLORED MESSAGES (colored method)"}
-{"timestamp":1770538645.90756,"task_uuid":"a507d4ac-69bc-4c18-b959-3be7a76bf05c","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.907579,"task_uuid":"fc4fd819-0966-44c7-9611-be8f583bcead","task_level":[1],"logxpy:foreground":"red","message_type":"loggerx:info","message":"Important message in red"}
-{"timestamp":1770538645.9075973,"task_uuid":"2ee55c94-6b0c-4c6c-a32f-efa4b6895ab8","task_level":[1],"logxpy:foreground":"green","message_type":"loggerx:info","message":"Success message in green"}
-{"timestamp":1770538645.9076152,"task_uuid":"88465971-b1cb-4716-9fa9-1dec756cc9ca","task_level":[1],"logxpy:foreground":"yellow","message_type":"loggerx:info","message":"Warning message in yellow"}
-{"timestamp":1770538645.9076345,"task_uuid":"b30bae99-5b07-42da-85aa-def92cedcc74","task_level":[1],"logxpy:foreground":"black","logxpy:background":"yellow","message_type":"loggerx:info","message":"⚠️  WARNING with yellow background"}
-{"timestamp":1770538645.9076571,"task_uuid":"3392c4f7-b0cf-4b2e-a724-bb91829c8188","task_level":[1],"logxpy:foreground":"white","logxpy:background":"red","message_type":"loggerx:info","message":"❌ ERROR with red background"}
-{"timestamp":1770538645.9076784,"task_uuid":"b17fb070-e9f2-4f83-a970-7bfce69a14cb","task_level":[1],"logxpy:foreground":"white","logxpy:background":"green","message_type":"loggerx:info","message":"✅ SUCCESS with green background"}
-{"timestamp":1770538645.9077036,"task_uuid":"ae8cf10a-22a3-4455-98bc-6c017d3d0a38","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9077246,"task_uuid":"a96853f7-f680-4515-8292-f89103cdb1ec","task_level":[1],"message_type":"loggerx:info","message":"6. COLORED BLOCKS (Unicode Box Drawing)"}
-{"timestamp":1770538645.9077415,"task_uuid":"9cd65444-f387-4e4c-8ee5-15ec66b84bcc","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.907759,"task_uuid":"5c9b4617-4f5d-440b-8b0c-4145ad98c326","task_level":[1],"logxpy:foreground":"black","logxpy:background":"yellow","message_type":"loggerx:info","message":"╔════════════════════════════════════════════════════════════╗\n║  ⚠️  WARNING - IMPORTANT NOTICE                               ║\n║                                                                ║\n║  This is a highlighted warning block using Unicode characters   ║\n║  Yellow background with black text for maximum visibility     ║\n╚════════════════════════════════════════════════════════════╝"}
-{"timestamp":1770538645.907784,"task_uuid":"a3ef2f02-e8f6-433b-a495-0d15e0676768","task_level":[1],"logxpy:foreground":"white","logxpy:background":"red","message_type":"loggerx:info","message":"╔════════════════════════════════════════════════════════════╗\n║  ❌ ERROR - CRITICAL FAILURE                                     ║\n║                                                                ║\n║  This is an error block with red background                     ║\n║  White text on red background for critical issues              ║\n╚════════════════════════════════════════════════════════════╝"}
-{"timestamp":1770538645.9078066,"task_uuid":"e519aec5-7fcf-4f35-8e90-73f5423acb13","task_level":[1],"logxpy:foreground":"white","logxpy:background":"green","message_type":"loggerx:info","message":"╔════════════════════════════════════════════════════════════╗\n║  ✅ SUCCESS - OPERATION COMPLETED                               ║\n║                                                                ║\n║  This is a success block with green background                  ║\n║  White text on green background for positive results          ║\n╚════════════════════════════════════════════════════════════╝"}
-{"timestamp":1770538645.9078274,"task_uuid":"f3a69684-7416-4c1c-9b46-ee895e025d1b","task_level":[1],"logxpy:foreground":"black","logxpy:background":"cyan","message_type":"loggerx:info","message":"╔════════════════════════════════════════════════════════════╗\n║  ℹ️  INFO - INFORMATION                                          ║\n║                                                                ║\n║  This is an info block with cyan background                      ║\n║  Black text on cyan background for informational content        ║\n╚════════════════════════════════════════════════════════════╝"}
-{"timestamp":1770538645.9078467,"task_uuid":"53692833-6467-44fb-ab14-d3a0cde78315","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9078655,"task_uuid":"a5baa782-58b4-479c-a7ab-d08a69345171","task_level":[1],"message_type":"loggerx:info","message":"7. ALL AVAILABLE COLORS DEMO"}
-{"timestamp":1770538645.9078817,"task_uuid":"922b9c7c-106b-48b5-b669-fcc48db00e6b","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9078984,"task_uuid":"82b16e3a-eb67-4227-a0c2-337fd2035ada","task_level":[1],"logxpy:foreground":"black","message_type":"loggerx:info","message":"  → black        text example  ←"}
-{"timestamp":1770538645.9079158,"task_uuid":"bb504f86-c503-4ad3-bc8a-8aee712da872","task_level":[1],"logxpy:foreground":"red","message_type":"loggerx:info","message":"  → red          text example  ←"}
-{"timestamp":1770538645.9079325,"task_uuid":"84605751-3ac7-4812-b481-94fefec48804","task_level":[1],"logxpy:foreground":"green","message_type":"loggerx:info","message":"  → green        text example  ←"}
-{"timestamp":1770538645.9079483,"task_uuid":"17808a8a-bfb3-46be-a173-97e7db972717","task_level":[1],"logxpy:foreground":"yellow","message_type":"loggerx:info","message":"  → yellow       text example  ←"}
-{"timestamp":1770538645.907967,"task_uuid":"76d5e8ed-83fd-4edd-9ad7-1dad2d4b36cf","task_level":[1],"logxpy:foreground":"blue","message_type":"loggerx:info","message":"  → blue         text example  ←"}
-{"timestamp":1770538645.9079826,"task_uuid":"088879d3-b5fd-4135-bf12-b08afe881fb6","task_level":[1],"logxpy:foreground":"magenta","message_type":"loggerx:info","message":"  → magenta      text example  ←"}
-{"timestamp":1770538645.907999,"task_uuid":"a4572e44-7c54-4826-9fb6-cca834bfad5b","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:info","message":"  → cyan         text example  ←"}
-{"timestamp":1770538645.9080143,"task_uuid":"929f3802-bd0f-4a31-b3f7-f940774af221","task_level":[1],"logxpy:foreground":"white","message_type":"loggerx:info","message":"  → white        text example  ←"}
-{"timestamp":1770538645.9080288,"task_uuid":"e58d8eb8-4c1a-47ce-a39d-50d78922f801","task_level":[1],"logxpy:foreground":"light_gray","message_type":"loggerx:info","message":"  → light_gray   text example  ←"}
-{"timestamp":1770538645.9080443,"task_uuid":"cc005ec8-bb37-43c0-8428-8adc0f2fa707","task_level":[1],"logxpy:foreground":"dark_gray","message_type":"loggerx:info","message":"  → dark_gray    text example  ←"}
-{"timestamp":1770538645.9080586,"task_uuid":"8b76990d-56bc-4533-b0bd-2f59d4314322","task_level":[1],"logxpy:foreground":"light_red","message_type":"loggerx:info","message":"  → light_red    text example  ←"}
-{"timestamp":1770538645.9080734,"task_uuid":"00cd4fa9-5418-4023-b167-af0cbdba212d","task_level":[1],"logxpy:foreground":"light_green","message_type":"loggerx:info","message":"  → light_green  text example  ←"}
-{"timestamp":1770538645.908088,"task_uuid":"9d9e94e3-d899-44bb-8264-f8f4162b6117","task_level":[1],"logxpy:foreground":"light_blue","message_type":"loggerx:info","message":"  → light_blue   text example  ←"}
-{"timestamp":1770538645.9081028,"task_uuid":"ad50b960-dbe6-4106-8979-efe2cf083e8d","task_level":[1],"logxpy:foreground":"light_yellow","message_type":"loggerx:info","message":"  → light_yellow text example  ←"}
-{"timestamp":1770538645.9081173,"task_uuid":"81973342-a714-4eb5-abd9-674c98393cfe","task_level":[1],"logxpy:foreground":"light_magenta","message_type":"loggerx:info","message":"  → light_magenta text example  ←"}
-{"timestamp":1770538645.9081316,"task_uuid":"2ca54ca6-6439-4e38-b346-9bd58e4d2acc","task_level":[1],"logxpy:foreground":"light_cyan","message_type":"loggerx:info","message":"  → light_cyan   text example  ←"}
-{"timestamp":1770538645.9081461,"task_uuid":"1891e718-2f82-4f89-a2f2-2df38046c250","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9081657,"task_uuid":"d7b4aa20-e0dc-4ab4-bdc1-a834d0e41238","task_level":[1],"message_type":"loggerx:info","message":"8. PRACTICAL EXAMPLES"}
-{"timestamp":1770538645.9081817,"task_uuid":"d34261f4-977c-4352-af8a-5db6036d965f","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9081955,"task_uuid":"b4fb1d14-a9a3-4b48-adf7-b1073753309e","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:info","message":"💾 Database: Slow query detected (>5 seconds)"}
-{"timestamp":1770538645.9082217,"task_uuid":"63d8d3fb-12ee-41a1-9c4a-7974d9c0e2e3","task_level":[1],"logxpy:foreground":"green","message_type":"loggerx:info","message":"💳 Payment: $99.99 payment completed successfully"}
-{"timestamp":1770538645.9082391,"task_uuid":"24425925-ed66-4b0c-9f09-a399a1cb28c4","task_level":[1],"logxpy:foreground":"white","logxpy:background":"red","message_type":"loggerx:info","message":"🔐 Auth: Invalid credentials - access denied"}
-{"timestamp":1770538645.9082568,"task_uuid":"8801cd6f-08da-4f8f-aaab-985e5d1cface","task_level":[1],"logxpy:foreground":"black","logxpy:background":"yellow","message_type":"loggerx:info","message":"⚠️  API: Rate limit exceeded (1000 req/hour)"}
-{"timestamp":1770538645.9082732,"task_uuid":"5eb3ea97-c316-4456-9b00-bc9267881cf0","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9082868,"task_uuid":"535cff8b-b765-4e4d-bc18-7a09cb4306af","task_level":[1],"message_type":"loggerx:info","message":"9. GRADIENT EFFECT"}
-{"timestamp":1770538645.9082997,"task_uuid":"df555f7d-84f4-41e9-9ead-7f16a639f60d","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9083154,"task_uuid":"13aae496-e08f-4718-be3e-73174df5adde","task_level":[1],"logxpy:foreground":"light_red","message_type":"loggerx:info","message":"  Gradient step 1: light_red text"}
-{"timestamp":1770538645.90833,"task_uuid":"3bf589db-4b0c-4867-bd7b-070454a08b46","task_level":[1],"logxpy:foreground":"light_yellow","message_type":"loggerx:info","message":"  Gradient step 2: light_yellow text"}
-{"timestamp":1770538645.908345,"task_uuid":"c503bef7-0d20-4ba8-911a-70e3c90bef9a","task_level":[1],"logxpy:foreground":"light_green","message_type":"loggerx:info","message":"  Gradient step 3: light_green text"}
-{"timestamp":1770538645.9083586,"task_uuid":"ece5a7bb-d128-4ef4-b908-fe67be0bd9bf","task_level":[1],"logxpy:foreground":"light_cyan","message_type":"loggerx:info","message":"  Gradient step 4: light_cyan text"}
-{"timestamp":1770538645.9083722,"task_uuid":"23d81e03-724f-48da-b913-94dda1fb3e8f","task_level":[1],"logxpy:foreground":"light_blue","message_type":"loggerx:info","message":"  Gradient step 5: light_blue text"}
-{"timestamp":1770538645.9083855,"task_uuid":"74842d99-056b-4257-8b92-386d6d0b58eb","task_level":[1],"logxpy:foreground":"light_magenta","message_type":"loggerx:info","message":"  Gradient step 6: light_magenta text"}
-{"timestamp":1770538645.908399,"task_uuid":"7ad36bc4-f57f-453d-b338-cb2f623d5b6a","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.9084127,"task_uuid":"1ddc321b-fe5d-4bf0-8f0f-bb397a6070cf","task_level":[1],"message_type":"loggerx:info","message":"10. DATA TYPE HIGHLIGHTING"}
-{"timestamp":1770538645.9084258,"task_uuid":"a923e39f-716d-4de7-aff7-2194d6cc04fd","task_level":[1],"message_type":"loggerx:info","message":"============================================================"}
-{"timestamp":1770538645.908439,"task_uuid":"b36e70d2-c9ba-409a-836b-4fe5cb55007c","task_level":[1],"logxpy:foreground":"cyan","message_type":"loggerx:info","message":"Numbers: 42, 3.14, -123"}
-{"timestamp":1770538645.9084525,"task_uuid":"507ea892-27da-4def-bdd2-c364bffa11b1","task_level":[1],"logxpy:foreground":"magenta","message_type":"loggerx:info","message":"Boolean: True, False"}
-{"timestamp":1770538645.9084716,"task_uuid":"0ec623fc-200a-4262-ab94-895c05062ea4","task_level":[1],"logxpy:foreground":"white","message_type":"loggerx:info","message":"String: 'Hello, World!'"}
-{"timestamp":1770538645.9084883,"task_uuid":"dca988ea-6094-4d46-b9e6-c0047ab26534","task_level":[1],"logxpy:foreground":"blue","message_type":"loggerx:info","message":"URL: https://example.com/api"}
+{"ts":1770575022.4061735,"tid":"C2.1","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.406242,"tid":"C2.2","lvl":[1],"mt":"info","msg":"1. BASIC LEVEL COLORS (Automatic)"}
+{"ts":1770575022.4062676,"tid":"C2.3","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4062843,"tid":"C2.4","lvl":[1],"mt":"debug","msg":"This is a DEBUG message - renders in gray"}
+{"ts":1770575022.406299,"tid":"C2.5","lvl":[1],"mt":"info","msg":"This is an INFO message - renders in white"}
+{"ts":1770575022.4063146,"tid":"C2.6","lvl":[1],"mt":"success","msg":"This is a SUCCESS message - renders in bright green"}
+{"ts":1770575022.4063282,"tid":"C2.7","lvl":[1],"mt":"note","msg":"This is a NOTE message - renders in yellow"}
+{"ts":1770575022.4063416,"tid":"C2.8","lvl":[1],"mt":"warning","msg":"This is a WARNING message - renders in bright yellow"}
+{"ts":1770575022.406355,"tid":"C2.9","lvl":[1],"mt":"error","msg":"This is an ERROR message - renders in red"}
+{"ts":1770575022.4063687,"tid":"C2.a","lvl":[1],"mt":"critical","msg":"This is a CRITICAL message - renders in bright red with background"}
+{"ts":1770575022.4063816,"tid":"C2.b","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4063945,"tid":"C2.c","lvl":[1],"mt":"info","msg":"2. SET FOREGROUND COLOR"}
+{"ts":1770575022.406407,"tid":"C2.d","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4064212,"tid":"C2.e","lvl":[1],"fg":"cyan","mt":"info","msg":"Cyan foreground text"}
+{"ts":1770575022.4064348,"tid":"C2.f","lvl":[1],"fg":"cyan","mt":"debug","msg":"Debug message with cyan foreground"}
+{"ts":1770575022.406448,"tid":"C2.g","lvl":[1],"fg":"cyan","mt":"success","msg":"Success message with cyan foreground"}
+{"ts":1770575022.4064677,"tid":"C2.h","lvl":[1],"fg":"green","mt":"info","msg":"Green foreground text"}
+{"ts":1770575022.4064822,"tid":"C2.i","lvl":[1],"fg":"yellow","mt":"info","msg":"Yellow foreground text"}
+{"ts":1770575022.4064958,"tid":"C2.j","lvl":[1],"fg":"magenta","mt":"info","msg":"Magenta foreground text"}
+{"ts":1770575022.4065099,"tid":"C2.k","lvl":[1],"fg":"red","mt":"info","msg":"Red foreground text"}
+{"ts":1770575022.406522,"tid":"C2.l","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4065347,"tid":"C2.m","lvl":[1],"mt":"info","msg":"3. SET BACKGROUND COLOR"}
+{"ts":1770575022.4065468,"tid":"C2.n","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4065602,"tid":"C2.o","lvl":[1],"bg":"yellow","mt":"info","msg":"Yellow background - warning style"}
+{"ts":1770575022.4065742,"tid":"C2.p","lvl":[1],"bg":"red","mt":"error","msg":"Red background - error style"}
+{"ts":1770575022.4065876,"tid":"C2.q","lvl":[1],"bg":"blue","mt":"info","msg":"Blue background - info style"}
+{"ts":1770575022.4066002,"tid":"C2.r","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4066133,"tid":"C2.s","lvl":[1],"mt":"info","msg":"4. COMBINED FOREGROUND AND BACKGROUND"}
+{"ts":1770575022.406625,"tid":"C2.t","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4066381,"tid":"C2.u","lvl":[1],"fg":"white","bg":"red","mt":"error","msg":"White on red - critical error style"}
+{"ts":1770575022.406652,"tid":"C2.v","lvl":[1],"fg":"black","bg":"yellow","mt":"warning","msg":"Black on yellow - highlight style"}
+{"ts":1770575022.4066656,"tid":"C2.w","lvl":[1],"fg":"cyan","bg":"blue","mt":"info","msg":"Cyan on blue - info highlight"}
+{"ts":1770575022.406678,"tid":"C2.x","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4066904,"tid":"C2.y","lvl":[1],"mt":"info","msg":"5. ONE-SHOT COLORED MESSAGES (colored method)"}
+{"ts":1770575022.4067023,"tid":"C2.z","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4067261,"tid":"C2.A","lvl":[1],"fg":"red","mt":"info","msg":"Important message in red"}
+{"ts":1770575022.4067442,"tid":"C2.B","lvl":[1],"fg":"green","mt":"info","msg":"Success message in green"}
+{"ts":1770575022.406758,"tid":"C2.C","lvl":[1],"fg":"yellow","mt":"info","msg":"Warning message in yellow"}
+{"ts":1770575022.4067717,"tid":"C2.D","lvl":[1],"fg":"black","bg":"yellow","mt":"info","msg":"⚠️  WARNING with yellow background"}
+{"ts":1770575022.406788,"tid":"C2.E","lvl":[1],"fg":"white","bg":"red","mt":"info","msg":"❌ ERROR with red background"}
+{"ts":1770575022.4068027,"tid":"C2.F","lvl":[1],"fg":"white","bg":"green","mt":"info","msg":"✅ SUCCESS with green background"}
+{"ts":1770575022.4068162,"tid":"C2.G","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4068286,"tid":"C2.H","lvl":[1],"mt":"info","msg":"6. COLORED BLOCKS (Unicode Box Drawing)"}
+{"ts":1770575022.4068408,"tid":"C2.I","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.406854,"tid":"C2.J","lvl":[1],"fg":"black","bg":"yellow","mt":"info","msg":"╔════════════════════════════════════════════════════════════╗\n║  ⚠️  WARNING - IMPORTANT NOTICE                               ║\n║                                                                ║\n║  This is a highlighted warning block using Unicode characters   ║\n║  Yellow background with black text for maximum visibility     ║\n╚════════════════════════════════════════════════════════════╝"}
+{"ts":1770575022.406875,"tid":"C2.K","lvl":[1],"fg":"white","bg":"red","mt":"info","msg":"╔════════════════════════════════════════════════════════════╗\n║  ❌ ERROR - CRITICAL FAILURE                                     ║\n║                                                                ║\n║  This is an error block with red background                     ║\n║  White text on red background for critical issues              ║\n╚════════════════════════════════════════════════════════════╝"}
+{"ts":1770575022.4068923,"tid":"C2.L","lvl":[1],"fg":"white","bg":"green","mt":"info","msg":"╔════════════════════════════════════════════════════════════╗\n║  ✅ SUCCESS - OPERATION COMPLETED                               ║\n║                                                                ║\n║  This is a success block with green background                  ║\n║  White text on green background for positive results          ║\n╚════════════════════════════════════════════════════════════╝"}
+{"ts":1770575022.4069095,"tid":"C2.M","lvl":[1],"fg":"black","bg":"cyan","mt":"info","msg":"╔════════════════════════════════════════════════════════════╗\n║  ℹ️  INFO - INFORMATION                                          ║\n║                                                                ║\n║  This is an info block with cyan background                      ║\n║  Black text on cyan background for informational content        ║\n╚════════════════════════════════════════════════════════════╝"}
+{"ts":1770575022.406931,"tid":"C2.N","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4069474,"tid":"C2.O","lvl":[1],"mt":"info","msg":"7. ALL AVAILABLE COLORS DEMO"}
+{"ts":1770575022.40696,"tid":"C2.P","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4069755,"tid":"C2.Q","lvl":[1],"fg":"black","mt":"info","msg":"  → black        text example  ←"}
+{"ts":1770575022.4069912,"tid":"C2.R","lvl":[1],"fg":"red","mt":"info","msg":"  → red          text example  ←"}
+{"ts":1770575022.407006,"tid":"C2.S","lvl":[1],"fg":"green","mt":"info","msg":"  → green        text example  ←"}
+{"ts":1770575022.4070203,"tid":"C2.T","lvl":[1],"fg":"yellow","mt":"info","msg":"  → yellow       text example  ←"}
+{"ts":1770575022.4070342,"tid":"C2.U","lvl":[1],"fg":"blue","mt":"info","msg":"  → blue         text example  ←"}
+{"ts":1770575022.407048,"tid":"C2.V","lvl":[1],"fg":"magenta","mt":"info","msg":"  → magenta      text example  ←"}
+{"ts":1770575022.4070616,"tid":"C2.W","lvl":[1],"fg":"cyan","mt":"info","msg":"  → cyan         text example  ←"}
+{"ts":1770575022.4070756,"tid":"C2.X","lvl":[1],"fg":"white","mt":"info","msg":"  → white        text example  ←"}
+{"ts":1770575022.4070892,"tid":"C2.Y","lvl":[1],"fg":"light_gray","mt":"info","msg":"  → light_gray   text example  ←"}
+{"ts":1770575022.4071023,"tid":"C2.Z","lvl":[1],"fg":"dark_gray","mt":"info","msg":"  → dark_gray    text example  ←"}
+{"ts":1770575022.4071162,"tid":"C2.10","lvl":[1],"fg":"light_red","mt":"info","msg":"  → light_red    text example  ←"}
+{"ts":1770575022.40713,"tid":"C2.11","lvl":[1],"fg":"light_green","mt":"info","msg":"  → light_green  text example  ←"}
+{"ts":1770575022.4071484,"tid":"C2.12","lvl":[1],"fg":"light_blue","mt":"info","msg":"  → light_blue   text example  ←"}
+{"ts":1770575022.4071627,"tid":"C2.13","lvl":[1],"fg":"light_yellow","mt":"info","msg":"  → light_yellow text example  ←"}
+{"ts":1770575022.4071763,"tid":"C2.14","lvl":[1],"fg":"light_magenta","mt":"info","msg":"  → light_magenta text example  ←"}
+{"ts":1770575022.40719,"tid":"C2.15","lvl":[1],"fg":"light_cyan","mt":"info","msg":"  → light_cyan   text example  ←"}
+{"ts":1770575022.4072037,"tid":"C2.16","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4072254,"tid":"C2.17","lvl":[1],"mt":"info","msg":"8. PRACTICAL EXAMPLES"}
+{"ts":1770575022.407239,"tid":"C2.18","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.407252,"tid":"C2.19","lvl":[1],"fg":"cyan","mt":"info","msg":"💾 Database: Slow query detected (>5 seconds)"}
+{"ts":1770575022.4072678,"tid":"C2.1a","lvl":[1],"fg":"green","mt":"info","msg":"💳 Payment: $99.99 payment completed successfully"}
+{"ts":1770575022.4072835,"tid":"C2.1b","lvl":[1],"fg":"white","bg":"red","mt":"info","msg":"🔐 Auth: Invalid credentials - access denied"}
+{"ts":1770575022.4072986,"tid":"C2.1c","lvl":[1],"fg":"black","bg":"yellow","mt":"info","msg":"⚠️  API: Rate limit exceeded (1000 req/hour)"}
+{"ts":1770575022.4073145,"tid":"C2.1d","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.407328,"tid":"C2.1e","lvl":[1],"mt":"info","msg":"9. GRADIENT EFFECT"}
+{"ts":1770575022.40734,"tid":"C2.1f","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4073546,"tid":"C2.1g","lvl":[1],"fg":"light_red","mt":"info","msg":"  Gradient step 1: light_red text"}
+{"ts":1770575022.4073684,"tid":"C2.1h","lvl":[1],"fg":"light_yellow","mt":"info","msg":"  Gradient step 2: light_yellow text"}
+{"ts":1770575022.4073818,"tid":"C2.1i","lvl":[1],"fg":"light_green","mt":"info","msg":"  Gradient step 3: light_green text"}
+{"ts":1770575022.407395,"tid":"C2.1j","lvl":[1],"fg":"light_cyan","mt":"info","msg":"  Gradient step 4: light_cyan text"}
+{"ts":1770575022.4074135,"tid":"C2.1k","lvl":[1],"fg":"light_blue","mt":"info","msg":"  Gradient step 5: light_blue text"}
+{"ts":1770575022.4074292,"tid":"C2.1l","lvl":[1],"fg":"light_magenta","mt":"info","msg":"  Gradient step 6: light_magenta text"}
+{"ts":1770575022.407442,"tid":"C2.1m","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4074547,"tid":"C2.1n","lvl":[1],"mt":"info","msg":"10. DATA TYPE HIGHLIGHTING"}
+{"ts":1770575022.4074671,"tid":"C2.1o","lvl":[1],"mt":"info","msg":"============================================================"}
+{"ts":1770575022.4074798,"tid":"C2.1p","lvl":[1],"fg":"cyan","mt":"info","msg":"Numbers: 42, 3.14, -123"}
+{"ts":1770575022.4074936,"tid":"C2.1q","lvl":[1],"fg":"magenta","mt":"info","msg":"Boolean: True, False"}
+{"ts":1770575022.4075065,"tid":"C2.1r","lvl":[1],"fg":"white","mt":"info","msg":"String: 'Hello, World!'"}
+{"ts":1770575022.4075193,"tid":"C2.1s","lvl":[1],"fg":"blue","mt":"info","msg":"URL: https://example.com/api"}

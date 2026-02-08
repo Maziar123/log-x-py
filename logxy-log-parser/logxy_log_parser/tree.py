@@ -13,6 +13,23 @@ from .core import LogEntry
 from .types import ActionStatus
 
 
+def _get_action_level(task_level: tuple[int, ...]) -> tuple[int, ...]:
+    """Get the action level from a task level.
+
+    In logxpy, action messages have a task_level that is one level deeper
+    than the action itself. For example:
+    - Action at level [3] has messages at [3,1], [3,2], etc.
+    - So [3,1].parent() = [3] (the action level)
+
+    Args:
+        task_level: The task level tuple.
+
+    Returns:
+        The parent level (action level).
+    """
+    return task_level[:-1] if len(task_level) > 1 else tuple()
+
+
 @dataclass
 class TaskNode:
     """Node in task tree."""
@@ -116,7 +133,13 @@ class TaskTree:
 
     @classmethod
     def from_entries(cls, entries: list[LogEntry], task_uuid: str) -> TaskTree:
-        """Build tree from log entries.
+        """Build tree from log entries using logxpy format.
+
+        In logxpy, the task_level works as follows:
+        - Single element [1], [2], [3] are sequential top-level entries
+        - Multi-element [3,1], [3,2] are children of entry at action_level [3]
+        - Action entries have action_type and action_status
+        - Their child messages have task_level = [action_level, index]
 
         Args:
             entries: List of log entries.
@@ -131,32 +154,22 @@ class TaskTree:
         if not task_entries:
             raise ValueError(f"No entries found for task_uuid: {task_uuid}")
 
-        # Sort by timestamp
+        # Sort by timestamp (logxpy outputs in order, but sort to be safe)
         task_entries.sort(key=lambda e: e.timestamp)
 
-        # Create root node (first action)
-        first_entry = task_entries[0]
-        root = TaskNode(
-            task_uuid=task_uuid,
-            task_level=first_entry.task_level,
-            action_type=first_entry.action_type,
-            status=first_entry.action_status,
-            start_time=first_entry.timestamp,
-            end_time=first_entry.timestamp if first_entry.duration else None,
-            duration=first_entry.duration,
-        )
+        # Track actions by their level (action messages are at level N,
+        # their children are at level [N, 1], [N, 2], etc.)
+        # We use the message's task_level to find its parent action
+        actions: dict[tuple[int, ...], TaskNode] = {}
+        root: TaskNode | None = None
 
-        # Track nodes by task level
-        nodes: dict[tuple[int, ...], TaskNode] = {first_entry.task_level: root}
-
-        # Process remaining entries
-        for entry in task_entries[1:]:
+        # First pass: collect all action start/end events
+        for entry in task_entries:
             if entry.is_action:
-                # Create or update action node
-                node = nodes.get(entry.task_level)
+                action_level = _get_action_level(entry.task_level)
 
-                if node is None:
-                    # Create new node
+                if action_level not in actions:
+                    # Create new action node
                     node = TaskNode(
                         task_uuid=task_uuid,
                         task_level=entry.task_level,
@@ -166,31 +179,74 @@ class TaskTree:
                         end_time=entry.timestamp if entry.duration else None,
                         duration=entry.duration,
                     )
+                    actions[action_level] = node
 
-                    # Find parent and add child
-                    parent_level = entry.task_level[:-1]
-                    parent = nodes.get(parent_level, root)
-                    parent.add_child(node)
-
-                    nodes[entry.task_level] = node
+                    # Track root (empty tuple action_level means root)
+                    if len(action_level) == 0:
+                        root = node
                 else:
-                    # Update existing node
+                    # Update existing action
+                    node = actions[action_level]
                     if entry.action_status == ActionStatus.STARTED:
-                        node.start_time = entry.timestamp
+                        if node.start_time is None:
+                            node.start_time = entry.timestamp
                     elif entry.action_status in (ActionStatus.SUCCEEDED, ActionStatus.FAILED):
                         node.end_time = entry.timestamp
                         node.status = entry.action_status
-                        if entry.duration:
+                        if entry.duration is not None:
                             node.duration = entry.duration
-            else:
-                # Add message to appropriate node
-                # Find the deepest node that was active at this time
-                target_level = entry.task_level
-                while target_level not in nodes and len(target_level) > 1:
-                    target_level = target_level[:-1]
 
-                if target_level in nodes:
-                    nodes[target_level].add_message(entry)
+        # If no actions found, create a synthetic root from the first message
+        if root is None:
+            if task_entries:
+                first = task_entries[0]
+                root = TaskNode(
+                    task_uuid=task_uuid,
+                    task_level=first.task_level,
+                    action_type=first.action_type or "message",
+                    status=first.action_status,
+                    start_time=first.timestamp,
+                    end_time=first.timestamp,
+                    duration=first.duration,
+                )
+                # Add all messages as children of root
+                for entry in task_entries:
+                    root.add_message(entry)
+            else:
+                raise ValueError(f"No entries found for task_uuid: {task_uuid}")
+
+        # Second pass: build parent-child relationships
+        # A child action has action_level that is a suffix of a parent's children
+        # E.g., if parent action has children at [3,1], [3,2]
+        # then [3,1, 1] would be a child of action at [3,1]
+        for action_level, node in sorted(actions.items(), key=lambda x: len(x[0])):
+            if action_level == ():
+                continue  # Skip root
+
+            # Find parent: parent is the action whose children would have
+            # task_levels starting with action_level
+            # In logxpy, if this action is at level [3], its messages are [3,1], [3,2]
+            # A nested action would have messages like [3,1, 1], so its action_level is [3,1]
+            parent_level = action_level[:-1] if len(action_level) > 1 else ()
+
+            if parent_level in actions:
+                actions[parent_level].add_child(node)
+            else:
+                # If no parent found, attach to root
+                root.add_child(node)
+
+        # Third pass: assign messages to actions
+        for entry in task_entries:
+            if not entry.is_action:
+                # Find parent action for this message
+                # The message's task_level parent gives us the action level
+                action_level = _get_action_level(entry.task_level)
+
+                if action_level in actions:
+                    actions[action_level].add_message(entry)
+                elif root is not None:
+                    # Attach to root if no specific action found
+                    root.add_message(entry)
 
         return cls(root)
 
@@ -240,8 +296,7 @@ class TaskTree:
         """
         if viz_format == "ascii":
             return self._visualize_ascii()
-        else:
-            return self._visualize_text()
+        return self._visualize_text()
 
     def _visualize_ascii(self) -> str:
         """Create ASCII tree visualization.
@@ -284,7 +339,11 @@ class TaskTree:
         if node.messages:
             msg_prefix = prefix + ("    " if is_last else "│   ")
             for msg in node.messages:
-                msg_text = msg.message or ""
+                # Use message_type if message is not available
+                msg_text = msg.message or msg.message_type or ""
+                if not msg_text and msg.fields:
+                    # Show field names if no text
+                    msg_text = f"fields: {', '.join(list(msg.fields.keys())[:3])}"
                 lines.append(f"{msg_prefix}└── 💬 {msg_text[:50]}{'...' if len(msg_text) > 50 else ''}")
 
     def _visualize_text(self) -> str:
@@ -319,7 +378,11 @@ class TaskTree:
 
         # Visualize messages
         for msg in node.messages:
-            msg_text = msg.message or ""
+            # Use message_type if message is not available
+            msg_text = msg.message or msg.message_type or ""
+            if not msg_text and msg.fields:
+                # Show field names if no text
+                msg_text = f"fields: {', '.join(list(msg.fields.keys())[:3])}"
             lines.append(f"{indent}  💬 {msg_text[:50]}{'...' if len(msg_text) > 50 else ''}")
 
     def get_execution_path(self) -> list[str]:

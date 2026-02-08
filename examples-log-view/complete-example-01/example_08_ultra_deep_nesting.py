@@ -244,7 +244,7 @@ def level_12_authorization(user, resource, action):
         time.sleep(0.002)
         Message.log(message_type="authz:resource", resource=resource, resource_type="api_endpoint")
         time.sleep(0.001)
-        Message.log(message_type="authz:action", action=action, action_type="http_method")
+        Message.log(message_type="authz:action", action=action, http_method="GET")
         time.sleep(0.002)
         Message.log(message_type="authz:policy", policy_id="policy_api_read", effect="allow")
         level_13_cache_layer(f"authz:{user['id']}:{resource}:{action}")

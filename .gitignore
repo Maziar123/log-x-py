@@ -114,6 +114,9 @@ htmlcov/
 # hypothesis
 .hypothesis/
 
+.archive/
+git-hooks/
+
 # ==========================================
 # Project Specific - Generated/Runtime Files
 # ==========================================
