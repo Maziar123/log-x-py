@@ -223,7 +223,7 @@ log.configure(
 
 These methods create **colored blocks or lines** when viewed with logxpy-cli-view:
 
-![Color Methods Demo](docs/images/logxpy-colors-demo.png)
+![Color Methods Demo](https://raw.githubusercontent.com/Maziar123/log-x-py/main/docs/images/logxpy-colors-demo.png)
 
 > 📁 **Source**: [`examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py`](examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py)
 
@@ -320,7 +320,7 @@ with log.span("database_query", table="users", sql="SELECT *"):
 - **Pattern Extraction** - Extract emails, IPs, URLs from logs
 - **Export** - JSON, CSV, HTML, logfmt formats
 
-![Nested Actions Demo](docs/images/logxpy-nested-demo.png)
+![Nested Actions Demo](https://raw.githubusercontent.com/Maziar123/log-x-py/main/docs/images/logxpy-nested-demo.png)
 
 > 📁 **Source**: [`examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py`](examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py)
 

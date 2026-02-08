@@ -10,8 +10,22 @@ def read(path):
     # Read from the same directory as this file
     base_dir = os.path.dirname(os.path.abspath(__file__))
     full_path = os.path.join(base_dir, path)
-    with open(full_path) as f:
+    with open(full_path, encoding="utf-8") as f:
         return f.read()
+
+
+# Read README from parent directory (project root) for markdown with images
+def get_long_description():
+    """Get long description from root README.md"""
+    import os
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    root_readme = os.path.join(base_dir, "..", "README.md")
+    try:
+        with open(root_readme, encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        # Fallback to package README.rst
+        return read("README.rst")
 
 
 setup(
@@ -31,6 +45,8 @@ setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="Modern structured logging library with hierarchical Sqid task IDs",
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
     python_requires=">=3.12.0",
     install_requires=[
         # Internal code documentation:
@@ -75,5 +91,9 @@ setup(
     url="https://github.com/logxpy/logxpy/",
     maintainer="logxpy Team",
     maintainer_email="",
-    long_description=read("README.rst"),
+    project_urls={
+        "Bug Reports": "https://github.com/logxpy/logxpy/issues",
+        "Source": "https://github.com/logxpy/logxpy/",
+        "Documentation": "https://github.com/logxpy/logxpy/blob/main/README.md",
+    },
 )
