@@ -10,8 +10,7 @@ jobs:
     name: Build and publish to PyPI
     runs-on: ubuntu-latest
     
-    permissions:
-      id-token: write  # Required for trusted publishing (OIDC)
+    # Using API Token authentication (Trusted Publisher not configured on PyPI)
     
     steps:
       - name: Checkout code
@@ -43,4 +42,5 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxpy/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true  # Skip if version already exists
