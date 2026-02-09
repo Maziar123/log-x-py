@@ -47,8 +47,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxpy/dist/
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true
 
       # ============================================================================
       # Build logxpy-cli-view (uses hatchling)
@@ -68,8 +66,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxpy_cli_view/dist/
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true
 
       # ============================================================================
       # Build logxy-log-parser (uses hatchling)
@@ -89,8 +85,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxy-log-parser/dist/
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true
 
   # Separate job to verify packages after publishing
   verify:
