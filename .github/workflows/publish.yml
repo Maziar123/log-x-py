@@ -7,6 +7,10 @@ on:
       - '[0-9]*' # Trigger on numeric tags (e.g., 0.4.0, 1.0.0)
   workflow_dispatch:  # Allow manual trigger
 
+permissions:
+  contents: read
+  id-token: write  # REQUIRED for Trusted Publishing
+
 jobs:
   build-and-publish-all:
     name: Build and publish all packages to PyPI
@@ -15,8 +19,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -91,6 +93,9 @@ jobs:
     name: Verify packages on PyPI
     runs-on: ubuntu-latest
     needs: build-and-publish-all
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
