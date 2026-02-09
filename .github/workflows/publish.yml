@@ -32,7 +32,7 @@ jobs:
           python -m pip install versioneer
 
       # ============================================================================
-      # Build logxpy (uses setuptools + versioneer)
+      # Build logxpy (uses setuptools + versioneer) - Use API token
       # ============================================================================
       - name: Build logxpy
         working-directory: ./logxpy
@@ -45,13 +45,14 @@ jobs:
           name: logxpy-distributions
           path: logxpy/dist/
 
-      - name: Publish logxpy to PyPI
+      - name: Publish logxpy to PyPI (using API token)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxpy/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
 
       # ============================================================================
-      # Build logxpy-cli-view (uses hatchling)
+      # Build logxpy-cli-view (new package) - Use API token for first publish
       # ============================================================================
       - name: Build logxpy-cli-view
         working-directory: ./logxpy_cli_view
@@ -64,13 +65,15 @@ jobs:
           name: logxpy-cli-view-distributions
           path: logxpy_cli_view/dist/
 
-      - name: Publish logxpy-cli-view to PyPI
+      - name: Publish logxpy-cli-view to PyPI (using API token for new package)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxpy_cli_view/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
 
       # ============================================================================
-      # Build logxy-log-parser (uses hatchling)
+      # Build logxy-log-parser (new package) - Use API token for first publish
       # ============================================================================
       - name: Build logxy-log-parser
         working-directory: ./logxy-log-parser
@@ -83,19 +86,18 @@ jobs:
           name: logxy-log-parser-distributions
           path: logxy-log-parser/dist/
 
-      - name: Publish logxy-log-parser to PyPI
+      - name: Publish logxy-log-parser to PyPI (using API token for new package)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: logxy-log-parser/dist/
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip-existing: true
 
   # Separate job to verify packages after publishing
   verify:
     name: Verify packages on PyPI
     runs-on: ubuntu-latest
     needs: build-and-publish-all
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
