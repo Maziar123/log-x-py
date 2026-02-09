@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "logxpy-cli-view"
-version = "1.0.0"
+version = "1.0.1"
 description = "Render LogXPy logs as an ASCII tree"
 readme = "README.md"
 license = "MIT"
