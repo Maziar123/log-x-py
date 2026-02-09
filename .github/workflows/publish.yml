@@ -3,7 +3,8 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags (e.g., v1.0.0, v1.1.0)
+      - 'v*'     # Trigger on version tags (e.g., v1.0.0, v1.1.0)
+      - '[0-9]*' # Trigger on numeric tags (e.g., 0.4.0, 1.0.0)
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
