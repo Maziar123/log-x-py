@@ -53,6 +53,7 @@ dev = [
 
 [project.scripts]
 logxpy-cli-view = "logxpy_cli_view._cli:main"
+logxpy-view = "logxpy_cli_view._cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Maziar123/log-x-py"

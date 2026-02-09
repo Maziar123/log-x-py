@@ -90,12 +90,12 @@ setup(
     keywords="logging",
     license="Apache 2.0",
     packages=["logxpy", "logxpy.tests"],
-    url="https://github.com/logxpy/logxpy/",
-    maintainer="logxpy Team",
+    url="https://github.com/Maziar123/log-x-py",
+    maintainer="Maziar",
     maintainer_email="",
     project_urls={
-        "Bug Reports": "https://github.com/logxpy/logxpy/issues",
-        "Source": "https://github.com/logxpy/logxpy/",
-        "Documentation": "https://github.com/logxpy/logxpy/blob/main/README.md",
+        "Bug Reports": "https://github.com/Maziar123/log-x-py/issues",
+        "Source": "https://github.com/Maziar123/log-x-py",
+        "Documentation": "https://github.com/Maziar123/log-x-py/blob/main/README.md",
     },
 )

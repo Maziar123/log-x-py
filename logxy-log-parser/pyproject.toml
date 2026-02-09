@@ -65,10 +65,10 @@ logxy-view = "logxy_log_parser.cli:main"
 logxy-tree = "logxy_log_parser.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/log-x-py"
-Documentation = "https://github.com/yourusername/log-x-py/tree/main/logxy-log-parser"
-Repository = "https://github.com/yourusername/log-x-py"
-Issues = "https://github.com/yourusername/log-x-py/issues"
+Homepage = "https://github.com/Maziar123/log-x-py"
+Documentation = "https://github.com/Maziar123/log-x-py/tree/main/logxy-log-parser"
+Repository = "https://github.com/Maziar123/log-x-py"
+Issues = "https://github.com/Maziar123/log-x-py/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["logxy_log_parser"]
