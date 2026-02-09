@@ -7,8 +7,12 @@ import time
 
 from logxpy import log, to_file
 
+# Setup output to log file (delete old log first)
 LOG_FILE = Path(__file__).with_suffix(".log")
-to_file(open(LOG_FILE, "w"))
+if LOG_FILE.exists():
+    LOG_FILE.unlink()
+with open(LOG_FILE, "w", encoding="utf-8") as f:
+    to_file(f)
 
 
 # ============================================================================
@@ -462,7 +466,7 @@ def main():
         log.info("\n" + "=" * 60)
         log.success("🎉 FINAL RESULT", result=result)
         log.info("=" * 60)
-    except Exception:
+    except ValueError:
         log.exception("❌ Order processing failed")
 
 

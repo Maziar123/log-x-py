@@ -10,8 +10,12 @@ from pathlib import Path
 import asyncio
 from logxpy import log, aaction, to_file
 
+# Setup output to log file (delete old log first)
 LOG_FILE = Path(__file__).with_suffix(".log")
-to_file(open(LOG_FILE, "w"))
+if LOG_FILE.exists():
+    LOG_FILE.unlink()
+with open(LOG_FILE, "w", encoding="utf-8") as f:
+    to_file(f)
 
 # 1. Async Decorator
 @log.logged
@@ -30,13 +34,13 @@ async def process_data(data):
 async def main():
     print("--- 1. Async Decorator ---")
     result = await fetch_data("http://example.com")
-    
+
     print("\n--- 2. Async Actions ---")
     # Context propagates automatically in asyncio
     with log.scope(task_id="main-task"):
         processed = await process_data(result)
         log.success("Done", result=processed)
-        
+
     print("\n--- 3. Concurrent Tasks ---")
     # Each task gets its own context/action tree
     async with aaction("batch_job"):

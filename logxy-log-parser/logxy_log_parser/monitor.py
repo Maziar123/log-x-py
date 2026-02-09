@@ -2,6 +2,8 @@
 Monitor functionality for logxy-log-parser.
 
 Contains LogFile for handling and monitoring log files with real-time updates.
+
+Supports both compact and legacy field naming conventions.
 """
 
 from __future__ import annotations
@@ -13,6 +15,8 @@ from pathlib import Path
 from typing import Any
 
 from .core import LogEntry, LogParser
+from .types import MSG
+from .utils import get_field_value  # For flexible field access
 
 
 class LogFileError(Exception):
@@ -208,7 +212,8 @@ class LogFile:
                     continue
                 try:
                     data = json.loads(line)
-                    message = data.get("message", "")
+                    # Use get_field_value to support both "msg" and "message"
+                    message = get_field_value(data, MSG, "")
                     if message:
                         if regex:
                             if pattern and pattern.search(message):
@@ -455,9 +460,7 @@ class LogFile:
                 return False
             if message and entry.message and message.lower() not in entry.message.lower():
                 return False
-            if task_uuid and entry.task_uuid != task_uuid:
-                return False
-            return True
+            return not (task_uuid and entry.task_uuid != task_uuid)
 
         yield from self.watch(interval=interval, filter_func=filter_func)
 

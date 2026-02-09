@@ -10,7 +10,7 @@ This tutorial demonstrates:
 - Fluent interface (chaining)
 
 Run this script to generate: tutorial_01_basic.log
-Then view with: logxpy-tree2 tutorial_01_basic.log
+Then view with: logxpy-view tutorial_01_basic.log
 """
 
 from pathlib import Path
@@ -100,11 +100,11 @@ def main():
     print("✓ Log file created successfully!")
     print("=" * 60)
     print(f"\nTo view the logs, run:")
-    print(f"  logxpy-tree2 {log_file}")
+    print(f"  logxpy-view {log_file}")
     print(f"\nOr with colors disabled:")
-    print(f"  logxpy-tree2 --color never {log_file}")
+    print(f"  logxpy-view --color never {log_file}")
     print(f"\nOr filter by level:")
-    print(f"  logxpy-tree2 --select 'level == `ERROR`' {log_file}")
+    print(f"  logxpy-view --select 'level == `ERROR`' {log_file}")
 
 
 if __name__ == "__main__":

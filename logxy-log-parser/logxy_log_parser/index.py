@@ -9,13 +9,11 @@ from __future__ import annotations
 import gzip
 import json
 from collections import defaultdict
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from .core import LogEntry
-from .types import Level
 
 
 @dataclass
@@ -113,8 +111,6 @@ class LogIndex:
         self._time_index.clear()
 
         import time
-
-        start_time = time.time()
 
         # Handle gzip files
         open_func = gzip.open if str(self._path).endswith(".gz") else open
@@ -296,7 +292,7 @@ class LogIndex:
         elif level:
             positions = {p.line_number: p for p in self.find_by_level(level)}
         else:
-            positions = {ln: p for ln, p in self._entries_by_line.items()}
+            positions = dict(self._entries_by_line.items())
 
         # Apply additional filters
         if task_uuid and task_uuid not in self._entries_by_task:

@@ -27,7 +27,7 @@ def _get_action_level(task_level: tuple[int, ...]) -> tuple[int, ...]:
     Returns:
         The parent level (action level).
     """
-    return task_level[:-1] if len(task_level) > 1 else tuple()
+    return task_level[:-1] if len(task_level) > 1 else ()
 
 
 @dataclass
@@ -97,8 +97,11 @@ class TaskNode:
         """
         self.messages.append(message)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, output_format: str = "compact") -> dict[str, Any]:
         """Convert node to dictionary.
+
+        Args:
+            output_format: Output format - "compact" or "legacy"
 
         Returns:
             dict[str, Any]: Dictionary representation.
@@ -111,8 +114,8 @@ class TaskNode:
             "start_time": self.start_time,
             "end_time": self.end_time,
             "duration": self.duration,
-            "children": [c.to_dict() for c in self.children],
-            "messages": [m.to_dict() for m in self.messages],
+            "children": [c.to_dict(output_format) for c in self.children],
+            "messages": [m.to_dict(output_format) for m in self.messages],
         }
 
     def __repr__(self) -> str:
@@ -277,13 +280,16 @@ class TaskTree:
 
         return None
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self, output_format: str = "compact") -> dict[str, Any]:
         """Convert tree to dictionary.
+
+        Args:
+            output_format: Output format - "compact" or "legacy"
 
         Returns:
             dict[str, Any]: Dictionary representation.
         """
-        return self._root.to_dict()
+        return self._root.to_dict(output_format)
 
     def visualize(self, viz_format: str = "ascii") -> str:
         """Visualize the tree.

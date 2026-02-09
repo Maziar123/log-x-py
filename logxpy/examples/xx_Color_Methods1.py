@@ -9,12 +9,16 @@ Run this script to generate a log file, then view it with:
     logxpy-view xx_Color_Methods1.log
 """
 
-from logxpy import log, to_file
 from pathlib import Path
 
-# Set output file
+from logxpy import log, to_file
+
+# Setup output to log file (delete old log first)
 log_file = Path(__file__).with_suffix('.log')
-to_file(open(log_file, 'w'))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, 'w', encoding='utf-8') as f:
+    to_file(f)
 
 def main():
     print(f"Generating colored log examples to {log_file}")

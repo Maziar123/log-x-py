@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import gzip
 import json
-from collections import Counter, defaultdict
-from collections.abc import Iterator
+from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -18,7 +18,6 @@ from typing import Any
 
 from .core import LogEntry
 from .filter import LogEntries
-from .types import Level
 
 
 @dataclass
@@ -65,7 +64,7 @@ class AggregatedStats:
     time_range: tuple[float, float] = (0, 0)
     level_counts: dict[str, int] = field(default_factory=dict)
     unique_tasks: int = 0
-    file_stats: dict[str, dict[str, int]] = field(default_factory=dict)
+    file_stats: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         """Convert stats to dictionary.
@@ -108,9 +107,9 @@ class LogAggregator:
         all_entries: list[LogEntry] = []
         all_task_uuids = set()
         min_ts = float("inf")
-        max_ts = 0
+        max_ts = 0.0
         level_counts: dict[str, int] = {}
-        file_stats: dict[str, dict[str, int]] = {}
+        file_stats: dict[str, dict[str, Any]] = {}
 
         for i, source in enumerate(self._sources):
             # Update progress
@@ -147,7 +146,7 @@ class LogAggregator:
 
                         except (json.JSONDecodeError, ValueError):
                             continue
-            except (IOError, OSError):
+            except OSError:
                 # Skip files that can't be read
                 continue
 
@@ -211,7 +210,6 @@ class TimeSeriesAnalyzer:
         # Find time range
         timestamps = [e.timestamp for e in self._entries]
         min_ts = min(timestamps)
-        max_ts = max(timestamps)
 
         # Create buckets
         buckets: dict[float, TimeBucket] = {}
@@ -330,7 +328,7 @@ class TimeSeriesAnalyzer:
 
             if hour_granularity:
                 # By hour of day (0-23)
-                outer_key = dt.hour
+                outer_key: int | str = dt.hour
                 inner_key = dt.weekday()  # Day of week
             else:
                 # By day of week and hour
@@ -374,7 +372,7 @@ class TimeSeriesAnalyzer:
         current_burst_start = None
         current_max = 0
 
-        for i, bucket in enumerate(buckets):
+        for bucket in buckets:
             if bucket.count > threshold_value:
                 if current_burst_start is None:
                     current_burst_start = bucket.start
@@ -438,11 +436,10 @@ class MultiFileAnalyzer:
         Returns:
             dict[str, Any]: Combined analysis results.
         """
-        aggregator = LogAggregator(self._files)
+        aggregator = LogAggregator([str(f) for f in self._files])
         entries = aggregator.aggregate()
 
         from .analyzer import LogAnalyzer
-        from .filter import LogEntries
 
         analyzer = LogAnalyzer(entries)
         error_summary = analyzer.error_summary()
@@ -472,7 +469,7 @@ class MultiFileAnalyzer:
         Returns:
             list[dict[str, Any]]: Time series data.
         """
-        aggregator = LogAggregator(self._files)
+        aggregator = LogAggregator([str(f) for f in self._files])
         entries = aggregator.aggregate()
 
         analyzer = TimeSeriesAnalyzer(entries)

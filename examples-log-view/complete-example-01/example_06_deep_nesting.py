@@ -18,9 +18,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "logxpy"))
 
 from logxpy import Message, start_action, to_file
 
-# Setup logging to file
+# Setup logging to file (delete old log first)
 log_file = Path(__file__).parent / "example_06_deep_nesting.log"
-to_file(open(log_file, "w"))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
 
 
 def level_7_deepest():

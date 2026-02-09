@@ -29,7 +29,13 @@ classifiers = [
     "Topic :: System :: Logging",
 ]
 
-dependencies = ["boltons>=24.0.0"]
+# Core dependencies
+dependencies = [
+    # Pure-Python utility library (dictutils, iterutils, cacheutils, etc.):
+    "boltons>=24.0.0",
+    # 160+ functions extending itertools (chunked, peekable, seekable, windowed, etc.):
+    "more-itertools>=10.0.0",
+]
 
 [project.optional-dependencies]
 pandas = ["pandas>=2.0"]

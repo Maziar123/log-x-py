@@ -54,6 +54,15 @@ except ImportError:
         return decorator(fn) if fn else decorator
 
 
+# Setup logging to file (delete old log first)
+log_file = Path(__file__).parent / "example_09_comprehensive.log"
+if log_file.exists():
+    log_file.unlink()
+from logxpy import to_file
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
+
+
 def demo_basic_messages() -> None:
     """Category 1: 📨 Basic Message Sending - log.info(), log.debug(), log.send(), log.note()."""
     log.info("Hello World", source="basic_messages")
@@ -153,12 +162,12 @@ def demo_conditional_formatted() -> None:
         log('DebugInfo', {'value': SAMPLE_COUNT, 'threshold': 100})
     if SAMPLE_COUNT > 0:
         log('PositiveCount', {'count': SAMPLE_COUNT})
-    
+
     # Using log() callable with condition
     if "I exist":
         log('AssignedValue', {'value': "I exist", 'type': 'string'})
     # None check skipped - Pythonic way
-    
+
     # Formatted messages - f-strings are preferred
     log('Formatted', {
         'message': f"User: Alice, ID: {12345}",
@@ -237,25 +246,25 @@ async def async_operation() -> str:
 
 def demo_decorators() -> None:
     """Category 14: 🎨 Decorators - @logged, @timed, @retry, @generator, @aiterator, @trace."""
-    
+
     # @logged - Universal logging decorator (most comprehensive)
     @logged(level="INFO", capture_args=True, capture_result=True, exclude={"password"})
     def process_user_login(username: str, password: str, ip_address: str) -> dict:
         """Demonstrates @logged with sensitive field masking."""
         return {"user_id": 12345, "status": "authenticated", "ip": ip_address}
-    
+
     result = process_user_login("alice", "secret123", "192.168.1.100")
     log.info('Logged decorator completed', result=result)
-    
+
     # @logged - Another example with timer disabled
     @logged(level="INFO", capture_args=True, timer=False)
     def legacy_function(x: int, y: int) -> int:
         """Demonstrates @logged with timer disabled."""
         return x * y
-    
+
     legacy_result = legacy_function(10, 20)
     log.info('Legacy function completed', result=legacy_result)
-    
+
     # @timed - Timing-only decorator (lightweight)
     @timed("database.query_time")
     def simulate_database_query() -> list:
@@ -263,13 +272,13 @@ def demo_decorators() -> None:
         import time
         time.sleep(0.01)  # Simulate 10ms query
         return [{"id": 1, "data": "result"}]
-    
+
     query_results = simulate_database_query()
     log.info('Timed query completed', rows=len(query_results))
-    
+
     # @retry - Retry with exponential backoff
     attempt_counter = {"count": 0}
-    
+
     @retry(attempts=3, delay=0.01, backoff=2.0)
     def flaky_network_call() -> str:
         """Demonstrates @retry with simulated failures."""
@@ -277,23 +286,23 @@ def demo_decorators() -> None:
         if attempt_counter["count"] < 3:
             raise ConnectionError(f"Simulated network error (attempt {attempt_counter['count']})")
         return "success_after_retries"
-    
+
     try:
         retry_result = flaky_network_call()
         log.info('Retry decorator succeeded', result=retry_result, attempts=attempt_counter["count"])
     except ConnectionError:
         log.error('Retry decorator failed after all attempts')
-    
+
     # @generator - Generator progress tracking
     @generator(name="batch_processor", every=50)
     def process_batch_items(count: int):
         """Demonstrates @generator for progress tracking."""
         for i in range(count):
             yield {"item_id": i, "processed": True}
-    
+
     processed = list(process_batch_items(120))  # Will log at 50, 100
     log.info('Generator processing complete', total_items=len(processed))
-    
+
     # @aiterator - Async iterator progress tracking
     @aiterator(name="async_fetcher", every=30)
     async def fetch_async_items(count: int):
@@ -301,28 +310,28 @@ def demo_decorators() -> None:
         for i in range(count):
             await asyncio.sleep(0.001)  # Simulate async work
             yield {"async_id": i, "fetched": True}
-    
+
     async def run_async_iterator():
         async_items = []
         async for item in fetch_async_items(75):  # Will log at 30, 60
             async_items.append(item)
         return async_items
-    
+
     async_results = asyncio.run(run_async_iterator())
     log.info('Async iterator complete', total_items=len(async_results))
-    
+
     # @trace - OpenTelemetry tracing (gracefully degrades if OTel not installed)
     @trace(name="payment_process", kind="internal", attributes={"service": "billing"})
     def process_payment(order_id: str, amount: float) -> dict:
         """Demonstrates @trace for distributed tracing."""
         return {"transaction_id": f"TX-{order_id}", "amount": amount, "status": "completed"}
-    
+
     payment_result = process_payment("ORD-12345", 99.99)
     log.info('Trace decorator completed', payment=payment_result)
-    
+
     # Combining multiple decorators (deterministic - no random failures)
     call_count = {"count": 0}
-    
+
     @logged(level="DEBUG", capture_args=True, capture_result=True)
     @timed("combined_operation")
     @retry(attempts=3, delay=0.01)
@@ -333,7 +342,7 @@ def demo_decorators() -> None:
         if call_count["count"] < 3:
             raise RuntimeError(f"Simulated failure (attempt {call_count['count']})")
         return {"input": value, "output": value * 2, "transformed": True}
-    
+
     combined_result = combined_decorator_example(42)
     log.info('Combined decorators completed', result=combined_result, attempts=call_count["count"])
 
@@ -400,23 +409,23 @@ def demo_colors_for_viewer() -> None:
     log.info("This also has cyan foreground (context persists)")
     log.reset_foreground()
     log.info("Back to normal foreground")
-    
+
     # Method 2: Using set_background
     log.set_background("blue")
     log.info("This message has BLUE background")
     log.warning("Warning also has blue background")
     log.reset_background()
-    
+
     # Method 3: Combined foreground + background
     log.set_foreground("white").set_background("red")
     log.error("White text on RED background - ERROR style")
     log.reset_foreground().reset_background()
-    
+
     # Method 4: One-shot colored() method
     log.colored("One-shot colored message", foreground="yellow", background="black")
     log.colored("Green on black", foreground="green", background="black", priority="high")
     log.colored("Magenta highlight", foreground="magenta", background="white")
-    
+
     # HIGHLIGHT BLOCK: Yellow background + Black font (classic warning highlight)
     # Using single multiline message for continuous block effect
     log.colored(
@@ -427,7 +436,7 @@ def demo_colors_for_viewer() -> None:
         foreground="black",
         background="yellow"
     )
-    
+
     # Method 5: Context-based colors (affects all subsequent logs)
     log.set_foreground("light_cyan")
     log.info("Light cyan text 1")

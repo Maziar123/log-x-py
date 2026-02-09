@@ -10,7 +10,7 @@ This tutorial demonstrates:
 - Decorator configuration options
 
 Run this script to generate: tutorial_03_decorators.log
-Then view with: logxpy-tree2 tutorial_03_decorators.log
+Then view with: logxpy-view tutorial_03_decorators.log
 """
 
 import time
@@ -217,11 +217,11 @@ def main():
     print("✓ Log file created successfully!")
     print("=" * 60)
     print(f"\nTo view the logs:")
-    print(f"  logxpy-tree2 {log_file}")
+    print(f"  logxpy-view {log_file}")
     print(f"\nTo view only entries with timing data:")
-    print(f"  logxpy-tree2 --select 'contains(keys(@), `duration`)' {log_file}")
+    print(f"  logxpy-view --select 'contains(keys(@), `duration`)' {log_file}")
     print(f"\nTo view with minimal output:")
-    print(f"  logxpy-tree2 --field-limit 50 {log_file}")
+    print(f"  logxpy-view --field-limit 50 {log_file}")
 
 
 if __name__ == "__main__":

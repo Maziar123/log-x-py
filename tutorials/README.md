@@ -1,17 +1,17 @@
 # LogXPY & LogXPY-CLI-View Tutorial Examples
 
-This directory contains comprehensive tutorial examples demonstrating how to use **logxpy** for logging and **logxpy_cli_view** for viewing logs.
+This directory contains comprehensive tutorial examples demonstrating how to use **logxpy** for logging and **logxpy-cli-view** for viewing logs.
 
 ## Overview
 
 These tutorials show the complete workflow:
 1. **Create logs** using the logxpy library
-2. **View logs** using the logxpy-tree2 CLI viewer
+2. **View logs** using the logxpy-view CLI viewer
 
 ## Tutorials
 
 ### Tutorial 01: Basic Logging
-**File:** `tutorial_01_basic_logging.py`  
+**File:** `tutorial_01_basic_logging.py`
 **Log Output:** `tutorial_01_basic.log`
 
 Learn the fundamentals:
@@ -22,11 +22,11 @@ Learn the fundamentals:
 
 ```bash
 python tutorial_01_basic_logging.py
-logxpy-tree2 tutorial_01_basic.log
+logxpy-view tutorial_01_basic.log
 ```
 
 ### Tutorial 02: Actions and Context
-**File:** `tutorial_02_actions_and_context.py`  
+**File:** `tutorial_02_actions_and_context.py`
 **Log Output:** `tutorial_02_actions.log`
 
 Learn advanced structuring:
@@ -38,11 +38,11 @@ Learn advanced structuring:
 
 ```bash
 python tutorial_02_actions_and_context.py
-logxpy-tree2 tutorial_02_actions.log
+logxpy-view tutorial_02_actions.log
 ```
 
 ### Tutorial 03: Decorators
-**File:** `tutorial_03_decorators.py`  
+**File:** `tutorial_03_decorators.py`
 **Log Output:** `tutorial_03_decorators.log`
 
 Learn automatic logging:
@@ -54,11 +54,11 @@ Learn automatic logging:
 
 ```bash
 python tutorial_03_decorators.py
-logxpy-tree2 tutorial_03_decorators.log
+logxpy-view tutorial_03_decorators.log
 ```
 
 ### Tutorial 04: Error Handling
-**File:** `tutorial_04_error_handling.py`  
+**File:** `tutorial_04_error_handling.py`
 **Log Output:** `tutorial_04_errors.log`
 
 Learn error handling patterns:
@@ -70,11 +70,11 @@ Learn error handling patterns:
 
 ```bash
 python tutorial_04_error_handling.py
-logxpy-tree2 tutorial_04_errors.log
+logxpy-view tutorial_04_errors.log
 ```
 
 ### Tutorial 05: Real-World API Scenario
-**File:** `tutorial_05_real_world_api.py`  
+**File:** `tutorial_05_real_world_api.py`
 **Log Output:** `tutorial_05_api.log`
 
 Complete real-world example:
@@ -88,7 +88,7 @@ Complete real-world example:
 
 ```bash
 python tutorial_05_real_world_api.py
-logxpy-tree2 tutorial_05_api.log
+logxpy-view tutorial_05_api.log
 ```
 
 ## Running All Tutorials
@@ -109,62 +109,75 @@ This will:
 ### Basic Viewing
 
 ```bash
-# View a log file with tree structure
-logxpy-tree2 tutorial_01_basic.log
+# View a log file with tree structure (default command)
+logxpy-view tutorial_01_basic.log
 
 # View with ASCII characters (no Unicode)
-logxpy-tree2 --ascii tutorial_01_basic.log
+logxpy-view --ascii tutorial_01_basic.log
 
 # View with colors disabled
-logxpy-tree2 --color never tutorial_01_basic.log
+logxpy-view --color never tutorial_01_basic.log
 ```
 
 ### Filtering
 
 ```bash
-# Filter by task UUID
-logxpy-tree2 -u <task-uuid> tutorial_02_actions.log
+# Filter by task UUID (Sqid)
+logxpy-view --task-uuid <task-uuid> tutorial_02_actions.log
 
 # Filter by action status (succeeded, failed, started)
-logxpy-tree2 --action-status failed tutorial_04_errors.log
+logxpy-view --status failed tutorial_04_errors.log
 
-# Filter by action type
-logxpy-tree2 --action-type 'api:create_order' tutorial_05_api.log
+# Filter by action type (supports wildcards)
+logxpy-view --action-type 'api:*' tutorial_05_api.log
 
 # Filter by keyword
-logxpy-tree2 --keyword 'payment' tutorial_05_api.log
+logxpy-view --keyword 'payment' tutorial_05_api.log
 
 # Filter using JMESPath query
-logxpy-tree2 --select 'level == `ERROR`' tutorial_04_errors.log
+logxpy-view --select 'level == `ERROR`' tutorial_04_errors.log
 ```
 
-### Advanced Options
+### Statistics
 
 ```bash
-# Show human-readable timestamps
-logxpy-tree2 --human-readable tutorial_02_actions.log
+# Show statistics
+logxpy-view stats tutorial_05_api.log
 
-# Limit field display length
-logxpy-tree2 --field-limit 50 tutorial_05_api.log
-
-# Use local timezone instead of UTC
-logxpy-tree2 --local-timezone tutorial_05_api.log
-
-# View with statistics
-logxpy-tree2 --stats tutorial_05_api.log
+# Export statistics to JSON
+logxpy-view stats tutorial_05_api.log -o stats.json
 ```
 
 ### Exporting
 
 ```bash
-# Export to HTML
-logxpy-tree2 --export-html report.html tutorial_05_api.log
-
 # Export to JSON
-logxpy-tree2 --export-json report.json tutorial_05_api.log
+logxpy-view export tutorial_05_api.log -f json -o report.json
 
 # Export to CSV
-logxpy-tree2 --export-csv report.csv tutorial_05_api.log
+logxpy-view export tutorial_05_api.log -f csv -o report.csv
+
+# Export to HTML
+logxpy-view export tutorial_05_api.log -f html -o report.html
+
+# Export to logfmt
+logxpy-view export tutorial_05_api.log -f logfmt -o report.log
+```
+
+### Live Monitoring
+
+```bash
+# Tail log file (like tail -f)
+logxpy-view tail tutorial_05_api.log
+
+# Show initial 20 lines
+logxpy-view tail -n 20 tutorial_05_api.log
+
+# Show live dashboard
+logxpy-view tail --dashboard tutorial_05_api.log
+
+# Show periodic statistics
+logxpy-view tail --aggregate -i 10 tutorial_05_api.log
 ```
 
 ## Log File Formats
@@ -221,20 +234,23 @@ log.error("Database connection failed",
 
 ## Requirements
 
-- Python 3.9+
-- logxpy (Eliot-based logging library)
-- logxpy-tree2 (log viewer CLI)
+- Python 3.9+ for logxpy-cli-view
+- Python 3.12+ for logxpy
+- logxpy (logging library)
+- logxpy-cli-view (log viewer CLI)
 
 ## Installation
 
 ```bash
-# Install logxpy
-cd ../logxpy
-pip install -e .
+# Install logxpy (requires Python 3.12+)
+pip install logxpy
 
-# Install logxpy_cli_view
-cd ../logxpy_cli_view
-pip install -e .
+# Install logxpy-cli-view (requires Python 3.9+)
+pip install logxpy-cli-view
+
+# Or install from source
+cd ../logxpy && pip install -e .
+cd ../logxpy_cli_view && pip install -e .
 ```
 
 ## Next Steps
@@ -302,7 +318,7 @@ cd ../logxpy_cli_view && pip install -e .
 Check that the script has write permissions in the tutorials directory.
 
 ### Viewer Not Found
-Make sure logxpy_cli_view is installed and `logxpy-tree2` is in your PATH.
+Make sure logxpy_cli_view is installed and `logxpy-view` is in your PATH.
 
 ## Contributing
 

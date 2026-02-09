@@ -197,15 +197,15 @@ class ConfigManager:
             ParserConfig: Loaded configuration.
         """
         try:
-            import tomllib  # Python 3.11+
+            import tomllib  # type: ignore[import-not-found]  # Python 3.11+
         except ImportError:
             try:
-                import tomli as tomllib
+                import tomli as tomllib  # type: ignore[import-not-found, no-redef]
             except ImportError:
                 return ParserConfig()
 
         with open(path, "rb") as f:
-            data = tomllib.load(f)
+            data = tomllib.load(f)  # type: ignore[attr-defined]
 
         # Extract logxy config section
         logxy_config = data.get("tool", {}).get("logxy", {})
@@ -245,10 +245,7 @@ class ConfigManager:
             name: Profile name.
             path: Optional path to save to. Defaults to .logxy/profiles/<name>.json.
         """
-        if path is None:
-            path = Path(".logxy/profiles") / f"{name}.json"
-        else:
-            path = Path(path)
+        path = Path(".logxy/profiles") / f"{name}.json" if path is None else Path(path)
 
         self.config.save(path)
         self._profiles[name] = self.config
@@ -266,10 +263,10 @@ class ConfigManager:
         config_dict = self.config.to_dict()
         keys = key.split(".")
 
-        value = config_dict
+        value: dict[str, Any] | Any = config_dict
         for k in keys:
             if isinstance(value, dict):
-                value = value.get(k)
+                value = value.get(k, {})
             else:
                 return default
 

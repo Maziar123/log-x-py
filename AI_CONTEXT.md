@@ -1,542 +1,588 @@
-# log-x-py - Complete User API
+# log-x-py - AI Context (2026 Optimized)
 
-Full API for using logxpy (logging) + logxpy-cli-view (viewer) + logxy-log-parser (analyzer).
-
-> **📁 API Reference Document**: [logxpy-api-reference.html](./logxpy-api-reference.html) - Complete API with 4 columns: logxpy Prototype, Description, Example, Params
+> **Complete API reference for AI assistants working with log-x-py ecosystem**
 >
-> **📘 Cross-Reference**: [DOC-X/cross-docs/cross-lib1.html](./DOC-X/cross-docs/cross-lib1.html) - CodeSite vs logxpy comparison (11 columns)
+> **Three Components:**
+> 1. **logxpy** - Structured logging library (Python 3.12+)
+> 2. **logxpy-cli-view** - CLI viewer tool (`logxpy-view`)
+> 3. **logxy-log-parser** - Log parsing & analysis library
 
 ---
 
-## Quick Start
+## Quick Reference for AI Assistants
 
-### Basic Logging
-
-```python
-# app.py
-from logxpy import start_action, Message, to_file
-
-to_file("app.log")
-
-with start_action("main"):
-    Message.log(info="starting")
-    with start_action("step1", user="alice"):
-        Message.log(result="done")
-```
+### Installation & Setup
 
 ```bash
-python app.py
+# Install all components
+uv pip install -e ./logxpy
+uv pip install -e ./logxpy_cli_view
+uv pip install -e ./logxy-log-parser
+
+# Or use pip
+pip install -e ./logxpy
+```
+
+### Essential CLI Commands
+
+```bash
+# View logs as ASCII tree (default render command)
 logxpy-view app.log
+logxpy-view render app.log          # Explicit render
+
+# Filter by status
+logxpy-view --status failed app.log
+logxpy-view --status succeeded app.log
+
+# Export to formats (subcommand style)
+logxpy-view export app.log -f json -o out.json
+logxpy-view export app.log -f csv -o out.csv
+logxpy-view export app.log -f html -o out.html
+logxpy-view export app.log -f logfmt -o out.log
+
+# Statistics
+logxpy-view stats app.log
+logxpy-view stats app.log -o stats.json
+
+# Live monitoring
+logxpy-view tail app.log
+logxpy-view tail app.log -f          # Follow mode
+logxpy-view tail app.log -d          # Live dashboard
 ```
 
-### Hierarchical Actions (Task Levels)
+### Python Quick Start
 
 ```python
-from logxpy import start_action, current_action
+# Basic logging
+from logxpy import start_action, to_file, Message
 
-# Task levels: /1, /2/1, /3/2/1 (nested hierarchy)
-with start_action("process_request", request_id="123"):
-    action = current_action()
-    print(action.task_level)      # "/1"
-    print(action.task_uuid)       # unique ID
+to_file(open("app.log", "w"))
+with start_action("main"):
+    Message.log(info="starting")
 
-    with start_action("db_query", table="users"):
-        print(action.task_level)  # "/1/1"
-        Message.log(rows_found=5)
-```
+# Parse logs
+from logxy_log_parser import parse_log, analyze_log
 
-### Decorators
+entries = parse_log("app.log")
+report = analyze_log("app.log")
+report.print_summary()
 
-```python
-from logxpy import log_call, log_message, aaction
+# Filter and render
+from logxpy_cli_view import tasks_from_iterable, filter_by_action_status, render_tasks
 
-@log_call(action_type="function_call")
-def my_function(x, y):
-    return x + y
-
-@log_message(message_type="custom_event")
-def handler():
-    pass
-
-@aaction("async_task", timeout=30)
-async def process():
-    await asyncio.sleep(1)
-```
-
-### Exception Logging
-
-```python
-from logxpy import write_traceback, write_failure
-
-try:
-    risky_operation()
-except Exception:
-    write_traceback()  # Full traceback in logs
-```
-
-### Filtering & Export (logxpy-cli-view)
-
-```python
-from logxpy_cli_view import (
-    tasks_from_iterable,
-    filter_by_action_type,
-    filter_by_duration,
-    export_json,
-    render_tasks
-)
-
-# Parse log file
 with open("app.log") as f:
     tasks = list(tasks_from_iterable(f))
 
-# Filter
-db_tasks = filter_by_action_type(tasks, "db_*")
-slow_tasks = filter_by_duration(tasks, min_seconds=5.0)
-
-# Export
-export_json(slow_tasks, "output.json")
-
-# Render as tree
-print(render_tasks(tasks))
-```
-
-### Live Tail (logxpy-cli-view)
-
-```python
-from logxpy_cli_view import tail_logs, watch_and_aggregate
-
-# Simple tail (prints to stdout)
-tail_logs("app.log")
-
-# Or watch and process
-for tasks in watch_and_aggregate("app.log"):
-    for task in tasks:
-        print(f"Task: {task.get('action_type')}")
-```
-
-### Log Parsing & Analysis (logxy-log-parser)
-
-```python
-from logxy_log_parser import parse_log, check_log, analyze_log
-
-# One-line parsing
-entries = parse_log("app.log")
-
-# Parse + validate
-result = check_log("app.log")
-print(f"Valid: {result.is_valid}, Entries: {result.entry_count}")
-
-# Full analysis
-report = analyze_log("app.log")
-report.print_summary()
-```
-
-### CLI Commands
-
-```bash
-# View as tree
-logxpy-view app.log
-
-# Only failed actions
-logxpy-view app.log --failed
-
-# Filter by action name
-logxpy-view app.log --filter "db_*"
-
-# Export formats
-logxpy-view app.log --export json > out.json
-logxpy-view app.log --export csv > out.csv
-logxpy-view app.log --export html > out.html
-
-# Live monitoring
-logxpy-view app.log --tail
-
-# Statistics
-logxpy-view app.log --stats
-
-# Theme options
-logxpy-view app.log --theme light
-logxpy-view app.log --no-color
+failed = filter_by_action_status(tasks, "failed")
+print(render_tasks(failed))
 ```
 
 ---
 
 # Component 1: logxpy (Logging Library)
 
-## Messaging - Complete API
+## Core Imports
 
-| Category | Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|----------|-----------|------------|---------|---------|----------|
-| **Core** | `Message.log` | `log(**fields)` | Any key-value pairs | None | Log structured message (deprecated) | `Message.log(info="starting", count=5)` |
-| **Core** | `Message.new` | `new(**fields)` | Any key-value pairs | `Message` | Create new message (deprecated) | `msg = Message.new(x=1)` |
-| **Core** | `Message.bind` | `bind(**fields)` | **fields | `Message` | Add fields to message | `msg.bind(user="alice")` |
-| **Core** | `Message.contents` | `contents()` | None | `dict` | Get message contents | `msg.contents()` |
-| **Core** | `Message.write` | `write(logger, action)` | `logger`, `action` | None | Write to logger | `msg.write(logger)` |
-| **Core** | `log` | `log(**fields)` | `message_type`: str, **fields | None | Log message in current action | `log(message_type="event", x=1)` |
-| **Core** | `log_message` | `log_message(message_type, **fields)` | `message_type`: str, **fields | None | Log message in action context | `log_message("my_type", x=1)` |
-| **Action** | `start_action` | `start_action(action_type='', **fields)` | `action_type`: str, **fields | Context manager | Begin hierarchical action | `with start_action("db_query", table="users"):` |
-| **Action** | `start_task` | `start_task(action_type='', **fields)` | `action_type`: str, **fields | Context manager | Create top-level action | `with start_task("process"):` |
-| **Action** | `action` | `action(action_type, level=Level.INFO, **fields)` | `action_type`: str, `level`: Level/str, **fields | Context manager | Sync action (LoggerX style) | `with action("task"):` |
-| **Action** | `aaction` | `aaction(action_type, level=Level.INFO, **fields)` | `action_type`: str, `level`: Level/str, **fields | AsyncIterator | Async action context | `async with aaction("task"):` |
-| **Action** | `current_action` | `current_action()` | None | `Action` or `None` | Get current action context | `action = current_action()` |
-| **Action** | `preserve_context` | `preserve_context(fn)` | `fn`: callable | callable | Capture context for threads | `ctx = preserve_context(func)` |
-| **Action** | `Action.continue_task` | `continue_task(task_id, **fields)` | `task_id`: str, **fields | `Action` | Continue task in new thread | `Action.continue_task(task_id="uuid@/1")` |
-| **Action** | `Action.serialize_task_id` | `serialize_task_id()` | None | `bytes` | Serialize task location | `action.serialize_task_id()` |
-| **Action** | `Action.finish` | `finish(exception=None)` | `exception`: Exception | None | Finish action with status | `action.finish()` |
-| **Action** | `Action.child` | `child(logger, action_type)` | `logger`, `action_type` | `Action` | Create child action | `action.child(logger, "subtask")` |
-| **Action** | `Action.run` | `run(f, *args, **kwargs)` | `f`: callable | Any | Run function in action context | `action.run(func, 1, 2)` |
-| **Action** | `Action.add_success_fields` | `add_success_fields(**fields)` | **fields | None | Add fields on success | `action.add_success_fields(result=5)` |
-| **Action** | `Action.context` | `context()` | None | Context manager | Run in action context (no finish) | `with action.context():` |
-| **Action** | `Action.log` | `log(message_type, **fields)` | `message_type`, **fields | None | Log message within action | `action.log("event", x=1)` |
-| **Task** | `TaskLevel` | Class | - | - | Task level hierarchy | `TaskLevel([1, 2])` |
-| **Task** | `TaskLevel.as_list` | `as_list()` | None | `list` | Get level as list | `level.as_list()` |
-| **Task** | `TaskLevel.from_string` | `from_string(s)` | `s`: "/1/2" | `TaskLevel` | Parse from string | `TaskLevel.from_string("/1/2")` |
-| **Task** | `TaskLevel.to_string` | `to_string()` | None | `str` | Convert to string | `level.to_string()` |
-| **Task** | `TaskLevel.next_sibling` | `next_sibling()` | None | `TaskLevel` | Get next sibling | `level.next_sibling()` |
-| **Task** | `TaskLevel.child` | `child()` | None | `TaskLevel` | Get child level | `level.child()` |
-| **Task** | `TaskLevel.parent` | `parent()` | None | `TaskLevel` or None | Get parent level | `level.parent()` |
-| **Task** | `TaskLevel.is_sibling_of` | `is_sibling_of(other)` | `other`: TaskLevel | `bool` | Check if sibling | `level.is_sibling_of(other)` |
-| **Scope** | `scope` | `scope(**ctx)` | **ctx | Context manager | Nested scope for fields | `with scope(user="alice"):` |
-| **Scope** | `current_scope` | `current_scope()` | None | `dict` | Get current scope context | `ctx = current_scope()` |
-| **Emitter** | `register_emitter` | `register_emitter(fn)` | `fn`: callable | None | Register custom emitter | `register_emitter(handler)` |
-| **Decorator** | `@log_call` | `log_call(*args, **kwargs)` | `action_type`, `include_args`, `include_result` | Decorator | Log function calls | `@log_call(action_type="func")` |
-| **Output** | `to_file` | `to_file(output_file)` | `output_file`: file | None | Set log file (JSON lines) | `to_file(open("app.log", "a"))` |
-| **Output** | `add_destinations` | `add_destinations(*dests)` | `*dests`: callables | None | Add multiple outputs | `add_destinations(d1, d2)` |
-| **Output** | `remove_destination` | `remove_destination(dest)` | `dest`: callable | None | Remove output | `remove_destination(dest)` |
-| **Output** | `add_global_fields` | `add_global_fields(**fields)` | **fields | None | Add fields to all messages | `add_global_fields(app="myapp")` |
-| **Output** | `FileDestination` | `FileDestination(file)` | `file`: file object | Destination | File output | `FileDestination(f)` |
-| **Output** | `BufferingDestination` | `BufferingDestination()` | None | Destination | In-memory buffer (1000 msg) | `BufferingDestination()` |
-| **Output** | `Destinations` | `Destinations()` | None | - | Manage destinations | `Destinations().add(dest)` |
-| **Logger** | `Logger` | Class | - | - | Main logger class | `Logger._destinations.add(dest)` |
-| **Logger** | `ILogger` | Interface | - | - | Logger interface | `class MyDest(ILogger):` |
-| **Logger** | `MemoryLogger` | `MemoryLogger()` | None | Logger | In-memory for testing | `logger = MemoryLogger()` |
-| **Logger** | `MemoryLogger.validate` | `validate()` | None | None | Validate all messages | `logger.validate()` |
-| **Logger** | `MemoryLogger.serialize` | `serialize()` | None | `list` | Serialize messages | `logger.serialize()` |
-| **Logger** | `MemoryLogger.reset` | `reset()` | None | None | Clear messages | `logger.reset()` |
-| **Logger** | `MemoryLogger.flush_tracebacks` | `flush_tracebacks(exc_type)` | `exc_type`: type | `list` | Flush tracebacks | `logger.flush_tracebacks(ValueError)` |
-| **Exception** | `write_traceback` | `write_traceback(logger, exc_info)` | `logger`, `exc_info` | None | Log exception traceback | `except: write_traceback()` |
-| **Exception** | `write_failure` | `write_failure(failure, logger)` | `failure`: Failure, `logger` | None | Log Twisted Failure | `write_failure(failure)` |
-| **Message** | `WrittenMessage` | Class | - | - | A logged message | `WrittenMessage.from_dict(d)` |
-| **Message** | `WrittenMessage.timestamp` | Property | - | `float` | Message timestamp | `msg.timestamp` |
-| **Message** | `WrittenMessage.task_uuid` | Property | - | `str` | Task UUID | `msg.task_uuid` |
-| **Message** | `WrittenMessage.task_level` | Property | - | `TaskLevel` | Task level | `msg.task_level` |
-| **Message** | `WrittenMessage.contents` | Property | - | `dict` | Message contents | `msg.contents` |
-| **Action** | `WrittenAction` | Class | - | - | A logged action | `WrittenAction.from_messages()` |
-| **Action** | `WrittenAction.start_message` | Property | - | `WrittenMessage` | Start message | `action.start_message` |
-| **Action** | `WrittenAction.end_message` | Property | - | `WrittenMessage` | End message | `action.end_message` |
-| **Action** | `WrittenAction.action_type` | Property | - | `str` | Action type | `action.action_type` |
-| **Action** | `WrittenAction.status` | Property | - | `str` | Action status | `action.status` |
-| **Action** | `WrittenAction.start_time` | Property | - | `float` | Start time | `action.start_time` |
-| **Action** | `WrittenAction.end_time` | Property | - | `float` | End time | `action.end_time` |
-| **Action** | `WrittenAction.exception` | Property | - | `str` or None | Exception type | `action.exception` |
-| **Action** | `WrittenAction.reason` | Property | - | `str` or None | Failure reason | `action.reason` |
-| **Action** | `WrittenAction.children` | Property | - | `list` | Child messages | `action.children` |
-| **Action** | `AsyncAction` | Class | - | - | Async-native action | `AsyncAction("task", uuid, level)` |
-| **Action** | `AsyncAction.fields` | Attribute | - | `dict` | Mutable fields | `act.fields["x"] = 1` |
-| **Action** | `AsyncAction.child_level` | `child_level()` | None | `tuple` | Get next child level | `act.child_level()` |
-| **Validation** | `MessageType` | Class base | Fields as class attrs | - | Define message schema | `class Msg(MessageType):` |
-| **Validation** | `ActionType` | Class base | Fields as class attrs | - | Define action schema | `class Act(ActionType):` |
-| **Validation** | `Field` | `Field(key, serializer)` | `key`, `serializer` | - | Define field | `Field("x", int)` |
-| **Validation** | `Field.for_value` | `for_value(value)` | `value` | `Field` | Single value field | `Field.for_value(5)` |
-| **Validation** | `Field.for_types` | `for_types(types)` | `types`: list | `Field` | Multi-type field | `Field.for_types([int, str])` |
-| **Validation** | `Field.validate` | `validate(value)` | `value` | None | Validate value | `field.validate(5)` |
-| **Validation** | `Field.serialize` | `serialize(value)` | `value` | Any | Serialize value | `field.serialize(5)` |
-| **Validation** | `fields.integer` | Constant | - | - | Integer validator | `Field(fields.integer)` |
-| **Validation** | `fields.text` | Constant | - | - | Text validator | `Field(fields.text)` |
-| **Validation** | `fields.success` | Constant | - | - | Boolean success | `Field(fields.success)` |
-| **Validation** | `ValidationError` | Exception | - | - | Validation failed | `except ValidationError:` |
-| **Constants** | `TRACEBACK_MESSAGE` | MessageType | - | - | Traceback message type | `TRACEBACK_MESSAGE.log()` |
-| **Constants** | `DESTINATION_FAILURE` | str | - | - | "eliot:destination_failure" | - |
-| **Constants** | `SERIALIZATION_FAILURE` | str | - | - | "eliot:serialization_failure" | - |
-| **Constants** | `REMOTE_TASK` | str | - | - | "eliot:remote_task" | - |
-| **Constants** | `STARTED_STATUS` | str | - | - | "started" | - |
-| **Constants** | `SUCCEEDED_STATUS` | str | - | - | "succeeded" | - |
-| **Constants** | `FAILED_STATUS` | str | - | - | "failed" | - |
-| **Constants** | `VALID_STATUSES` | tuple | - | - | All valid statuses | - |
-| **Constants** | `MESSAGE_TYPE_FIELD` | str | - | - | "message_type" | - |
-| **Constants** | `ACTION_TYPE_FIELD` | str | - | - | "action_type" | - |
-| **Constants** | `ACTION_STATUS_FIELD` | str | - | - | "action_status" | - |
-| **Constants** | `TASK_UUID_FIELD` | str | - | - | "task_uuid" | - |
-| **Constants** | `TASK_LEVEL_FIELD` | str | - | - | "task_level" | - |
-| **Constants** | `TIMESTAMP_FIELD` | str | - | - | "timestamp" | - |
-| **Constants** | `EXCEPTION_FIELD` | str | - | - | "exception" | - |
-| **Constants** | `REASON_FIELD` | str | - | - | "reason" | - |
-| **Constants** | `RESERVED_FIELDS` | tuple | - | - | Reserved field names | - |
-| **Integration** | `register_exception_extractor` | `register_exception_extractor(exc_class, extractor)` | `exc_class`, `extractor` | None | Register exception handler | `register_exception_extractor(ValueError, lambda e: {"code": 1})` |
-| **Errors** | `WrongTask` | Exception | - | - | Wrong task UUID | `except WrongTask:` |
-| **Errors** | `WrongTaskLevel` | Exception | - | - | Wrong task level | `except WrongTaskLevel:` |
-| **Errors** | `WrongActionType` | Exception | - | - | Wrong action type | `except WrongActionType:` |
-| **Errors** | `InvalidStatus` | Exception | - | - | Invalid status | `except InvalidStatus:` |
-| **Errors** | `DuplicateChild` | Exception | - | - | Duplicate child | `except DuplicateChild:` |
-| **Errors** | `InvalidStartMessage` | Exception | - | - | Invalid start | `except InvalidStartMessage:` |
-| **Errors** | `TooManyCalls` | Exception | - | - | Context called twice | `except TooManyCalls:` |
-| **Compat** | `add_destination` | `add_destination(dest)` | `dest` | None | Deprecated | `add_destination(dest)` |
-| **Compat** | `use_asyncio_context` | `use_asyncio_context()` | None | None | No-op (deprecated) | `use_asyncio_context()` |
-| **Compat** | `_parse` | Module | - | - | Parse compatibility | For eliot-tree |
-| **Compat** | `addDestination` | Alias | - | - | Legacy camelCase | `addDestination(dest)` |
-| **Compat** | `removeDestination` | Alias | - | - | Legacy camelCase | `removeDestination(dest)` |
-| **Compat** | `addGlobalFields` | Alias | - | - | Legacy camelCase | `addGlobalFields(x=1)` |
-| **Compat** | `writeTraceback` | Alias | - | - | Legacy camelCase | `except: writeTraceback()` |
-| **Compat** | `writeFailure` | Alias | - | - | Legacy camelCase | `writeFailure(exc)` |
-| **Compat** | `startAction` | Alias | - | - | Legacy camelCase | `with startAction("x"):` |
-| **Compat** | `startTask` | Alias | - | - | Legacy camelCase | `with startTask("x"):` |
-| **Info** | `__version__` | str | - | - | Package version | `print(__version__)` |
+```python
+# Most commonly used imports
+from logxpy import (
+    start_action,      # Begin hierarchical action
+    start_task,        # Top-level action
+    Message,           # Structured messages
+    to_file,           # Set output destination
+    log,               # LoggerX instance
+    current_action,    # Get active action
+    write_traceback,   # Log exceptions
+)
+```
 
----
+## Compact Field Names (Log Entry Structure)
 
-## LoggerX API
+LogXPy uses 1-2 character field names for minimal log size:
 
-### Logger Class - Level Methods
+| Compact | Legacy | Meaning |
+|---------|--------|---------|
+| `ts` | `timestamp` | Unix timestamp (seconds) |
+| `tid` | `task_uuid` | Task ID (Sqid format, 4-12 chars) |
+| `lvl` | `task_level` | Hierarchy level array `[1, 2, 1]` |
+| `mt` | `message_type` | Log level: info, success, error, etc. |
+| `at` | `action_type` | Action type (for emoji: db:query, http:request) |
+| `st` | `action_status` | started/succeeded/failed |
+| `dur` | `duration` | Duration in seconds |
 
-| Method | Signature | Returns | Explain | Examples |
-|--------|-----------|---------|---------|----------|
-| `debug` | `debug(msg, **fields)` | `Logger` | Log at DEBUG level | `log.debug("starting", count=5)` |
-| `info` | `info(msg, **fields)` | `Logger` | Log at INFO level | `log.info("user logged in", user="alice")` |
-| `success` | `success(msg, **fields)` | `Logger` | Log at SUCCESS level | `log.success("completed", total=100)` |
-| `note` | `note(msg, **fields)` | `Logger` | Log at NOTE level | `log.note("checkpoint", step=3)` |
-| `warning` | `warning(msg, **fields)` | `Logger` | Log at WARNING level | `log.warning("slow query", ms=5000)` |
-| `error` | `error(msg, **fields)` | `Logger` | Log at ERROR level | `log.error("failed", code=500)` |
-| `critical` | `critical(msg, **fields)` | `Logger` | Log at CRITICAL level | `log.critical("system down")` |
-| `checkpoint` | `checkpoint(msg, **fields)` | `Logger` | Log checkpoint (📍 prefix) | `log.checkpoint("step1")` |
-| `exception` | `exception(msg, **fields)` | `Logger` | Log exception with traceback | `except: log.exception("error")` |
-| `__call__` | `__call__(msg, **fields)` | `Logger` | Shortcut for info | `log("message")` |
-| `send` | `send(msg, data, **fields)` | `Logger` | Universal send with data | `log.send("result", data)` |
+**Example log entry:**
+```json
+{"ts":1770563890.78,"tid":"gD.1","lvl":[1],"mt":"info","msg":"Hello"}
+```
 
-### Logger Class - Type Methods
+## Task ID Format (Sqid)
 
-| Method | Signature | Returns | Explain | Examples |
-|--------|-----------|---------|---------|----------|
-| `df` | `df(data, title, **opts)` | `Logger` | Log DataFrame/pandas-like | `log.df(df, "Sales Data")` |
-| `tensor` | `tensor(data, title)` | `Logger` | Log tensor/PyTorch/TF | `log.tensor(tensor)` |
-| `json` | `json(data, title)` | `Logger` | Log JSON dict | `log.json({"a": 1})` |
-| `img` | `img(data, title, **opts)` | `Logger` | Log image/PIL/array | `log.img(image)` |
-| `plot` | `plot(fig, title)` | `Logger` | Log plot/matplotlib | `log.plot(fig)` |
-| `tree` | `tree(data, title)` | `Logger` | Log tree structure | `log.tree(data)` |
-| `table` | `table(data, title)` | `Logger` | Log table/list of dicts | `log.table(rows)` |
+| Format | Example | Length | Use Case |
+|--------|---------|--------|----------|
+| Root | `"Xa.1"` | 4 chars | Top-level task |
+| Child | `"Xa.1.1"` | 6 chars | Nested action |
+| Deep | `"Xa.1.1.2"` | 8 chars | 3 levels deep |
 
-### Logger Class - Context Methods
+**Environment variable for distributed mode (UUID4):**
+```bash
+LOGXPY_DISTRIBUTED=1  # Forces UUID4 for distributed tracing
+```
 
-| Method | Signature | Returns | Explain | Examples |
-|--------|-----------|---------|---------|----------|
-| `scope` | `scope(**ctx)` | Context manager | Create nested scope | `with log.scope(user=123):` |
-| `ctx` | `ctx(**ctx)` | `Logger` | Fluent context add | `log.ctx(app="myapp").info("msg")` |
-| `new` | `new(name)` | `Logger` | Create child logger | `child = log.new("module")` |
-| `span` | `span(name, **attributes)` | Context manager | OpenTelemetry span | `with log.span("operation"):` |
+## Core API Functions
 
-### Logger Class - Decorators (as methods)
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `start_action` | `start_action(action_type='', **fields)` | Context manager | Begin hierarchical action | `with start_action("db_query", table="users"):` |
+| `start_task` | `start_task(action_type='', **fields)` | Context manager | Top-level action | `with start_task("process"):` |
+| `log` | `log(message_type, **fields)` | None | Log in current action | `log(message_type="event", x=1)` |
+| `current_action` | `current_action()` | Action or None | Get active action | `action = current_action()` |
+| `write_traceback` | `write_traceback(logger=None, exc_info=None)` | None | Log exception | `except: write_traceback()` |
+| `to_file` | `to_file(output_file)` | None | Set log destination | `to_file(open("app.log", "a"))` |
+| `Message.log` | `Message.log(**fields)` | None | Log structured message | `Message.log(info="starting", count=5)` |
 
-| Decorator | Parameters | Explain | Examples |
-|-----------|------------|---------|----------|
-| `logged` | level, capture_args, capture_result, exclude, timer, when, max_depth, max_length, silent_errors | Universal logging decorator | `@log.logged()` |
-| `timed` | metric | Timing-only decorator | `@log.timed()` |
-| `retry` | attempts, delay, backoff, on_retry | Retry decorator | `@log.retry()` |
-| `generator` | name, every | Generator progress | `@log.generator()` |
-| `aiterator` | name, every | Async iterator progress | `@log.aiterator()` |
-| `trace` | name, kind, attributes | OpenTelemetry trace | `@log.trace()` |
+## Action Context Manager Methods
 
-### Global Logger Instance
+| Method | Signature | Returns | Purpose | Example |
+|--------|-----------|---------|---------|---------|
+| `Action.finish` | `finish(exception=None)` | None | Complete action | `action.finish()` |
+| `Action.child` | `child(logger, action_type)` | Action | Create child | `action.child(logger, "subtask")` |
+| `Action.run` | `run(f, *args, **kwargs)` | Any | Run in context | `action.run(func, 1, 2)` |
+| `Action.add_success_fields` | `add_success_fields(**fields)` | None | Add on success | `action.add_success_fields(result=5)` |
+| `Action.context` | `context()` | Context manager | Run without finish | `with action.context():` |
 
-| Symbol | Type | Explain |
-|--------|------|---------|
-| `log` | `Logger` | Global logger instance | `from logxpy import log` |
+## TaskLevel Class
 
----
+| Method | Returns | Purpose | Example |
+|--------|---------|---------|---------|
+| `TaskLevel.from_string(s)` | TaskLevel | Parse from string | `TaskLevel.from_string("/1/2")` |
+| `as_list()` | list | Get as list | `level.as_list()` |
+| `to_string()` | str | Convert to string | `level.to_string()` |
+| `next_sibling()` | TaskLevel | Next sibling | `level.next_sibling()` |
+| `child()` | TaskLevel | Child level | `level.child()` |
+| `parent()` | TaskLevel or None | Parent level | `level.parent()` |
 
-## Part 1.6: Decorators Module
+## LoggerX Fluent API
 
-### Decorator Functions
+### Level Methods (all return `Logger` for chaining)
 
-| Decorator | Parameters | Returns | Explain | Examples |
-|-----------|------------|---------|---------|----------|
-| `logged` | fn=None, level="INFO", capture_args=True, capture_result=True, capture_self=False, exclude=None, timer=True, when=None, max_depth=3, max_length=500, silent_errors=False | Decorator | Universal logging with entry/exit/timing | `@logged(level="DEBUG")` |
-| `timed` | metric=None | Decorator | Timing-only decorator | `@timed("database.query")` |
-| `retry` | attempts=3, delay=1.0, backoff=2.0, on_retry=None | Decorator | Retry with exponential backoff | `@retry(attempts=5)` |
-| `generator` | name=None, every=100 | Decorator | Generator progress tracking | `@generator(every=50)` |
-| `aiterator` | name=None, every=100 | Decorator | Async iterator progress | `@aiterator()` |
-| `trace` | name=None, kind="internal", attributes=None | Decorator | OpenTelemetry trace decorator | `@trace(kind="external")` |
+| Method | Level | Example |
+|--------|-------|---------|
+| `log.debug(msg, **fields)` | DEBUG | `log.debug("starting", count=5)` |
+| `log.info(msg, **fields)` | INFO | `log.info("user login", user="alice")` |
+| `log.success(msg, **fields)` | SUCCESS | `log.success("completed", total=100)` |
+| `log.note(msg, **fields)` | NOTE | `log.note("checkpoint", step=3)` |
+| `log.warning(msg, **fields)` | WARNING | `log.warning("slow query", ms=5000)` |
+| `log.error(msg, **fields)` | ERROR | `log.error("failed", code=500)` |
+| `log.critical(msg, **fields)` | CRITICAL | `log.critical("system down")` |
+| `log.checkpoint(msg, **fields)` | CHECKPOINT (📍) | `log.checkpoint("step1")` |
+| `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
+
+### Flexible `__call__` Method
+
+| Usage | Equivalent To | Example |
+|-------|---------------|---------|
+| `log("msg")` | `log.info("msg")` | `log("Starting")` |
+| `log("title", data)` | `log.info("title", value=data)` | `log("User", {"id": 1})` |
+| `log(data)` | `log.send(auto_title, data)` | `log({"key": "val"})` |
+
+### Context Methods
+
+| Method | Returns | Purpose | Example |
+|--------|---------|---------|---------|
+| `log.scope(**ctx)` | Context manager | Nested scope | `with log.scope(user_id=123):` |
+| `log.ctx(**ctx)` | Logger | Fluent context | `log.ctx(user_id=123).info("msg")` |
+| `log.new(name)` | Logger | Child logger | `child = log.new("database")` |
+| `log.span(name, **attrs)` | Context manager | OpenTelemetry span | `with log.span("query"):` |
+
+### Color Methods (for CLI viewer)
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.set_foreground(color)` | Set text color | `log.set_foreground("cyan")` |
+| `log.set_background(color)` | Set background | `log.set_background("yellow")` |
+| `log.reset_foreground()` | Reset text | `log.reset_foreground()` |
+| `log.reset_background()` | Reset background | `log.reset_background()` |
+| `log.colored(msg, fg, bg)` | One-shot color | `log.colored("Important!", "red", "yellow")` |
+
+**Colors:** black, red, green, yellow, blue, magenta, cyan, white, light_gray, dark_gray, light_red, light_green, light_blue, light_yellow, light_magenta, light_cyan
+
+### Data Type Methods
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.color(value, title)` | RGB/hex colors | `log.color((255, 0, 0), "Theme")` |
+| `log.currency(amount, code)` | Currency with precision | `log.currency("19.99", "USD")` |
+| `log.datetime(dt, title)` | DateTime formats | `log.datetime(dt, "StartTime")` |
+| `log.enum(enum_value, title)` | Enum name/value | `log.enum(Status.ACTIVE)` |
+| `log.json(data, title)` | JSON formatted | `log.json({"key": "val"}, "Config")` |
+| `log.df(data, title)` | DataFrame | `log.df(df, "Results")` |
+| `log.tensor(data, title)` | Tensor/PyTorch/TF | `log.tensor(tensor)` |
+| `log.img(data, title)` | Image/PIL/array | `log.img(image)` |
+| `log.plot(fig, title)` | Matplotlib plot | `log.plot(fig)` |
+| `log.tree(data, title)` | Tree structure | `log.tree(data)` |
+| `log.table(data, title)` | List of dicts | `log.table(rows)` |
+
+### System Info Methods
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.system_info()` | OS/platform info | `log.system_info()` |
+| `log.memory_status()` | Memory statistics | `log.memory_status()` |
+| `log.stack_trace(limit)` | Call stack | `log.stack_trace(10)` |
+
+### LoggerX Initialization
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| `log.init()` | Auto-generate log filename | `log.init()` |
+| `log.init(path)` | Specify file | `log.init("app.log")` |
+| `log.init(path, level, mode)` | Full config | `log.init("app.log", level="INFO", mode="w")` |
+| `log.configure(**opts)` | Advanced config | `log.configure(level="DEBUG", destinations=[...])` |
+
+## Decorators
+
+| Decorator | Parameters | Purpose | Example |
+|-----------|------------|---------|---------|
+| `@logged` | level, capture_args, capture_result, exclude, timer, when, max_depth, max_length, silent_errors | Universal logging | `@logged(level="DEBUG")` |
+| `@timed` | metric=None | Timing only | `@timed("db.query")` |
+| `@retry` | attempts=3, delay=1.0, backoff=2.0, on_retry=None | Retry with backoff | `@retry(attempts=5)` |
+| `@generator` | name=None, every=100 | Generator progress | `@generator(every=50)` |
+| `@aiterator` | name=None, every=100 | Async iterator | `@aiterator()` |
+| `@trace` | name=None, kind="internal", attributes=None | OpenTelemetry | `@trace(kind="external")` |
+
+**Decorator access:**
+```python
+from logxpy import logged, timed, retry, generator, aiterator, trace
+
+# Or via LoggerX
+@log.logged()
+def my_function():
+    pass
+
+@log.timed("metric.name")
+def my_function():
+    pass
+```
+
+## Category System
+
+| Class/Function | Purpose | Example |
+|----------------|---------|---------|
+| `CategorizedLogger(name)` | Logger with prefix | `cat_log = CategorizedLogger("database")` |
+| `category_context(name)` | Context manager | `with category_context("db"):` |
+| `Category(name)` | Global manager | `Category("database")` |
+| `log.with_category(name)` | Categorized logger | `db_log = log.with_category("database")` |
+
+## Output Destinations
+
+| Class/Function | Purpose | Example |
+|----------------|---------|---------|
+| `to_file(file)` | Set file output | `to_file(open("app.log", "a"))` |
+| `add_destinations(*dests)` | Add multiple outputs | `add_destinations(d1, d2)` |
+| `remove_destination(dest)` | Remove output | `remove_destination(dest)` |
+| `add_global_fields(**fields)` | Add to all messages | `add_global_fields(app="myapp")` |
+| `FileDestination(file)` | File output wrapper | `FileDestination(f)` |
+| `BufferingDestination()` | In-memory buffer | `BufferingDestination()` |
+| `Destinations()` | Manage destinations | `Destinations().add(dest)` |
+
+## Testing Utilities
+
+| Class | Purpose | Example |
+|-------|---------|---------|
+| `MemoryLogger()` | In-memory for testing | `logger = MemoryLogger()` |
+| `MemoryLogger.validate()` | Validate messages | `logger.validate()` |
+| `MemoryLogger.serialize()` | Get messages | `logger.serialize()` |
+| `MemoryLogger.reset()` | Clear messages | `logger.reset()` |
+
+## Exception Handling
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `write_traceback(logger, exc_info)` | Log exception | `except: write_traceback()` |
+| `write_failure(failure, logger)` | Log Twisted Failure | `write_failure(failure)` |
+| `register_exception_extractor(cls, fn)` | Custom handler | `register_exception_extractor(ValueError, lambda e: {"code": 1})` |
+
+## Validation
+
+| Class/Function | Purpose | Example |
+|----------------|---------|---------|
+| `MessageType` | Message schema base | `class Msg(MessageType): x = Field(int)` |
+| `ActionType` | Action schema base | `class Act(ActionType): table = Field(str)` |
+| `Field(key, serializer)` | Define field | `Field("x", int)` |
+| `fields.integer` | Integer validator | `Field(fields.integer)` |
+| `fields.text` | Text validator | `Field(fields.text)` |
+| `fields.success` | Boolean validator | `Field(fields.success)` |
+
+## Constants
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `TRACEBACK_MESSAGE` | MessageType | Traceback message type |
+| `STARTED_STATUS` | "started" | Action started |
+| `SUCCEEDED_STATUS` | "succeeded" | Action succeeded |
+| `FAILED_STATUS` | "failed" | Action failed |
+| `MESSAGE_TYPE_FIELD` | "message_type" | Message type key |
+| `ACTION_TYPE_FIELD` | "action_type" | Action type key |
+| `ACTION_STATUS_FIELD` | "action_status" | Action status key |
+| `TASK_UUID_FIELD` | "task_uuid" | Task UUID key |
+| `TASK_LEVEL_FIELD` | "task_level" | Task level key |
+| `TIMESTAMP_FIELD` | "timestamp" | Timestamp key |
+
+## System Message Types
+
+### Eliot System Messages
+
+| Message Type | Purpose |
+|--------------|---------|
+| `eliot:traceback` | Exception traceback |
+| `eliot:destination_failure` | Destination write failure |
+| `eliot:serialization_failure` | Message serialization failure |
+| `eliot:remote_task` | Remote/cross-process task |
+
+### LoggerX Message Types
+
+| Message Type | Level | Purpose |
+|--------------|-------|---------|
+| `loggerx:debug` | DEBUG | Debug messages |
+| `loggerx:info` | INFO | Info messages |
+| `loggerx:success` | SUCCESS | Success messages |
+| `loggerx:note` | NOTE | Note messages |
+| `loggerx:warning` | WARNING | Warning messages |
+| `loggerx:error` | ERROR | Error messages |
+| `loggerx:critical` | CRITICAL | Critical messages |
+
+## Emoji Auto-Detection (by action_type)
+
+| Pattern | Emoji |
+|---------|-------|
+| database, db:, query | 💾 |
+| http, api, request | 🔌 |
+| auth, login | 🔐 |
+| payment, charge | 💳 |
+| server | 🖥️ |
+| pipeline, etl | 🔄 |
+| error, fail | 🔥 |
+| default | ⚡ |
 
 ---
 
 # Component 2: logxpy-cli-view (Viewer)
 
-## CLI Commands
+## CLI Structure
 
-| Command | Options | Type | Explain | Examples |
-|---------|---------|------|---------|----------|
-| `logxpy-view` | `<file>` | arg | View log as tree | `logxpy-view app.log` |
-| `--failed` | - | flag | Show only failed actions | `--failed` |
-| `--succeeded` | - | flag | Show only succeeded | `--succeeded` |
-| `--filter` | `<pattern>` | string | Filter by action name | `--filter "db"` |
-| `--export` | `json` / `csv` / `html` / `logfmt` | enum | Export format | `--export json` |
-| `--tail` | - | flag | Live log monitoring | `--tail` |
-| `--stats` | - | flag | Show statistics | `--stats` |
-| `--theme` | `dark` / `light` | enum | Color theme | `--theme light` |
-| `--color` | - | flag | Enable colors | `--color` |
-| `--no-color` | - | flag | Disable colors | `--no-color` |
+The CLI uses **subcommands** with legacy fallback (no subcommand = render):
 
-## Core API
+```
+logxpy-view [COMMAND] [OPTIONS] [FILE]
+```
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `render_tasks` | `render_tasks(tasks)` | `tasks`: list | `str` | Render tasks as ASCII tree | `print(render_tasks(tasks))` |
-| `tasks_from_iterable` | `tasks_from_iterable(lines)` | `lines`: iterable | Iterator | Parse log lines into tasks | `tasks = tasks_from_iterable(f)` |
-| `parser_context` | `parser_context()` | None | Context manager | Parse with context | `with parser_context():` |
+### Commands
+
+| Command | Aliases | Purpose |
+|---------|---------|---------|
+| `render` | r, show | View logs as tree (default) |
+| `stats` | s, statistics | Show statistics |
+| `export` | e, convert | Export to formats |
+| `tail` | t, watch, follow | Live monitoring |
+
+### CLI Examples
+
+```bash
+# Render (default command, optional)
+logxpy-view app.log
+logxpy-view render app.log
+logxpy-view r app.log
+
+# Filtering
+logxpy-view --status failed app.log
+logxpy-view --action-type "db:*" app.log
+logxpy-view --keyword "error" app.log
+logxpy-view --min-duration 1.0 app.log
+logxpy-view --select "[?level=='error']" app.log
+
+# Display options
+logxpy-view --human-readable app.log
+logxpy-view --raw app.log
+logxpy-view --ascii app.log
+logxpy-view --no-color-tree app.log
+logxpy-view --theme light app.log
+
+# Export
+logxpy-view export app.log -f json -o out.json
+logxpy-view export app.log -f csv -o out.csv
+logxpy-view export app.log -f html -o out.html
+logxpy-view export app.log -f logfmt -o out.log
+
+# Stats
+logxpy-view stats app.log
+logxpy-view stats app.log -o stats.json
+
+# Tail/Live
+logxpy-view tail app.log
+logxpy-view tail app.log -f           # Follow mode
+logxpy-view tail app.log -d           # Dashboard
+logxpy-view tail app.log -a           # Aggregate stats
+```
+
+## Filtering Options (render command)
+
+| Option | Type | Purpose | Example |
+|--------|------|---------|---------|
+| `-u, --task-uuid` | UUID | Filter by task ID | `--task-uuid "Xa.1"` |
+| `--select` | JMESPath | JMESPath query | `--select "[?status=='failed']"` |
+| `--start` | ISO8601 | Filter after date | `--start "2024-01-01"` |
+| `--end` | ISO8601 | Filter before date | `--end "2024-12-31"` |
+| `--status` | enum | Filter by status | `--status failed` |
+| `--action-type` | pattern | Filter by action type | `--action-type "db:*"` |
+| `--action-type-regex` | flag | Treat as regex | `--action-type-regex` |
+| `--min-duration` | float | Min duration (sec) | `--min-duration 1.0` |
+| `--max-duration` | float | Max duration (sec) | `--max-duration 10.0` |
+| `--has-field` | field | Field exists | `--has-field "user_id"` |
+| `--keyword` | text | Search values | `--keyword "error"` |
+| `--min-level` | int | Min depth (1=top) | `--min-level 2` |
+| `--max-level` | int | Max depth | `--max-level 3` |
+
+## Display Options (render command)
+
+| Option | Type | Purpose | Example |
+|--------|------|---------|---------|
+| `--human-readable` | flag | Format values (default) | on |
+| `--raw` | flag | No formatting | `--raw` |
+| `--local-timezone` | flag | Local timestamps | `--local-timezone` |
+| `--color` | enum | Color mode | `--color always` |
+| `--ascii` | flag | ASCII tree | `--ascii` |
+| `--no-color-tree` | flag | Plain tree lines | `--no-color-tree` |
+| `--theme` | enum | Color theme | `--theme light` |
+| `-l, --field-limit` | int | Truncate values | `--field-limit 50` |
+| `--no-line-numbers` | flag | Hide line numbers | `--no-line-numbers` |
+| `--format` | enum | Output format | `--format tree` |
+
+## Export Options (export command)
+
+| Option | Type | Purpose | Example |
+|--------|------|---------|---------|
+| `-f, --format` | enum | Format: json/csv/html/logfmt | `-f json` |
+| `-o, --output` | path | Output file | `-o out.json` |
+| `--indent` | int | JSON indentation | `--indent 2` |
+| `--include-fields` | list | Fields to include | `--include-fields timestamp` |
+| `--exclude-fields` | list | Fields to exclude | `--exclude-fields traceback` |
+| `--title` | string | HTML page title | `--title "My Logs"` |
+
+## Tail Options (tail command)
+
+| Option | Type | Purpose | Example |
+|--------|------|---------|---------|
+| `-n, --lines` | int | Initial lines | `-n 20` |
+| `-f, --follow` | flag | Follow new entries | `-f` |
+| `--no-follow` | flag | Don't follow | `--no-follow` |
+| `-d, --dashboard` | flag | Live dashboard | `-d` |
+| `-a, --aggregate` | flag | Periodic stats | `-a` |
+| `-i, --interval` | int | Aggregation interval (sec) | `-i 5` |
+| `-r, --refresh` | float | Dashboard refresh (sec) | `-r 1.0` |
+
+## Core Python API
+
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `tasks_from_iterable` | `tasks_from_iterable(lines)` | Iterator | Parse log lines | `tasks = list(tasks_from_iterable(f))` |
+| `render_tasks` | `render_tasks(tasks, write=None, **options)` | str | Render tree | `print(render_tasks(tasks))` |
+| `render_oneline` | `render_oneline(tasks, write=None, theme=None)` | None | One-line format | `render_oneline(tasks)` |
 
 ## Filter Functions
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `filter_by_action_status` | `filter_by_action_status(tasks, status)` | `tasks`, `status`: "succeeded"/"failed"/"started" | Filtered tasks | Filter by completion status | `filter_by_action_status(tasks, "failed")` |
-| `filter_by_action_type` | `filter_by_action_type(tasks, action_type)` | `tasks`, `action_type`: str pattern | Filtered tasks | Filter by action name pattern | `filter_by_action_type(tasks, "db_*")` |
-| `filter_by_duration` | `filter_by_duration(tasks, min_seconds, max_seconds)` | `tasks`, `min_seconds`: float, `max_seconds`: float | Filtered tasks | Filter by duration range | `filter_by_duration(tasks, min=1.0)` |
-| `filter_by_start_date` | `filter_by_start_date(tasks, date)` | `tasks`, `date`: datetime | Filtered tasks | Filter by start time | `filter_by_start_date(tasks, dt)` |
-| `filter_by_end_date` | `filter_by_end_date(tasks, date)` | `tasks`, `date`: datetime | Filtered tasks | Filter by end time | `filter_by_end_date(tasks, dt)` |
-| `filter_by_relative_time` | `filter_by_relative_time(tasks, time)` | `tasks`, `time`: str (e.g. "5m ago") | Filtered tasks | Filter by relative time | `filter_by_relative_time(tasks, "1h ago")` |
-| `filter_by_field_exists` | `filter_by_field_exists(tasks, field)` | `tasks`, `field`: str | Filtered tasks | Has field exists | `filter_by_field_exists(tasks, "user_id")` |
-| `filter_by_keyword` | `filter_by_keyword(tasks, keyword)` | `tasks`, `keyword`: str | Filtered tasks | Search in values | `filter_by_keyword(tasks, "error")` |
-| `filter_by_jmespath` | `filter_by_jmespath(tasks, query)` | `tasks`, `query`: str (JMESPath) | Filtered tasks | JMESPath query | `filter_by_jmespath(tasks, "[?status=='failed']")` |
-| `filter_by_task_level` | `filter_by_task_level(tasks, level)` | `tasks`, `level`: str pattern | Filtered tasks | By task level | `filter_by_task_level(tasks, "/1/*")` |
-| `filter_by_uuid` | `filter_by_uuid(tasks, uuid)` | `tasks`, `uuid`: str | Filtered tasks | By task UUID | `filter_by_uuid(tasks, "123-abc")` |
-| `filter_sample` | `filter_sample(tasks, ratio)` | `tasks`, `ratio`: float (0-1) | Filtered tasks | Random sample | `filter_sample(tasks, 0.1)` |
-| `combine_filters_and` | `combine_filters_and(*filters)` | `*filters` | Filtered tasks | AND combine | `combine_filters_and(f1, f2)` |
-| `combine_filters_or` | `combine_filters_or(*filters)` | `*filters` | Filtered tasks | OR combine | `combine_filters_or(f1, f2)` |
-| `combine_filters_not` | `combine_filters_not(filter)` | `filter` | Filtered tasks | NOT filter | `combine_filters_not(f1)` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `filter_by_action_status` | `filter_by_action_status(tasks, status)` | Iterator | By status | `filter_by_action_status(tasks, "failed")` |
+| `filter_by_action_type` | `filter_by_action_type(tasks, pattern, regex=False)` | Iterator | By action type | `filter_by_action_type(tasks, "db_*")` |
+| `filter_by_duration` | `filter_by_duration(tasks, min_seconds=None, max_seconds=None)` | Iterator | By duration | `filter_by_duration(tasks, min_seconds=1.0)` |
+| `filter_by_start_date` | `filter_by_start_date(tasks, date)` | Iterator | After date | `filter_by_start_date(tasks, dt)` |
+| `filter_by_end_date` | `filter_by_end_date(tasks, date)` | Iterator | Before date | `filter_by_end_date(tasks, dt)` |
+| `filter_by_field_exists` | `filter_by_field_exists(tasks, field)` | Iterator | Has field | `filter_by_field_exists(tasks, "user_id")` |
+| `filter_by_keyword` | `filter_by_keyword(tasks, keyword)` | Iterator | Search values | `filter_by_keyword(tasks, "error")` |
+| `filter_by_jmespath` | `filter_by_jmespath(tasks, query)` | Iterator | JMESPath | `filter_by_jmespath(tasks, "[?status=='failed']")` |
+| `filter_by_task_level` | `filter_by_task_level(tasks, min_level=None, max_level=None)` | Iterator | By depth | `filter_by_task_level(tasks, min_level=2)` |
+| `filter_by_uuid` | `filter_by_uuid(tasks, *uuids)` | Iterator | By task ID | `filter_by_uuid(tasks, "Xa.1")` |
+| `filter_sample` | `filter_sample(tasks, ratio)` | Iterator | Random sample | `filter_sample(tasks, 0.1)` |
+| `combine_filters_and` | `combine_filters_and(*filters)` | callable | AND combine | `combine_filters_and(f1, f2)` |
+| `combine_filters_or` | `combine_filters_or(*filters)` | callable | OR combine | `combine_filters_or(f1, f2)` |
+| `combine_filters_not` | `combine_filters_not(filter)` | callable | NOT filter | `combine_filters_not(f1)` |
 
 ## Export Functions
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `export_json` | `export_json(tasks, file)` | `tasks`, `file` | None | Export as JSON | `export_json(tasks, "out.json")` |
-| `export_csv` | `export_csv(tasks, file)` | `tasks`, `file` | None | Export as CSV | `export_csv(tasks, "out.csv")` |
-| `export_html` | `export_html(tasks, file)` | `tasks`, `file` | None | Export as HTML | `export_html(tasks, "out.html")` |
-| `export_logfmt` | `export_logfmt(tasks, file)` | `tasks`, `file` | None | Export as logfmt | `export_logfmt(tasks, "out.log")` |
-| `export_tasks` | `export_tasks(tasks, file, format)` | `tasks`, `file`, `format` | None | Generic export | `export_tasks(tasks, "out", "json")` |
-| `EXPORT_FORMATS` | Constant | - | `list` of str | Available formats: ["json", "csv", "html", "logfmt"] | - |
-| `ExportOptions` | Class | - | - | Export configuration options | `ExportOptions(human_readable=True)` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `export_json` | `export_json(tasks, file, **options)` | int (count) | Export JSON | `export_json(tasks, "out.json")` |
+| `export_csv` | `export_csv(tasks, file, **options)` | int | Export CSV | `export_csv(tasks, "out.csv")` |
+| `export_html` | `export_html(tasks, file, title=None)` | int | Export HTML | `export_html(tasks, "out.html")` |
+| `export_logfmt` | `export_logfmt(tasks, file, **options)` | int | Export logfmt | `export_logfmt(tasks, "out.log")` |
+| `export_tasks` | `export_tasks(tasks, output, format, options=None, title=None)` | int | Generic export | `export_tasks(tasks, "out", "json")` |
+| `EXPORT_FORMATS` | Constant | list[str] | Available formats | `["json", "csv", "html", "logfmt"]` |
 
-## Statistics
+## Statistics Functions
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `calculate_statistics` | `calculate_statistics(tasks)` | `tasks` | `TaskStatistics` | Compute task stats | `stats = calculate_statistics(tasks)` |
-| `TaskStatistics` | Class | - | - | Stats with total_actions, succeeded_count, failed_count, duration_* | `stats.total_actions` |
-| `create_time_series` | `create_time_series(tasks, interval)` | `tasks`, `interval` | `TimeSeriesData` | Time series data | `series = create_time_series(tasks, "1m")` |
-| `TimeSeriesData` | Class | - | - | Time series with timestamps and counts | `series.timestamps` |
-| `print_statistics` | `print_statistics(stats)` | `stats` | None | Print stats to stdout | `print_statistics(stats)` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `calculate_statistics` | `calculate_statistics(tasks)` | TaskStatistics | Compute stats | `stats = calculate_statistics(tasks)` |
+| `print_statistics` | `print_statistics(stats)` | None | Print to stdout | `print_statistics(stats)` |
+| `create_time_series` | `create_time_series(tasks, interval)` | TimeSeriesData | Time series | `create_time_series(tasks, "1m")` |
 
-## Live Tail
+## Tail/Live Monitoring
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `tail_logs` | `tail_logs(path)` | `path`: str | None | Simple tail to stdout | `tail_logs("app.log")` |
-| `watch_and_aggregate` | `watch_and_aggregate(path)` | `path`: str | Iterator | Watch and aggregate | `watch_and_aggregate("app.log")` |
-| `LiveDashboard` | Class | - | - | - | Dashboard for tail | `dash = LiveDashboard()` |
-| `LiveDashboard.update` | Method | `.update(tasks)` | `tasks`: list | None | Update dashboard | `dash.update(new_tasks)` |
-| `LogTailer` | Class | - | `path`, `callback` | - | Tail with callback | `LogTailer("app.log", cb=func)` |
-| `LogTailer.start` | Method | `.start()` | None | None | Start tailing | `tailer.start()` |
-| `LogTailer.stop` | Method | `.stop()` | None | None | Stop tailing | `tailer.stop()` |
+| Function/Class | Signature | Returns | Purpose | Example |
+|----------------|-----------|---------|---------|---------|
+| `tail_logs` | `tail_logs(path, follow=True, lines=10, **opts)` | None | Tail to stdout | `tail_logs("app.log")` |
+| `watch_and_aggregate` | `watch_and_aggregate(path, interval=5)` | Iterator | Watch & aggregate | `watch_and_aggregate("app.log")` |
+| `LiveDashboard` | `LiveDashboard(path, refresh_rate=1.0)` | Class | Live dashboard | `LiveDashboard("app.log").run()` |
 
 ## Pattern Extraction
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `extract_urls` | `extract_urls(text)` | `text`: str | `list` of str | Find URLs | `urls = extract_urls(log_line)` |
-| `extract_emails` | `extract_emails(text)` | `text`: str | `list` of str | Find emails | `emails = extract_emails(log_line)` |
-| `extract_ips` | `extract_ips(text)` | `text`: str | `list` of str | Find IPs | `ips = extract_ips(log_line)` |
-| `extract_uuids` | `extract_uuids(text)` | `text`: str | `list` of str | Find UUIDs | `uuids = extract_uuids(log_line)` |
-| `compile_pattern` | `compile_pattern(pattern)` | `pattern`: str | Pattern | Compile regex pattern | `compile_pattern(r'\d+')` |
-| `COMMON_PATTERNS` | Constant | - | `dict` | Built-in patterns: url, email, ip, uuid | - |
-| `create_common_classifier` | `create_common_classifier()` | None | `LogClassifier` | Create classifier | `cls = create_common_classifier()` |
-| `LogClassifier` | Class | - | - | Classify log entries | `cls.classify(entry)` |
-| `LogClassifier.classify` | Method | `.classify(entry)` | `entry`: dict | Classification | Classify entry | `cls.classify(log_entry)` |
-| `PatternExtractor` | Class | - | `patterns`: list | - | Extract patterns | `PatternExtractor([pat1, pat2])` |
-| `PatternExtractor.extract` | Method | `.extract(text)` | `text`: str | `list` of PatternMatch | Extract all | `extractor.extract(log_line)` |
-| `PatternMatch` | Class | - | - | Match with type, value, position | `match.type, match.value` |
-| `create_extraction_pipeline` | `create_extraction_pipeline(patterns)` | `patterns`: list | Extractor | Multi-pattern extractor | `create_extraction_pipeline([url, email])` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `extract_urls` | `extract_urls(text)` | list[str] | Find URLs | `extract_urls(log_line)` |
+| `extract_emails` | `extract_emails(text)` | list[str] | Find emails | `extract_emails(log_line)` |
+| `extract_ips` | `extract_ips(text)` | list[str] | Find IPs | `extract_ips(log_line)` |
+| `extract_uuids` | `extract_uuids(text)` | list[str] | Find UUIDs | `extract_uuids(log_line)` |
+| `COMMON_PATTERNS` | Constant | dict | Built-in patterns | `COMMON_PATTERNS["url"]` |
 
 ## Theme & Color
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `get_theme` | `get_theme(mode)` | `mode`: ThemeMode | `Theme` | Get color theme | `theme = get_theme(ThemeMode.LIGHT)` |
-| `ThemeMode` | Enum | - | `DARK`, `LIGHT` | - | Theme mode enum | `ThemeMode.LIGHT` |
-| `DarkBackgroundTheme` | Constant | - | - | `Theme` | Dark theme preset | `theme = DarkBackgroundTheme()` |
-| `LightBackgroundTheme` | Constant | - | - | `Theme` | Light theme preset | `theme = LightBackgroundTheme()` |
-| `Theme` | Class | - | - | - | Base theme class | Custom themes |
-| `apply_theme_overrides` | `apply_theme_overrides(theme, **colors)` | `theme`, `**colors` | `Theme` | Override colors | `apply_theme_overrides(t, action_name="red")` |
-| `color_factory` | `color_factory(human)` | `human`: bool | Color function | Create color function | `color = color_factory()` |
-| `colored` | `colored(text, color, style)` | `text`, `color`, `style` | `str` | Colorize text | `colored("text", "cyan", "bold")` |
-| `no_color` | Function | `no_color(text)` | `text` | `str` | No-op (plain text) | `no_color("text")` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `get_theme` | `get_theme(dark_background=True, colored=None)` | Theme | Get theme | `get_theme()` |
+| `ThemeMode` | Enum | DARK/LIGHT/AUTO | Theme mode | `ThemeMode.DARK` |
+| `apply_theme_overrides` | `apply_theme_overrides(theme, **colors)` | Theme | Override colors | `apply_theme_overrides(t, action_name="red")` |
+| `colored` | `colored(text, color, style=None)` | str | Colorize | `colored("text", "cyan", "bold")` |
 
-## Formatting
+## Formatting Utilities
 
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `duration` | `duration(seconds)` | `seconds`: float | `str` | Format duration | `duration(123)` → "2m 3s" |
-| `timestamp` | `timestamp(epoch)` | `epoch`: float | `str` | Format timestamp | `timestamp(1234567890.123)` |
-| `text` | `text(value, encoding)` | `value`, `encoding`: str | `str` | Format as text | `text(b"bytes")` |
-| `binary` | `binary(value)` | `value`: bytes | `str` | Format binary | `binary(b"\x00")` |
-| `anything` | `anything(value)` | `value`: any | `str` | Format any value | `anything(obj)` |
-| `some` | `some(value)` | `value`: any | `str` | Format optional | `some(None)` |
-| `format_any` | `format_any(value)` | `value`: any | `str` | Format with type detection | `format_any(val)` |
-| `truncate_value` | `truncate_value(value, max_len)` | `value`, `max_len`: int | `str` | Truncate long values | `truncate_value(s, 50)` |
-| `escape_control_characters` | `escape_control_characters(text)` | `text`: str | `str` | Escape control chars | `escape_control_characters(data)` |
-| `fields` | `fields(dict)` | `dict`: dict | `str` | Format dict as fields | `fields({"a": 1})` |
+| Function | Signature | Returns | Purpose | Example |
+|----------|-----------|---------|---------|---------|
+| `duration` | `duration(seconds)` | str | Format duration | `duration(123)` → "2m 3s" |
+| `timestamp` | `timestamp(epoch)` | str | Format timestamp | `timestamp(1234567890.123)` |
+| `truncate_value` | `truncate_value(value, max_len)` | str | Truncate | `truncate_value(s, 50)` |
+| `format_any` | `format_any(value)` | str | Format with type | `format_any(val)` |
 
-## Rendering
+## Error Classes
 
-| Name | Type | Prototype | Parameters | Returns | Explain | Examples |
-|-----|------|-----------|------------|---------|---------|----------|
-| `ColorizedOptions` | Class | - | - | - | Rendering config | `ColorizedOptions(human_readable=True)` |
-| `NodeFormatter` | Class | - | options | - | Format tree nodes | `NodeFormatter(options=opts)` |
-| `format_node` | Function | `format_node(node, formatter)` | `node`, `formatter` | `str` | Format single node | `format_node(task, formatter)` |
-| `DEFAULT_IGNORED_KEYS` | Constant | - | - | `list` of str | Keys hidden by default | - |
-| `render_tasks` | Function | `render_tasks(tasks, options)` | `tasks`, `options` | `str` | Render tasks to tree | `render_tasks(tasks)` |
-| `get_children` | Function | `get_children(task)` | `task` | `list` | Get child tasks | `get_children(task)` |
-| `track_exceptions` | Function | `track_exceptions(tasks)` | `tasks` | `dict` | Track exceptions | `track_exceptions(tasks)` |
-
-## Utilities
-
-| Function | Prototype | Parameters | Returns | Explain | Examples |
-|----------|-----------|------------|---------|---------|----------|
-| `message_fields` | `message_fields(msg)` | `msg`: dict | `dict` | Get message fields | `message_fields(msg)` |
-| `message_name` | `message_name(msg)` | `msg`: dict | `str` | Get message name | `message_name(msg)` |
-| `eliot_ns` | `eliot_ns(**fields)` | `**fields` | `Namespace` | Create Eliot namespace | `eliot_ns(action_type="x")` |
-| `format_namespace` | `format_namespace(ns)` | `ns` | `str` | Format namespace | `format_namespace(ns)` |
-| `is_namespace` | `is_namespace(obj)` | `obj` | `bool` | Check if namespace | `is_namespace(obj)` |
-| `namespaced` | `namespaced(**fields)` | `**fields` | `Namespace` | Create namespaced dict | `namespaced(x=1)` |
-| `_Namespace` | Class | - | - | - | Namespace object | Eliot compatibility |
-| `Writable` | Protocol | - | - | Write protocol | For file-like objects |
-
-## Errors
-
-| Exception | Explain | Examples |
-|-----------|-------------|----------|
-| `ConfigError` | Configuration errors | `raise ConfigError("Invalid")` |
-| `EliotParseError` | Log parsing failed | `except EliotParseError:` |
-| `JSONParseError` | Invalid JSON | `except JSONParseError:` |
-
-## Compatibility
-
-| Name | Type | Prototype | Explain | Examples |
-|------|------|-----------|-------------|----------|
-| `deprecated` | Decorator | `@deprecated(message)` | Mark deprecated | `@deprecated("Use X")` |
-| `catch_errors` | Decorator / Context | - | Catch errors | `@catch_errors` |
-| `dump_json_bytes` | Function | `dump_json_bytes(data)` | Dump as JSON bytes | `dump_json_bytes({"a": 1})` |
-| `__version__` | `str` | - | Package version | `print(__version__)` |
+| Exception | Purpose |
+|-----------|---------|
+| `ConfigError` | Configuration errors |
+| `LogXPyParseError` | Log parsing failed |
+| `EliotParseError` | Alias for LogXPyParseError |
+| `JSONParseError` | Invalid JSON |
 
 ---
 
 # Component 3: logxy-log-parser (Log Parser & Analyzer)
 
-## Simple API (One-Liners)
+## Simple One-Line API
 
-| Function | Purpose | Example |
-|----------|---------|---------|
-| `parse_log(path)` | Parse log file | `entries = parse_log("app.log")` |
-| `parse_line(line)` | Parse single line | `entry = parse_line(json_str)` |
-| `check_log(path)` | Parse + validate | `result = check_log("app.log")` |
-| `analyze_log(path)` | Full analysis | `report = analyze_log("app.log")` |
+| Function | Returns | Purpose | Example |
+|----------|---------|---------|---------|
+| `parse_log(source)` | ParseResult | Parse log file | `entries = parse_log("app.log")` |
+| `parse_line(line)` | LogXPyEntry or None | Parse single line | `entry = parse_line(json_str)` |
+| `check_log(source)` | CheckResult | Parse + validate | `result = check_log("app.log")` |
+| `analyze_log(source)` | AnalysisReport | Full analysis | `report = analyze_log("app.log")` |
 
 ## Core Classes
 
@@ -549,34 +595,94 @@ logxpy-view app.log --no-color
 | `LogAnalyzer` | Performance/error analysis | `analyzer = LogAnalyzer(logs)` |
 | `TaskTree` | Hierarchical task tree | `tree = parser.build_task_tree()` |
 | `TaskNode` | Node in task tree | `node = tree.root` |
+| `LogIndex` | Fast lookups via indexing | `index = LogIndex.build("app.log")` |
+| `IndexedLogParser` | Parser with index | `parser = IndexedLogParser("app.log")` |
+| `TimeSeriesAnalyzer` | Time-series analysis | `analyzer = TimeSeriesAnalyzer(logs)` |
+| `LogAggregator` | Multi-file aggregation | `agg = LogAggregator(files)` |
+| `MultiFileAnalyzer` | Cross-file analysis | `multi = MultiFileAnalyzer(files)` |
 
 ## LogFile API (Real-time Monitoring)
 
+| Method | Returns | Purpose | Example |
+|--------|---------|---------|---------|
+| `LogFile.open(path)` | LogFile | Open and validate | `logfile = LogFile.open("app.log")` |
+| `entry_count` | int | Get entry count (fast) | `logfile.entry_count` |
+| `contains_error()` | bool | Check for errors | `logfile.contains_error()` |
+| `contains(**criteria)` | bool | Check contains | `logfile.contains(level="error")` |
+| `find_first(**criteria)` | LogXPyEntry or None | Find first match | `logfile.find_first(level="error")` |
+| `find_all(**criteria)` | LogEntries | Find all matches | `logfile.find_all(level="error")` |
+| `tail(n)` | LogEntries | Last N entries | `logfile.tail(10)` |
+| `watch()` | Iterator | Iterate new entries | `for entry in logfile.watch():` |
+| `wait_for_message(text, timeout)` | LogXPyEntry | Wait for message | `logfile.wait_for_message("ready", 30)` |
+| `wait_for_error(timeout)` | LogXPyEntry | Wait for error | `logfile.wait_for_error(60)` |
+
+## LogFilter Methods (all return LogEntries for chaining)
+
 | Method | Purpose | Example |
 |--------|---------|---------|
-| `LogFile.open(path)` | Open and validate | `logfile = LogFile.open("app.log")` |
-| `logfile.entry_count` | Get entry count (fast) | `count = logfile.entry_count` |
-| `logfile.contains_error()` | Check for errors | `if logfile.contains_error():` |
-| `logfile.watch()` | Iterate new entries | `for entry in logfile.watch():` |
-| `logfile.wait_for_message(text, timeout)` | Wait for message | `entry = logfile.wait_for_message("ready", 30)` |
-| `logfile.wait_for_error(timeout)` | Wait for error | `error = logfile.wait_for_error(60)` |
+| `by_level(*levels)` | Filter by log level | `.by_level("error", "warning")` |
+| `by_message(pattern)` | Filter by message text | `.by_message("database")` |
+| `by_time_range(start, end)` | Filter by time range | `.by_time_range("2024-01-01", "2024-12-31")` |
+| `by_task_uuid(*uuids)` | Filter by task ID | `.by_task_uuid("Xa.1")` |
+| `by_action_type(*types)` | Filter by action type | `.by_action_type("db:*")` |
+| `by_field(field, value)` | Filter by field value | `.by_field("user_id", 123)` |
+| `by_duration(min, max)` | Filter by duration | `.by_duration(min=1.0)` |
+| `by_nesting_level(min, max)` | Filter by depth | `.by_nesting_level(1, 3)` |
+| `with_traceback()` | Entries with tracebacks | `.with_traceback()` |
+| `failed_actions()` | Failed actions only | `.failed_actions()` |
+| `succeeded_actions()` | Succeeded actions only | `.succeeded_actions()` |
+| `slow_actions(threshold)` | Slow actions only | `.slow_actions(5.0)` |
+| `fast_actions(threshold)` | Fast actions only | `.fast_actions(0.001)` |
 
-## Filter Methods
+## LogAnalyzer Methods
 
-| Method | Purpose | Example |
-|--------|---------|---------|
-| `by_level(*levels)` | Filter by log level | `by_level("error", "warning")` |
-| `by_message(pattern)` | Filter by message text | `by_message("database")` |
-| `by_time_range(start, end)` | Filter by time range | `by_time_range("2024-01-01", "2024-12-31")` |
-| `by_task_uuid(*uuids)` | Filter by task UUID | `by_task_uuid("abc-123")` |
-| `by_action_type(*types)` | Filter by action type | `by_action_type("db_*")` |
-| `by_field(field, value)` | Filter by field value | `by_field("user_id", 123)` |
-| `by_duration(min, max)` | Filter by duration | `by_duration(min=1.0)` |
-| `with_traceback()` | Entries with tracebacks | `with_traceback()` |
-| `failed_actions()` | Failed actions only | `failed_actions()` |
-| `slow_actions(threshold)` | Slow actions only | `slow_actions(5.0)` |
+| Method | Returns | Purpose | Example |
+|--------|---------|---------|---------|
+| `slowest_actions(n)` | list[ActionStat] | Slowest actions | `analyzer.slowest_actions(10)` |
+| `fastest_actions(n)` | list[ActionStat] | Fastest actions | `analyzer.fastest_actions(10)` |
+| `duration_by_action()` | dict[str, DurationStats] | Duration by action | `analyzer.duration_by_action()` |
+| `error_summary()` | ErrorSummary | Error analysis | `analyzer.error_summary()` |
+| `error_patterns()` | list[ErrorPattern] | Find error patterns | `analyzer.error_patterns()` |
+| `failure_rate_by_action()` | dict[str, float] | Failure rate per action | `analyzer.failure_rate_by_action()` |
+| `deepest_nesting()` | int | Maximum depth | `analyzer.deepest_nesting()` |
+| `orphans()` | LogEntries | Unmatched entries | `analyzer.orphans()` |
+| `timeline(interval)` | Timeline | Timeline data | `analyzer.timeline(3600)` |
+| `peak_periods(n)` | list[TimePeriod] | Busiest periods | `analyzer.peak_periods(5)` |
+| `generate_report(format)` | str | Generate report | `analyzer.generate_report("html")` |
 
-## Export Formats
+## Indexing System
+
+| Class/Method | Purpose | Example |
+|--------------|---------|---------|
+| `LogIndex.build(path)` | Build index | `index = LogIndex.build("app.log")` |
+| `index.find_by_task(uuid)` | Find by task UUID | `index.find_by_task("Xa.1")` |
+| `index.find_by_level(level)` | Find by level | `index.find_by_level("error")` |
+| `index.find_by_time_range(start, end)` | Find by time range | `index.find_by_time_range(start, end)` |
+| `IndexedLogParser(path)` | Indexed parser | `parser = IndexedLogParser("app.log")` |
+| `parser.query(**criteria)` | Query with criteria | `parser.query(task_uuid="Xa.1")` |
+
+## Time Series Analysis
+
+| Method | Returns | Purpose | Example |
+|--------|---------|---------|---------|
+| `bucket_by_interval(seconds)` | list[TimeBucket] | Bucket by time | `analyzer.bucket_by_interval(3600)` |
+| `detect_anomalies(window, threshold)` | list[Anomaly] | Detect anomalies | `analyzer.detect_anomalies(10, 2.0)` |
+| `error_rate_t(interval)` | list[tuple] | Error rate over time | `analyzer.error_rate_t(60)` |
+| `level_distribution(interval)` | dict | Level distribution | `analyzer.level_distribution(3600)` |
+| `activity_heatmap(hour_granularity)` | dict | Activity heatmap | `analyzer.activity_heatmap(1)` |
+| `burst_detection(threshold, min_interval)` | list[Burst] | Detect bursts | `analyzer.burst_detection(100, 60)` |
+
+## Aggregation & Multi-File Analysis
+
+| Class/Method | Purpose | Example |
+|--------------|---------|---------|
+| `LogAggregator(files)` | Aggregate multiple files | `agg = LogAggregator(["f1.log", "f2.log"])` |
+| `aggregator.aggregate()` | AggregateResult | Aggregate all files | `agg.aggregate()` |
+| `MultiFileAnalyzer(files)` | Analyze multiple files | `multi = MultiFileAnalyzer(files)` |
+| `multi.analyze_all()` | list[AnalysisReport] | Analyze all files | `multi.analyze_all()` |
+| `multi.time_series_analysis(interval)` | TimeSeriesResult | Cross-file time series | `multi.time_series_analysis(3600)` |
+
+## Export Formats (LogEntries)
 
 | Method | Purpose | Example |
 |--------|---------|---------|
@@ -584,41 +690,159 @@ logxpy-view app.log --no-color
 | `to_csv(file)` | Export as CSV | `logs.to_csv("out.csv")` |
 | `to_html(file)` | Export as HTML | `logs.to_html("out.html")` |
 | `to_markdown(file)` | Export as Markdown | `logs.to_markdown("out.md")` |
-| `to_dataframe()` | Export as pandas DataFrame | `df = logs.to_dataframe()` |
+| `to_dataframe()` | pandas DataFrame | Export as DataFrame | `df = logs.to_dataframe()` |
 
-## Analysis Methods
+## Helper Functions
 
-| Method | Purpose | Example |
-|--------|---------|---------|
-| `slowest_actions(n)` | Find slowest operations | `for action in analyzer.slowest_actions(10):` |
-| `duration_by_action()` | Duration by action type | `durations = analyzer.duration_by_action()` |
-| `error_summary()` | Error statistics | `summary = analyzer.error_summary()` |
-| `failure_rate_by_action()` | Failure rate per action | `rates = analyzer.failure_rate_by_action()` |
-| `generate_report(format)` | Generate full report | `analyzer.generate_report("html")` |
+| Function | Returns | Purpose | Example |
+|----------|---------|---------|---------|
+| `count_by(entries, field)` | dict | Count by field | `count_by(entries, "level")` |
+| `group_by(entries, field)` | dict | Group by field | `group_by(entries, "action_type")` |
+| `types(entries)` | set | Get unique types | `types(entries)` |
 
 ---
 
-## System Message Types
+## CLI Tools (logxy-log-parser)
 
-### Eliot System Messages
+The parser library also provides CLI tools:
 
-| Message Type | Purpose | Fields |
-|--------------|---------|--------|
-| `eliot:traceback` | Exception traceback | `reason`, `traceback`, `exception` |
-| `eliot:destination_failure` | Destination write failure | `reason`, `exception`, `message` |
-| `eliot:serialization_failure` | Message serialization failure | `message` |
-| `eliot:remote_task` | Remote/cross-process task | `action_type` |
-| `eliot:stdlib` | Standard library events | Various |
-| `eliot:duration` | Action duration (field) | Seconds (float) |
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `logxy-query <file>` | Query log file | `logxy-query app.log --level error` |
+| `logxy-analyze <file>` | Analyze log file | `logxy-analyze app.log --output report.html` |
+| `logxy-view <file>` | View with colored output | `logxy-view app.log` |
+| `logxy-tree <file>` | Visualize task tree | `logxy-tree app.log` |
 
-### LoggerX Message Types
+---
 
-| Message Type | Level | Purpose |
-|--------------|-------|---------|
-| `loggerx:debug` | DEBUG | Debug level messages |
-| `loggerx:info` | INFO | Info level messages |
-| `loggerx:success` | SUCCESS | Success level messages |
-| `loggerx:note` | NOTE | Note level messages |
-| `loggerx:warning` | WARNING | Warning level messages |
-| `loggerx:error` | ERROR | Error level messages |
-| `loggerx:critical` | CRITICAL | Critical level messages |
+## Type Definitions
+
+### LogXPyEntry
+
+A single log entry (dataclass with slots):
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `timestamp` | float | Unix timestamp |
+| `task_uuid` | str | Task ID (Sqid or UUID4) |
+| `task_level` | list[int] | Hierarchy level |
+| `message_type` | str | Log level/type |
+| `action_type` | str or None | Action type |
+| `action_status` | str or None | started/succeeded/failed |
+| `message` | dict | Full entry data |
+
+### ParseResult
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `entries` | LogEntries | Parsed entries |
+| `entry_count` | int | Total count |
+| `source` | str | Source path |
+
+### CheckResult
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `is_valid` | bool | Validation status |
+| `entry_count` | int | Total entries |
+| `errors` | list[str] | Validation errors |
+| `entries` | LogEntries | Parsed entries |
+
+### AnalysisReport
+
+| Method | Returns | Purpose |
+|--------|---------|---------|
+| `print_summary()` | None | Print to stdout |
+| `to_dict()` | dict | Convert to dict |
+| `to_json()` | str | Convert to JSON |
+
+---
+
+## Python Version Requirements
+
+| Component | Min Version | Key Features Used |
+|-----------|-------------|-------------------|
+| logxpy | 3.12+ | Pattern matching, type aliases, dataclass slots, StrEnum |
+| logxpy-cli-view | 3.9+ | Modern but widely compatible |
+| logxy-log-parser | 3.12+ | Pattern matching, type aliases |
+
+---
+
+## Common Patterns
+
+### Reading Logs
+
+```python
+from logxy_log_parser import parse_log
+
+# Simple parse
+entries = parse_log("app.log")
+
+# Iterate
+for entry in entries:
+    print(entry.message_type, entry.timestamp)
+
+# Count by level
+from logxy_log_parser import count_by
+levels = count_by(entries, "message_type")
+print(levels)  # {'info': 100, 'error': 5, ...}
+```
+
+### Filtering Errors
+
+```python
+from logxy_log_parser import parse_log
+from logxpy_cli_view import filter_by_action_status
+
+entries = parse_log("app.log")
+errors = filter_by_action_status(entries.entries, "failed")
+
+for error in errors:
+    print(error.get("action_type"), error.get("message"))
+```
+
+### Building Task Tree
+
+```python
+from logxy_log_parser import LogParser
+
+parser = LogParser("app.log")
+tree = parser.build_task_tree()
+
+# Traverse tree
+def print_tree(node, indent=0):
+    print("  " * indent + node.action_type)
+    for child in node.children:
+        print_tree(child, indent + 1)
+
+print_tree(tree.root)
+```
+
+### Real-time Monitoring
+
+```python
+from logxy_log_parser import LogFile
+
+logfile = LogFile.open("app.log")
+
+# Wait for specific event
+try:
+    entry = logfile.wait_for_message("Startup complete", timeout=30)
+    print("Startup:", entry)
+except TimeoutError:
+    print("Startup timed out")
+
+# Watch for errors
+for entry in logfile.watch():
+    if entry.message_type == "loggerx:error":
+        print("Error:", entry.message)
+```
+
+---
+
+## Related Documentation
+
+- [README.md](./README.md) - Main project documentation
+- [CLAUDE.md](./CLAUDE.md) - Agent instructions
+- [logxpy-api-reference.html](./logxpy-api-reference.html) - Complete API reference
+- [DOC-X/cross-docs/cross-lib1.html](./DOC-X/cross-docs/cross-lib1.html) - CodeSite cross-reference

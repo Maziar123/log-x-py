@@ -20,9 +20,12 @@ try:
 except ImportError:
     from eliot import Message, start_action, to_file
 
-# Setup logging
+# Setup logging (delete old log first)
 log_file = Path(__file__).parent / "example_07_all_data_types.log"
-to_file(open(log_file, "w"))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
 
 
 def log_primitives():
@@ -372,8 +375,8 @@ def main():
     print(f"  python view_tree.py {log_file.name} --depth-limit 3")
     print()
     print("Log Statistics:")
-    with open(log_file) as f:
-        entry_count = sum(1 for line in f if line.strip())
+    with open(log_file, encoding="utf-8") as log_f:
+        entry_count = sum(1 for line in log_f if line.strip())
     print(f"  Total entries: {entry_count}")
     print(f"  File size: {log_file.stat().st_size} bytes")
     print()

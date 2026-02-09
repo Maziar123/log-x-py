@@ -349,7 +349,7 @@ class PdfExporter:
             bool: True if WeasyPrint is available.
         """
         try:
-            import weasyprint  # type: ignore  # noqa: F401
+            import weasyprint  # type: ignore[import-not-found]  # noqa: F401
             return True
         except ImportError:
             return False
@@ -371,7 +371,7 @@ class PdfExporter:
                 "Install with: pip install logxy-log-parser[pdf]"
             )
 
-        import weasyprint  # type: ignore
+        import weasyprint  # noqa: F401
 
         # First generate HTML
         html_exporter = HtmlExporter()
@@ -397,7 +397,7 @@ class CustomTemplateExporter:
         entries: LogEntries,
         file: str | Path,
         template_path: str | Path,
-        template_format: str = "html",
+        _template_format: str = "html",
     ) -> None:
         """Export entries using a custom template.
 
@@ -478,7 +478,7 @@ class Jinja2Exporter:
             bool: True if Jinja2 is available.
         """
         try:
-            import jinja2  # type: ignore  # noqa: F401
+            import jinja2  # noqa: F401  # noqa: F401
             return True
         except ImportError:
             return False
@@ -507,7 +507,7 @@ class Jinja2Exporter:
                 "Install with: pip install logxy-log-parser[templates]"
             )
 
-        import jinja2  # type: ignore
+        import jinja2  # noqa: F401
 
         template_path = Path(template_path)
         path = Path(file)

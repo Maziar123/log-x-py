@@ -45,9 +45,9 @@ show_help() {
     echo ""
 }
 
-# Check if logxpy-tree2 is available
-if ! command -v logxpy-tree2 &> /dev/null; then
-    echo -e "${YELLOW}Warning: logxpy-tree2 not found in PATH${NC}"
+# Check if logxpy-view is available
+if ! command -v logxpy-view &> /dev/null; then
+    echo -e "${YELLOW}Warning: logxpy-view not found in PATH${NC}"
     echo "Please install logxpy_cli_view:"
     echo "  cd ../logxpy_cli_view && pip install -e ."
     exit 1
@@ -107,8 +107,8 @@ fi
 
 # Display header
 echo -e "${GREEN}Viewing: $DESCRIPTION${NC}"
-echo -e "${BLUE}Command: logxpy-tree2 $VIEWER_OPTS $LOG_FILE${NC}"
+echo -e "${BLUE}Command: logxpy-view $VIEWER_OPTS $LOG_FILE${NC}"
 echo ""
 
 # Run the viewer
-logxpy-tree2 $VIEWER_OPTS $LOG_FILE
+logxpy-view $VIEWER_OPTS $LOG_FILE

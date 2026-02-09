@@ -81,18 +81,21 @@ def main():
         
         print("\nView individual logs:")
         for log_file, desc in log_files:
-            print(f"  logxpy-tree2 {log_file}  # {desc}")
+            print(f"  logxpy-view {log_file}  # {desc}")
         
         print("\nView all logs together:")
-        print("  logxpy-tree2 tutorial_*.log")
+        print("  logxpy-view tutorial_*.log")
         
         print("\nView with filtering:")
-        print("  logxpy-tree2 --action-status failed tutorial_*.log")
-        print("  logxpy-tree2 --keyword 'error' tutorial_*.log")
-        print("  logxpy-tree2 --select 'level == `ERROR`' tutorial_*.log")
-        
+        print("  logxpy-view --action-status failed tutorial_*.log")
+        print("  logxpy-view --keyword 'error' tutorial_*.log")
+        print("  logxpy-view --select 'level == `ERROR`' tutorial_*.log")
+
         print("\nExport to HTML:")
-        print("  logxpy-tree2 --export-html all_tutorials.html tutorial_*.log")
+        print("  logxpy-view export tutorial_*.log -f html -o all_tutorials.html")
+
+        print("\nShow statistics:")
+        print("  logxpy-view stats tutorial_*.log")
         
         print("\n" + "=" * 80)
     

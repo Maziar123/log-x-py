@@ -11,7 +11,7 @@ This tutorial demonstrates:
 - Different error severity levels
 
 Run this script to generate: tutorial_04_errors.log
-Then view with: logxpy-tree2 tutorial_04_errors.log
+Then view with: logxpy-view tutorial_04_errors.log
 """
 
 import time
@@ -272,13 +272,13 @@ def main():
     print("✓ Log file created successfully!")
     print("=" * 60)
     print(f"\nTo view the logs:")
-    print(f"  logxpy-tree2 {log_file}")
+    print(f"  logxpy-view {log_file}")
     print(f"\nTo view only errors and failures:")
-    print(f"  logxpy-tree2 --action-status failed {log_file}")
+    print(f"  logxpy-view --action-status failed {log_file}")
     print(f"\nTo search for specific errors:")
-    print(f"  logxpy-tree2 --keyword 'validation' {log_file}")
+    print(f"  logxpy-view --keyword 'validation' {log_file}")
     print(f"\nTo view with full tracebacks:")
-    print(f"  logxpy-tree2 --field-limit 200 {log_file}")
+    print(f"  logxpy-view --field-limit 200 {log_file}")
 
 
 if __name__ == "__main__":

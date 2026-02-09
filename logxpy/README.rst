@@ -30,7 +30,7 @@ Features
 
 * **Type Safe** - Full type hints with Python 3.12+ syntax
 * **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
-* **Minimal Dependencies** - Uses boltons & more-itertools (pure Python)
+* **Minimal Dependencies** - Uses boltons (pure Python utility library)
 * **Fluent API** - All methods return self for method chaining
 * **Sqid Task IDs** - 89% smaller than UUID4 (4-12 chars vs 36)
 * **Compact Field Names** - 1-2 character field names minimize log size

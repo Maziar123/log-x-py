@@ -1,7 +1,15 @@
-"""
-Core parsing functionality for logxy-log-parser.
+"""Core parsing functionality for logxy-log-parser.
 
 Contains LogEntry dataclass and LogParser for parsing LogXPy log files.
+
+Supports both:
+- New LogXPy compact format (ts, tid, lvl, mt, at, st, dur, msg)
+- Legacy Eliot format (timestamp, task_uuid, task_level, etc.)
+
+Python 3.12+ features used:
+- Type aliases (PEP 695): `type Name = ...`
+- Pattern matching (PEP 634): Clean value routing
+- Dataclass slots (PEP 681): Memory optimization
 """
 
 from __future__ import annotations
@@ -12,8 +20,30 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .types import ActionStatus, Level, LogDict, TaskLevel
-from .utils import level_from_message_type
+from .types import (
+    ACTION_STATUS,
+    ACTION_TYPE,
+    ALL_KNOWN_FIELDS,
+    AT,
+    DUR,
+    DURATION_NS,
+    LVL,
+    MESSAGE,
+    MESSAGE_TYPE,
+    MSG,
+    MT,
+    ST,
+    TASK_LEVEL,
+    TASK_UUID,
+    TID,
+    TIMESTAMP,
+    TS,
+    ActionStatus,
+    Level,
+    LogDict,
+    TaskLevel,
+)
+from .utils import extract_duration, get_field_value, level_from_entry
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +51,7 @@ class LogEntry:
     """Immutable log entry with typed accessors.
 
     Represents a single log entry from a LogXPy log file.
+    Supports both compact and legacy field naming conventions.
     """
 
     timestamp: float
@@ -33,11 +64,24 @@ class LogEntry:
     duration: float | None
     fields: dict[str, Any]
     line_number: int = 0  # Line number in the log file (0 if unknown)
+    _format: str = "auto"  # Detected format: "compact", "legacy", or "auto"
 
     @property
     def level(self) -> Level:
         """Get the log level for this entry."""
-        return level_from_message_type(self.message_type)
+        # Check direct level field first
+        if "level" in self.fields:
+            level_val = self.fields["level"]
+            if isinstance(level_val, str):
+                try:
+                    return Level(level_val.lower())
+                except ValueError:
+                    pass
+        return level_from_entry({
+            MT: self.message_type,
+            AT: self.action_type,
+            ST: self.action_status.value if self.action_status else None,
+        })
 
     @property
     def depth(self) -> int:
@@ -63,133 +107,169 @@ class LogEntry:
     def from_dict(cls, data: LogDict, line_number: int = 0) -> LogEntry:
         """Create LogEntry from a dictionary.
 
+        Handles both compact and legacy field naming conventions.
+
         Args:
             data: Dictionary containing log entry data.
+            line_number: Line number in the source file.
 
         Returns:
             LogEntry: New LogEntry instance.
         """
-        # Parse task_level - handle both array format [1,1] and string format "/1/1"
-        task_level_raw = data.get("task_level")
-        if task_level_raw is not None:
-            if isinstance(task_level_raw, list):
-                # Array format: [1] or [1,1] or [1,1,1]
-                task_level = tuple(int(x) if isinstance(x, (int, float)) else 0
-                                   for x in task_level_raw if x is not None)
-            elif isinstance(task_level_raw, str):
-                # String format: "/1" or "/1/1"
-                if task_level_raw.startswith("/"):
-                    level_parts = task_level_raw[1:].split("/") if task_level_raw != "/" else []
-                    task_level = tuple(int(p) for p in level_parts if p)
-                else:
-                    # Try to split by /
-                    level_parts = task_level_raw.split("/") if task_level_raw else []
-                    task_level = tuple(int(p) for p in level_parts if p)
-            elif isinstance(task_level_raw, (int, float)):
-                task_level = (int(task_level_raw),)
-            else:
-                task_level = ()
-        else:
-            # Fallback: try old "level" field for backward compatibility
-            level_str = data.get("level", "/")
-            if isinstance(level_str, str) and level_str.startswith("/"):
-                level_parts = level_str[1:].split("/") if level_str != "/" else []
-                task_level = tuple(int(p) for p in level_parts if p)
-            else:
-                task_level = ()
+        # Detect format first
+        detected_format = "compact" if TS in data or TID in data else "legacy"
 
-        # Parse action status - check both action_status and status fields
-        action_status = data.get("action_status") or data.get("status")
-        if action_status:
-            try:
-                action_status = ActionStatus(action_status)
-            except ValueError:
-                action_status = None
-        else:
-            action_status = None
+        # Use get_field_value to check both naming conventions
+        # Task level parsing
+        task_level = cls._parse_task_level(data)
 
-        # Parse duration - check multiple possible field names
-        duration = None
-        for field in ("duration_ns", "logxpy:duration", "eliot:duration", "duration"):
-            if field in data:
-                duration_val = data[field]
-                if duration_val is not None:
-                    if field == "duration_ns":
-                        duration = duration_val / 1e9  # Convert nanoseconds to seconds
-                    else:
-                        # Already in seconds or unknown format
-                        duration = float(duration_val) if not isinstance(duration_val, bool) else None
-                    break
+        # Action status parsing
+        action_status = cls._parse_action_status(data)
 
-        # Extract known fields (everything else goes to fields dict)
-        # Note: "level" field is for log level, not task level - keep it in fields if not a known level
-        known_fields = {
-            "task_uuid",
-            "timestamp",
-            "task_level",
-            "message_type",
-            "message",
-            "action_type",
-            "action_status",
-            "status",
-            "duration_ns",
-            "logxpy:duration",
-            "eliot:duration",
-            "duration",
-            # logxpy specific
-            "logxpy:traceback",
-            "exception",
-            "reason",
-            # Keep log level in entries for reference but don't store in fields
-            "level",
-        }
-        fields = {k: v for k, v in data.items() if k not in known_fields}
+        # Duration parsing (handles seconds vs nanoseconds)
+        duration = extract_duration(data)
 
-        # Get timestamp (could be string or number)
-        timestamp = data.get("timestamp", 0)
+        # Timestamp parsing
+        timestamp = get_field_value(data, TS, 0)
         if isinstance(timestamp, str):
-            # Try to parse as float
             try:
                 timestamp = float(timestamp)
             except ValueError:
-                timestamp = 0
+                timestamp = 0.0
         elif isinstance(timestamp, (int, float)):
             timestamp = float(timestamp)
 
+        # Extract fields (everything not a known field)
+        known_fields = ALL_KNOWN_FIELDS | {"status"}
+        fields = {k: v for k, v in data.items() if k not in known_fields}
+
         return cls(
             timestamp=timestamp,
-            task_uuid=data.get("task_uuid", ""),
+            task_uuid=get_field_value(data, TID, ""),
             task_level=task_level,
-            message_type=data.get("message_type", ""),
-            message=data.get("message"),
-            action_type=data.get("action_type"),
+            message_type=get_field_value(data, MT, ""),
+            message=get_field_value(data, MSG),
+            action_type=get_field_value(data, AT),
             action_status=action_status,
             duration=duration,
             fields=fields,
             line_number=line_number,
+            _format=detected_format,
         )
 
-    def to_dict(self) -> LogDict:
+    @staticmethod
+    def _parse_task_level(data: LogDict) -> TaskLevel:
+        """Parse task level from entry data.
+
+        Handles compact ('lvl') and legacy ('task_level') field names.
+        Supports array, string, and numeric formats.
+
+        Args:
+            data: Log entry dictionary
+
+        Returns:
+            TaskLevel as tuple of integers
+        """
+        # Try compact then legacy
+        lvl_raw = get_field_value(data, LVL, [])
+
+        if isinstance(lvl_raw, list):
+            return tuple(int(x) if isinstance(x, (int, float)) else 0
+                       for x in lvl_raw if x is not None)
+
+        if isinstance(lvl_raw, tuple):
+            return lvl_raw
+
+        if isinstance(lvl_raw, str):
+            # String format: "/1" or "/1/1"
+            if lvl_raw.startswith("/"):
+                parts = lvl_raw[1:].split("/") if lvl_raw != "/" else []
+            else:
+                parts = lvl_raw.split("/") if lvl_raw else []
+            return tuple(int(p) for p in parts if p)
+
+        if isinstance(lvl_raw, (int, float)):
+            return (int(lvl_raw),)
+
+        return ()
+
+    @staticmethod
+    def _parse_action_status(data: LogDict) -> ActionStatus | None:
+        """Parse action status from entry data.
+
+        Args:
+            data: Log entry dictionary
+
+        Returns:
+            ActionStatus enum or None
+        """
+        # Check compact 'st' first, then legacy 'action_status'
+        status_val = get_field_value(data, ST) or data.get("status")
+
+        if status_val:
+            try:
+                return ActionStatus(status_val)
+            except (ValueError, TypeError):
+                pass
+
+        # Infer from action_type presence
+        if get_field_value(data, AT):
+            # Default to started if action_type exists but no status
+            return ActionStatus.STARTED
+
+        return None
+
+    def to_dict(self, output_format: str = "compact") -> LogDict:
         """Convert LogEntry back to dictionary format.
+
+        Args:
+            output_format: Output format - "compact" or "legacy"
 
         Returns:
             LogDict: Dictionary representation of this entry.
         """
+        if output_format == "legacy":
+            return self._to_legacy_dict()
+        return self._to_compact_dict()
+
+    def _to_compact_dict(self) -> LogDict:
+        """Convert to compact field name format."""
         result: LogDict = {
-            "task_uuid": self.task_uuid,
-            "timestamp": self.timestamp,
-            "task_level": list(self.task_level),  # Array format for logxpy
-            "message_type": self.message_type,
+            TS: self.timestamp,
+            TID: self.task_uuid,
+            LVL: list(self.task_level),
+            MT: self.message_type,
         }
 
         if self.message:
-            result["message"] = self.message
+            result[MSG] = self.message
         if self.action_type:
-            result["action_type"] = self.action_type
+            result[AT] = self.action_type
         if self.action_status:
-            result["action_status"] = self.action_status.value
+            result[ST] = self.action_status.value
         if self.duration is not None:
-            result["duration_ns"] = int(self.duration * 1e9)
+            result[DUR] = self.duration  # Seconds in compact format
+
+        result.update(self.fields)
+        return result
+
+    def _to_legacy_dict(self) -> LogDict:
+        """Convert to legacy field name format."""
+        result: LogDict = {
+            TIMESTAMP: self.timestamp,
+            TASK_UUID: self.task_uuid,
+            TASK_LEVEL: list(self.task_level),
+            MESSAGE_TYPE: self.message_type,
+        }
+
+        if self.message:
+            result[MESSAGE] = self.message
+        if self.action_type:
+            result[ACTION_TYPE] = self.action_type
+        if self.action_status:
+            result[ACTION_STATUS] = self.action_status.value
+        if self.duration is not None:
+            result[DURATION_NS] = int(self.duration * 1e9)  # Nanoseconds in legacy
 
         result.update(self.fields)
         return result
@@ -257,15 +337,22 @@ class LogParser:
     """Parse LogXPy JSON log files.
 
     Supports parsing from file paths, file objects, or raw data.
+    Automatically detects compact vs legacy format.
     """
 
-    def __init__(self, source: str | Path | Any | list[dict[str, Any]]):
+    def __init__(
+        self,
+        source: str | Path | Any | list[dict[str, Any]],
+        log_format: str = "auto",
+    ):
         """Initialize with file path, file object, or raw data.
 
         Args:
             source: File path (str/Path), file-like object, or list of dicts.
+            log_format: Expected format - "compact", "legacy", or "auto" (default).
         """
         self._source = source
+        self._format = log_format
         self._entries: list[LogEntry] | None = None
         self._errors: list[ParseError] = []
 
@@ -277,6 +364,11 @@ class LogParser:
             list[ParseError]: List of parse errors encountered.
         """
         return self._errors.copy()
+
+    @property
+    def format(self) -> str:
+        """Get detected format."""
+        return self._format
 
     def parse(self) -> list[LogEntry]:
         """Parse entire source into LogEntries.
@@ -290,16 +382,13 @@ class LogParser:
         entries: list[LogEntry] = []
 
         if isinstance(self._source, (str, Path)):
-            # Parse from file path
             path = Path(self._source)
             if path.exists():
                 with open(path, encoding="utf-8") as f:
                     entries = self._parse_file(f)
         elif isinstance(self._source, list):
-            # Parse from list of dicts
             entries = [LogEntry.from_dict(d) for d in self._source]
         elif hasattr(self._source, "read"):
-            # Parse from file-like object
             entries = self._parse_file(self._source)
         else:
             raise ValueError(f"Unsupported source type: {type(self._source)}")

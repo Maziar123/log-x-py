@@ -13,9 +13,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "logxpy"))
 
 from logxpy import Message, start_action, to_file
 
-# Setup logging to file
+# Setup logging to file (delete old log first)
 log_file = Path(__file__).parent / "example_04_api_server.log"
-to_file(open(log_file, "w"))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
 
 # Server startup
 with start_action(action_type="server:startup"):
@@ -69,8 +72,8 @@ with start_action(action_type="http:request", method="POST", path="/api/orders",
         with start_action(action_type="payment:process"):
             Message.log(message_type="payment:validate", amount=299.99)
             time.sleep(0.06)
-            raise Exception("Payment gateway timeout")
-    except Exception as e:
+            raise TimeoutError("Payment gateway timeout")
+    except TimeoutError as e:
         Message.log(message_type="payment:error", error=str(e))
         Message.log(message_type="http:response", status=500, error="Payment processing failed")
 

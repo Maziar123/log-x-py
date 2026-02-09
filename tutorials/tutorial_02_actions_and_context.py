@@ -11,7 +11,7 @@ This tutorial demonstrates:
 - Duration tracking
 
 Run this script to generate: tutorial_02_actions.log
-Then view with: logxpy-tree2 tutorial_02_actions.log
+Then view with: logxpy-view tutorial_02_actions.log
 """
 
 import time
@@ -181,13 +181,13 @@ def main():
     print("✓ Log file created successfully!")
     print("=" * 60)
     print(f"\nTo view the logs with tree structure:")
-    print(f"  logxpy-tree2 {log_file}")
+    print(f"  logxpy-view {log_file}")
     print(f"\nTo view only failed actions:")
-    print(f"  logxpy-tree2 --action-status failed {log_file}")
+    print(f"  logxpy-view --action-status failed {log_file}")
     print(f"\nTo view specific action type:")
-    print(f"  logxpy-tree2 --action-type 'order:process' {log_file}")
+    print(f"  logxpy-view --action-type 'order:process' {log_file}")
     print(f"\nTo view with timing information:")
-    print(f"  logxpy-tree2 --human-readable {log_file}")
+    print(f"  logxpy-view --human-readable {log_file}")
 
 
 if __name__ == "__main__":

@@ -53,8 +53,10 @@ setup(
         "zope.interface",
         # Persistent objects for Python:
         "pyrsistent >= 0.11.8",  # version with multi-type pvector/pmap_field
-        # Better decorators, with version that works better with type annotations:
-        "boltons >= 19.0.1",
+        # Pure-Python utility library (cacheutils, dictutils, funcutils, iterutils, strutils):
+        "boltons >= 24.0.0",
+        # 160+ functions extending itertools (chunked, peekable, seekable, windowed, etc.):
+        "more-itertools >= 10.0.0",
         # Faster JSON serialization:
         "orjson; implementation_name=='cpython'",
     ],

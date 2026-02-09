@@ -12,9 +12,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "logxpy"))
 
 from logxpy import Message, to_file
 
-# Setup logging to file
+# Setup logging to file (delete old log first)
 log_file = Path(__file__).parent / "example_01_basic.log"
-to_file(open(log_file, "w"))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
 
 # Log basic messages
 Message.log(message_type="app:startup", version="1.0.0", environment="production")

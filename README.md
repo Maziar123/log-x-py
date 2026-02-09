@@ -13,13 +13,13 @@ Modern structured logging ecosystem with three components: logging library, tree
 **Structured logging library with Sqid task IDs, fluent API, and minimal dependencies**
 
 ![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)
-![Dependencies](https://img.shields.io/badge/dependencies-boltons%2C%20more--itertools-green.svg)
+![Dependencies](https://img.shields.io/badge/dependencies-boltons-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ### Features
 - **Type Safe** - Full type hints with Python 3.12+ syntax
 - **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
-- **Minimal Dependencies** - Uses boltons & more-itertools (pure Python)
+- **Minimal Dependencies** - Uses boltons (pure Python utility library)
 - **Fluent API** - All methods return self for method chaining
 - **Sqid Task IDs** - 89% smaller than UUID4 (4-12 chars vs 36)
 - **Compact Field Names** - 1-2 character field names minimize log size

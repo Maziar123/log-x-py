@@ -15,7 +15,7 @@ This tutorial demonstrates a complete real-world scenario:
 This simulates a REST API server handling various requests.
 
 Run this script to generate: tutorial_05_api.log
-Then view with: logxpy-tree2 tutorial_05_api.log
+Then view with: logxpy-view tutorial_05_api.log
 """
 
 import time
@@ -421,17 +421,17 @@ def main():
     print("✓ Log file created successfully!")
     print("=" * 70)
     print(f"\nTo view the complete log tree:")
-    print(f"  logxpy-tree2 {log_file}")
+    print(f"  logxpy-view {log_file}")
     print(f"\nTo view only API requests:")
-    print(f"  logxpy-tree2 --select 'starts_with(action_type, `api:`)' {log_file}")
+    print(f"  logxpy-view --select 'starts_with(action_type, `api:`)' {log_file}")
     print(f"\nTo view only failed operations:")
-    print(f"  logxpy-tree2 --action-status failed {log_file}")
+    print(f"  logxpy-view --action-status failed {log_file}")
     print(f"\nTo view with human-readable times:")
-    print(f"  logxpy-tree2 --human-readable {log_file}")
+    print(f"  logxpy-view --human-readable {log_file}")
     print(f"\nTo filter by request ID (example):")
-    print(f"  logxpy-tree2 --keyword 'req_' {log_file}")
+    print(f"  logxpy-view --keyword 'req_' {log_file}")
     print(f"\nTo export to HTML for sharing:")
-    print(f"  logxpy-tree2 --export-html report.html {log_file}")
+    print(f"  logxpy-view --export-html report.html {log_file}")
 
 
 if __name__ == "__main__":

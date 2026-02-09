@@ -5,7 +5,7 @@ Guide for AI agents and assistants working on the log-x-py project.
 ## Project Overview
 
 **log-x-py** is a structured logging ecosystem with three components:
-1. **logxpy** - Structured logging library with minimal dependencies (boltons, more-itertools)
+1. **logxpy** - Structured logging library with minimal dependencies (boltons)
 2. **logxpy-cli-view** - Colored tree viewer for LogXPy logs
 3. **logxy-log-parser** - Log parsing, analysis, and monitoring library
 
@@ -20,7 +20,7 @@ Guide for AI agents and assistants working on the log-x-py project.
 Modern structured logging that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
 
 ### Key Features
-- **Minimal Dependencies** - Uses boltons & more-itertools (pure Python)
+- **Minimal Dependencies** - Uses boltons (pure Python utility library)
 - **Type Safe** - Full type hints with modern syntax
 - **Fast** - Dataclasses with slots (-40% memory), pattern matching (+10% speed)
 - **Fluent API** - All methods return self for method chaining
@@ -863,27 +863,7 @@ entry[MT] = "info"           # "mt"
 
 ## Included Dependencies
 
-The project includes two powerful utility libraries for easier and more concise coding:
-
-### 1. more-itertools (v10.8.0)
-
-> 160+ functions extending itertools · The standard "itertools recipes" library
-
-**Key Features:**
-- **Grouping**: `chunked`, `batched`, `bucket`, `distribute`, `split_at`, `grouper`
-- **Lookahead & Inspection**: `spy`, `peekable`, `seekable`, `ilen`, `is_sorted`
-- **Selecting**: `first`, `last`, `one`, `only`, `unique_everseen`, `take`, `tail`
-- **Windowing**: `windowed`, `pairwise`, `sliding_window`
-- **Augmenting**: `intersperse`, `repeat_each`, `padded`, `mark_ends`
-- **Combining**: `collapse`, `flatten`, `interleave`, `roundrobin`
-- **Math & Statistics**: `minmax`, `factor`, `sieve`, `numeric_range`
-- **Combinatorics**: `distinct_permutations`, `partitions`, `powerset`
-
-📖 **Full Reference**: See [DOC/more-itertools-ref.md](DOC/more-itertools-ref.md) for complete API documentation.
-
----
-
-### 2. boltons (v25.0.0)
+### Included Dependency: boltons (v25.0.0)
 
 > 250+ pure-Python utilities — no dependencies · Battle-tested · 26 modules
 
@@ -912,26 +892,6 @@ The project includes two powerful utility libraries for easier and more concise 
 
 📖 **Full Reference**: See [DOC/boltons-ref.md](DOC/boltons-ref.md) for complete API documentation.
 
----
-
-### more-itertools vs boltons.iterutils
-
-| Task | more-itertools | boltons |
-|---|---|---|
-| Chunk | `chunked` | `chunked` |
-| Window | `windowed(step=)` | `windowed(fill=)` |
-| Pairwise | `pairwise` | `pairwise(end=)` |
-| Flatten | `collapse` (deep) | `flatten` (1 level) |
-| Unique | `unique_everseen` | `unique` |
-| Partition | `(falsy, truthy)` | `(truthy, falsy)` ⚠ |
-| Group by | `bucket` (lazy) | `bucketize` (eager dict) |
-| Peek/Seek | `peekable`, `spy`, `seekable` | — |
-| Nested remap | — | `remap` ★ |
-| Backoff | — | `backoff` |
-| Combinatorics | 20+ functions | — |
-
----
-
 ## Contributing
 
 1. **Python 3.12+ only** - Use modern features
@@ -944,7 +904,7 @@ The project includes two powerful utility libraries for easier and more concise 
 ## Project Goals
 
 - Beautiful, readable log visualization
-- Minimal dependencies (boltons, more-itertools)
+- Minimal dependencies (boltons)
 - Modern Python 3.12+ features
 - Type-safe throughout
 - Fast and memory efficient

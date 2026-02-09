@@ -5,8 +5,14 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "log-x-py"
 version = "0.1.0"
-description = "Zero-dependency structured logging with beautiful tree visualization"
+description = "Structured logging ecosystem with tree visualization and log parsing"
 requires-python = ">=3.12"
+dependencies = [
+    "boltons>=24.0.0",      # Core utilities (cacheutils, dictutils, iterutils, etc.)
+    "zope.interface>=5.0",  # Interface definitions
+    "pyrsistent>=0.11.8",   # Persistent data structures
+    "orjson; implementation_name=='cpython'",  # Fast JSON serialization
+]
 
 [tool.setuptools]
 packages = []
@@ -77,5 +83,8 @@ convention = "google"
 
 [dependency-groups]
 dev = [
+    "mypy>=1.19.1",
     "playwright>=1.58.0",
+    "types-boltons>=25.0.0.20250919",
+    "types-jinja2>=2.11.9",
 ]

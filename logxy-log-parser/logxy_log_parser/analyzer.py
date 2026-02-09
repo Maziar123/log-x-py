@@ -95,151 +95,42 @@ class LogAnalyzer:
             entries: LogEntries collection or list of LogEntry.
         """
         self._entries = entries if isinstance(entries, LogEntries) else LogEntries(entries)
-        self._duration_cache: dict[str, list[float]] = {}
 
-    # Performance methods
+    # Helper methods
 
-    def slowest_actions(self, n: int = 10) -> list[ActionStat]:
-        """Get the slowest actions.
-
-        Args:
-            n: Number of actions to return.
-
-        Returns:
-            list[ActionStat]: Slowest action statistics.
-        """
-        # Filter entries with action_type and duration
-        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
-
-        # Group by action type using boltons bucketize
-        def _get_action_type(entry: LogEntry) -> str:
-            return entry.action_type or ""
-
-        action_groups = bucketize(filtered, _get_action_type)
-
-        # Calculate mean duration for each action type
-        stats: list[tuple[str, float]] = []
-        action_durations: dict[str, list[float]] = {}
-
-        for action_type, entries in action_groups.items():
-            durations = [e.duration for e in entries if e.duration is not None]
-            action_durations[action_type] = durations
-            mean_dur = sum(durations) / len(durations)
-            stats.append((action_type, mean_dur))
-
-        # Sort by mean duration (descending)
-        stats.sort(key=lambda x: x[1], reverse=True)
-
-        # Build ActionStat objects
-        result = []
-        for action_type, _ in stats[:n]:
-            durations = action_durations[action_type]
-            result.append(
-                ActionStat(
-                    action_type=action_type,
-                    count=len(durations),
-                    total_duration=sum(durations),
-                    mean_duration=sum(durations) / len(durations),
-                    min_duration=min(durations),
-                    max_duration=max(durations),
-                )
-            )
-
-        return result
-
-    def fastest_actions(self, n: int = 10) -> list[ActionStat]:
-        """Get the fastest actions.
+    def _group_by_action(self, filtered: bool = True) -> dict[str, list[LogEntry]]:
+        """Group entries by action type using boltons bucketize.
 
         Args:
-            n: Number of actions to return.
+            filtered: If True, only include entries with action_type and duration.
 
         Returns:
-            list[ActionStat]: Fastest action statistics.
+            dict[str, list[LogEntry]]: Action type to entries mapping.
         """
-        # Filter entries with action_type and duration
-        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
+        if filtered:
+            entries = [e for e in self._entries if e.action_type and e.duration is not None]
+        else:
+            entries = [e for e in self._entries if e.action_type]
 
-        # Group by action type using boltons bucketize
-        def _get_action_type(entry: LogEntry) -> str:
-            return entry.action_type or ""
+        return bucketize(entries, lambda e: e.action_type or "")  # type: ignore[no-untyped-call]
 
-        action_groups = bucketize(filtered, _get_action_type)
-
-        # Calculate mean duration for each action type
-        stats: list[tuple[str, float]] = []
-        action_durations: dict[str, list[float]] = {}
-
-        for action_type, entries in action_groups.items():
-            durations = [e.duration for e in entries if e.duration is not None]
-            action_durations[action_type] = durations
-            mean_dur = sum(durations) / len(durations)
-            stats.append((action_type, mean_dur))
-
-        # Sort by mean duration (ascending)
-        stats.sort(key=lambda x: x[1])
-
-        # Build ActionStat objects
-        result = []
-        for action_type, _ in stats[:n]:
-            durations = action_durations[action_type]
-            result.append(
-                ActionStat(
-                    action_type=action_type,
-                    count=len(durations),
-                    total_duration=sum(durations),
-                    mean_duration=sum(durations) / len(durations),
-                    min_duration=min(durations),
-                    max_duration=max(durations),
-                )
-            )
-
-        return result
-
-    def duration_by_action(self) -> dict[str, DurationStats]:
-        """Get duration statistics by action type.
-
-        Returns:
-            dict[str, DurationStats]: Mapping of action type to stats.
-        """
-        # Filter entries with action_type and duration
-        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
-
-        # Group by action type using boltons bucketize
-        def _get_action_type(entry: LogEntry) -> str:
-            return entry.action_type or ""
-
-        action_groups = bucketize(filtered, _get_action_type)
-
-        result: dict[str, DurationStats] = {}
-        for action_type, entries in action_groups.items():
-            durations = [e.duration for e in entries if e.duration is not None]
-            result[action_type] = self._calculate_duration_stats(durations)
-
-        return result
-
-    def percentile_durations(self, percentile: float = 95) -> list[ActionStat]:
-        """Get actions at a specific percentile.
+    def _action_stats_from_groups(
+        self, groups: dict[str, list[LogEntry]]
+    ) -> dict[str, tuple[list[float], ActionStat]]:
+        """Calculate statistics from action groups.
 
         Args:
-            percentile: Percentile value (e.g., 95 for 95th percentile).
+            groups: Action type to entries mapping.
 
         Returns:
-            list[ActionStat]: Actions at the specified percentile.
+            dict: Action type to (durations, ActionStat) mapping.
         """
-        # Filter entries with action_type and duration
-        filtered = [e for e in self._entries if e.action_type and e.duration is not None]
-
-        # Group by action type using boltons bucketize
-        def _get_action_type(entry: LogEntry) -> str:
-            return entry.action_type or ""
-
-        action_groups = bucketize(filtered, _get_action_type)
-
-        result = []
-        for action_type, entries in action_groups.items():
+        result = {}
+        for action_type, entries in groups.items():
             durations = [e.duration for e in entries if e.duration is not None]
             if durations:
-                result.append(
+                result[action_type] = (
+                    durations,
                     ActionStat(
                         action_type=action_type,
                         count=len(durations),
@@ -247,11 +138,8 @@ class LogAnalyzer:
                         mean_duration=sum(durations) / len(durations),
                         min_duration=min(durations),
                         max_duration=max(durations),
-                    )
+                    ),
                 )
-
-        # Sort by duration
-        result.sort(key=lambda x: x.mean_duration, reverse=True)
         return result
 
     def _calculate_duration_stats(self, durations: list[float]) -> DurationStats:
@@ -303,6 +191,89 @@ class LogAnalyzer:
             p99=p99,
         )
 
+    def _parse_interval(self, interval: str) -> float:
+        """Parse interval string to seconds.
+
+        Args:
+            interval: Interval string (e.g., "1min", "5min", "1hour").
+
+        Returns:
+            float: Interval in seconds.
+        """
+        interval = interval.lower()
+
+        match interval:
+            case s if "sec" in s:
+                return float(s.replace("sec", "").replace("s", ""))
+            case s if "min" in s:
+                return float(s.replace("min", "").replace("m", "")) * 60
+            case s if "hour" in s:
+                return float(s.replace("hour", "").replace("h", "")) * 3600
+            case s if "day" in s:
+                return float(s.replace("day", "").replace("d", "")) * 86400
+            case _:
+                return float(interval) * 60
+
+    # Performance methods
+
+    def slowest_actions(self, n: int = 10) -> list[ActionStat]:
+        """Get the slowest actions.
+
+        Args:
+            n: Number of actions to return.
+
+        Returns:
+            list[ActionStat]: Slowest action statistics.
+        """
+        groups = self._group_by_action()
+        stats = self._action_stats_from_groups(groups)
+
+        # Sort by mean duration (descending)
+        sorted_stats = sorted(stats.items(), key=lambda x: x[1][1].mean_duration, reverse=True)
+        return [stat for _, stat in sorted_stats[:n]]
+
+    def fastest_actions(self, n: int = 10) -> list[ActionStat]:
+        """Get the fastest actions.
+
+        Args:
+            n: Number of actions to return.
+
+        Returns:
+            list[ActionStat]: Fastest action statistics.
+        """
+        groups = self._group_by_action()
+        stats = self._action_stats_from_groups(groups)
+
+        # Sort by mean duration (ascending)
+        sorted_stats = sorted(stats.items(), key=lambda x: x[1][1].mean_duration)
+        return [stat for _, stat in sorted_stats[:n]]
+
+    def duration_by_action(self) -> dict[str, DurationStats]:
+        """Get duration statistics by action type.
+
+        Returns:
+            dict[str, DurationStats]: Mapping of action type to stats.
+        """
+        groups = self._group_by_action()
+        result = {}
+        for action_type, entries in groups.items():
+            durations = [e.duration for e in entries if e.duration is not None]
+            result[action_type] = self._calculate_duration_stats(durations)
+        return result
+
+    def percentile_durations(self, percentile: float = 95) -> list[ActionStat]:
+        """Get actions at a specific percentile.
+
+        Args:
+            percentile: Percentile value (e.g., 95 for 95th percentile).
+
+        Returns:
+            list[ActionStat]: Actions at the specified percentile.
+        """
+        groups = self._group_by_action()
+        stats = self._action_stats_from_groups(groups)
+        return [stat for _, stat in sorted(stats.values(), key=lambda x: x.mean_duration, reverse=True)]
+
     # Error methods
 
     def error_summary(self) -> ErrorSummary:
@@ -313,11 +284,13 @@ class LogAnalyzer:
         """
         error_entries = [e for e in self._entries if e.is_error]
 
-        # Count by level
-        by_level = Counter(e.level.value for e in error_entries)
+        # Use bucketize for counting by level
+        level_groups = bucketize(error_entries, lambda e: e.level.value)  # type: ignore[no-untyped-call]
+        by_level = {k: len(v) for k, v in level_groups.items()}
 
-        # Count by action type
-        by_action = Counter(e.action_type or "unknown" for e in error_entries)
+        # Use bucketize for counting by action
+        action_groups = bucketize(error_entries, lambda e: e.action_type or "unknown")  # type: ignore[no-untyped-call]
+        by_action = {k: len(v) for k, v in action_groups.items()}
 
         # Find most common error
         error_messages = [e.message for e in error_entries if e.message]
@@ -328,8 +301,8 @@ class LogAnalyzer:
             total_count=len(error_entries),
             unique_types=len(by_action),
             most_common=most_common,
-            by_level=dict(by_level),
-            by_action=dict(by_action),
+            by_level=by_level,
+            by_action=by_action,
         )
 
     def error_patterns(self) -> list[ErrorPattern]:
@@ -341,10 +314,7 @@ class LogAnalyzer:
         error_entries = [e for e in self._entries if e.is_error]
 
         # Group by error type using boltons bucketize
-        def _get_error_type(entry: LogEntry) -> str:
-            return entry.action_type or "message"
-
-        error_groups = bucketize(error_entries, _get_error_type)
+        error_groups = bucketize(error_entries, lambda e: e.action_type or "message")  # type: ignore[no-untyped-call]
 
         result = []
         for error_type, entries in error_groups.items():
@@ -371,17 +341,10 @@ class LogAnalyzer:
         Returns:
             dict[str, float]: Mapping of action type to failure rate (0-1).
         """
-        # Filter entries with action_type
-        filtered = [e for e in self._entries if e.action_type]
+        groups = self._group_by_action(filtered=False)
 
-        # Group by action type using boltons bucketize
-        def _get_action_type(entry: LogEntry) -> str:
-            return entry.action_type or ""
-
-        action_groups = bucketize(filtered, _get_action_type)
-
-        result: dict[str, float] = {}
-        for action_type, entries in action_groups.items():
+        result = {}
+        for action_type, entries in groups.items():
             total = len(entries)
             failed = sum(1 for e in entries if e.action_status == ActionStatus.FAILED)
             result[action_type] = failed / total if total > 0 else 0.0
@@ -408,16 +371,12 @@ class LogAnalyzer:
         Returns:
             dict[str, DurationStats]: Mapping of task UUID to stats.
         """
-        # Filter entries with task_uuid and duration
         filtered = [e for e in self._entries if e.task_uuid and e.duration is not None]
 
         # Group by task UUID using boltons bucketize
-        def _get_task_uuid(entry: LogEntry) -> str:
-            return entry.task_uuid or ""
+        task_groups = bucketize(filtered, lambda e: e.task_uuid or "")  # type: ignore[no-untyped-call]
 
-        task_groups = bucketize(filtered, _get_task_uuid)
-
-        result: dict[str, DurationStats] = {}
+        result = {}
         for task_uuid, entries in task_groups.items():
             durations = [e.duration for e in entries if e.duration is not None]
             result[task_uuid] = self._calculate_duration_stats(durations)
@@ -438,15 +397,12 @@ class LogAnalyzer:
         Returns:
             list[tuple[str, int]]: List of (task_uuid, child_count) tuples.
         """
-        task_counts: dict[str, int] = {}
-
-        for entry in self._entries:
-            if entry.task_uuid:
-                task_counts[entry.task_uuid] = task_counts.get(entry.task_uuid, 0) + 1
+        # Use bucketize to count by task UUID
+        task_groups = bucketize(self._entries, lambda e: e.task_uuid or "")  # type: ignore[no-untyped-call]
+        task_counts = {k: len(v) for k, v in task_groups.items()}
 
         # Sort by count (descending)
-        sorted_tasks = sorted(task_counts.items(), key=lambda x: x[1], reverse=True)
-        return sorted_tasks
+        return sorted(task_counts.items(), key=lambda x: x[1], reverse=True)
 
     def orphans(self) -> LogEntries:
         """Get orphaned entries (entries without matching start/end).
@@ -455,27 +411,28 @@ class LogAnalyzer:
             LogEntries: Collection of orphaned entries.
         """
         # Track started actions
-        started: dict[str, list[str]] = {}  # task_uuid -> list of action types
+        started: dict[str, set[str]] = {}  # task_uuid -> set of action types
 
         # First pass: collect started actions
         for entry in self._entries:
             if entry.action_status == ActionStatus.STARTED and entry.action_type:
-                if entry.task_uuid not in started:
-                    started[entry.task_uuid] = []
-                started[entry.task_uuid].append(entry.action_type)
+                started.setdefault(entry.task_uuid, set()).add(entry.action_type)
 
         # Second pass: find orphans
         orphans: list[LogEntry] = []
 
         for entry in self._entries:
-            if entry.action_status in (ActionStatus.SUCCEEDED, ActionStatus.FAILED):
-                if entry.task_uuid in started and entry.action_type in started[entry.task_uuid]:
-                    started[entry.task_uuid].remove(entry.action_type)
-            elif entry.action_status == ActionStatus.STARTED:  # noqa: SIM102
-                # Check if this action was never completed
-                if entry.task_uuid in started and entry.action_type in started[entry.task_uuid]:
-                    # This is a duplicate start, mark as orphan
-                    orphans.append(entry)
+            match entry.action_status:
+                case ActionStatus.SUCCEEDED | ActionStatus.FAILED:
+                    if entry.task_uuid in started and entry.action_type in started[entry.task_uuid]:
+                        started[entry.task_uuid].discard(entry.action_type)
+                case ActionStatus.STARTED:
+                    # Check if this action was never completed
+                    if entry.task_uuid in started and entry.action_type in started[entry.task_uuid]:
+                        # This is a duplicate start, mark as orphan
+                        orphans.append(entry)
+                case _:
+                    pass
 
         return LogEntries(orphans)
 
@@ -493,7 +450,6 @@ class LogAnalyzer:
         if not self._entries:
             return Timeline(intervals=[], total_entries=0)
 
-        # Parse interval
         interval_seconds = self._parse_interval(interval)
 
         # Get time range
@@ -507,14 +463,8 @@ class LogAnalyzer:
 
         while current_start < end_time:
             current_end = current_start + interval_seconds
-
-            # Count entries in this interval
             count = sum(1 for ts in timestamps if current_start <= ts < current_end)
-
-            intervals.append(
-                TimePeriod(start=current_start, end=current_end, entry_count=count)
-            )
-
+            intervals.append(TimePeriod(start=current_start, end=current_end, entry_count=count))
             current_start = current_end
 
         return Timeline(intervals=intervals, total_entries=len(self._entries))
@@ -529,8 +479,7 @@ class LogAnalyzer:
             list[TimePeriod]: Peak activity periods.
         """
         timeline = self.timeline(interval="1min")
-        sorted_periods = sorted(timeline.intervals, key=lambda x: x.entry_count, reverse=True)
-        return sorted_periods[:n]
+        return sorted(timeline.intervals, key=lambda x: x.entry_count, reverse=True)[:n]
 
     def quiet_periods(self, n: int = 5) -> list[TimePeriod]:
         """Get quiet activity periods.
@@ -542,33 +491,8 @@ class LogAnalyzer:
             list[TimePeriod]: Quiet activity periods.
         """
         timeline = self.timeline(interval="1min")
-        # Filter out periods with zero entries
         non_zero = [p for p in timeline.intervals if p.entry_count > 0]
-        sorted_periods = sorted(non_zero, key=lambda x: x.entry_count)
-        return sorted_periods[:n]
-
-    def _parse_interval(self, interval: str) -> float:
-        """Parse interval string to seconds.
-
-        Args:
-            interval: Interval string (e.g., "1min", "5min", "1hour").
-
-        Returns:
-            float: Interval in seconds.
-        """
-        interval = interval.lower()
-
-        if "sec" in interval:
-            return float(interval.replace("sec", "").replace("s", ""))
-        elif "min" in interval:
-            return float(interval.replace("min", "").replace("m", "")) * 60
-        elif "hour" in interval:
-            return float(interval.replace("hour", "").replace("h", "")) * 3600
-        elif "day" in interval:
-            return float(interval.replace("day", "").replace("d", "")) * 86400
-        else:
-            # Default to minutes
-            return float(interval) * 60
+        return sorted(non_zero, key=lambda x: x.entry_count)[:n]
 
     # Report generation
 
@@ -576,19 +500,20 @@ class LogAnalyzer:
         """Generate analysis report.
 
         Args:
-            format: Report format ("html", "text", "json").
+            report_format: Report format ("html", "text", "json").
 
         Returns:
             str: Report content.
         """
-        if report_format == "html":
-            return self._generate_html_report()
-        elif report_format == "text":
-            return self._generate_text_report()
-        elif report_format == "json":
-            return self._generate_json_report()
-        else:
-            raise ValueError(f"Unsupported format: {report_format}")
+        match report_format:
+            case "html":
+                return self._generate_html_report()
+            case "text":
+                return self._generate_text_report()
+            case "json":
+                return self._generate_json_report()
+            case _:
+                raise ValueError(f"Unsupported format: {report_format}")
 
     def _generate_html_report(self) -> str:
         """Generate HTML report."""
@@ -596,7 +521,7 @@ class LogAnalyzer:
         deepest = self.deepest_nesting()
         widest = self.widest_tasks()[:5]
 
-        html = f"""<!DOCTYPE html>
+        return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -612,20 +537,17 @@ class LogAnalyzer:
 </head>
 <body>
     <h1>Log Analysis Report</h1>
-
     <div class="section">
         <h2>Overview</h2>
         <div class="stat"><span class="stat-label">Total Entries:</span> <span class="stat-value">{len(self._entries)}</span></div>
         <div class="stat"><span class="stat-label">Errors:</span> <span class="stat-value">{error_summary.total_count}</span></div>
         <div class="stat"><span class="stat-label">Deepest Nesting:</span> <span class="stat-value">{deepest}</span></div>
     </div>
-
     <div class="section">
         <h2>Error Summary</h2>
         <p>Most common error: <strong>{error_summary.most_common[0]}</strong> ({error_summary.most_common[1]} occurrences)</p>
         <p>Unique error types: {error_summary.unique_types}</p>
     </div>
-
     <div class="section">
         <h2>Widest Tasks</h2>
         <ul>
@@ -635,7 +557,6 @@ class LogAnalyzer:
 </body>
 </html>
 """
-        return html
 
     def _generate_text_report(self) -> str:
         """Generate text report."""

@@ -46,7 +46,7 @@ def main():
     )
 
     print("\nCheck 'example_config.log' for file output.")
-    with open("example_config.log") as f:
+    with open("example_config.log", encoding="utf-8") as f:
         print(f.read())
 
     # Clean up

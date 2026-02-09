@@ -1,527 +1,510 @@
 """
-Simple, rich one-line API for parsing logxpy log files.
+Simple one-line API for logxy-log-parser.
 
-This module provides the easiest way to parse and validate logxpy logs:
+Features (by priority):
+a. Check presence - Verify if specific entries exist
+b. Type & count - Identify entry types and count occurrences
+c. Python-native - Work with results using standard itertools and list operations
+d. Productive - Rich, ready-to-use log checking with minimal boilerplate
 
-    # One line to parse a log file
-    entries = parse_log("example.log")
-    
-    # One line to parse with validation
-    result = check_log("example.log")
-    
-    # One line to parse and analyze
-    report = analyze_log("example.log")
-
-The API handles logxpy format automatically (task_level arrays, action_status fields).
+Example:
+    >>> from logxy_log_parser import parse_log, check_log, analyze_log
+    >>>
+    >>> # One line to parse (returns list[LogEntry] - Python native!)
+    >>> entries = parse_log("app.log")
+    >>>
+    >>> # Check presence
+    >>> if check_log("app.log").has_error:
+    ...     print("Errors found!")
+    >>>
+    >>> # Type & count
+    >>> from logxy_log_parser import count_by, group_by
+    >>> errors = count_by(entries, level="error")
+    >>> by_action = group_by(entries, "action_type")
 """
 
 from __future__ import annotations
 
 import json
-from collections import Counter
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
-from .core import LogEntry as BaseLogEntry
-from .types import ActionStatus, Level
+from .core import LogEntry
+from .types import Level
+from .utils import bucketize
 
+
+# ============================================================================
+# Check Result - Presence checks (Feature a)
+# ============================================================================
 
 @dataclass(frozen=True, slots=True)
-class LogXPyEntry:
-    """Log entry compatible with logxpy format (task_level arrays).
-    
-    Use this for logs created by logxpy library.
+class CheckResult:
+    """Result of checking a log file.
+
+    Feature: Check presence - has_error, has_level(), has_action(), contains()
     """
-    
-    timestamp: float
-    task_uuid: str
-    task_level: tuple[int, ...]
-    message_type: str
-    message: str | None
-    action_type: str | None
-    action_status: ActionStatus | None
-    duration: float | None
-    fields: dict[str, Any]
-    raw: dict[str, Any] = field(repr=False)  # Original raw data
-    line_number: int = 0  # Line number in source file (0 if unknown)
-    
+    entries: list[LogEntry]
+    file_path: Path
+    total_lines: int
+    error_count: int = 0
+    validation_errors: list[str] = field(default_factory=list)
+
+    def __len__(self) -> int:
+        return len(self.entries)
+
+    def __iter__(self) -> Iterator[LogEntry]:
+        return iter(self.entries)
+
+    def __getitem__(self, index: int) -> LogEntry:
+        return self.entries[index]
+
     @property
-    def level(self) -> Level:
-        """Get log level from message_type."""
-        mt = self.message_type.lower()
-        if "critical" in mt:
-            return Level.CRITICAL
-        elif "error" in mt:
-            return Level.ERROR
-        elif "warning" in mt:
-            return Level.WARNING
-        elif "debug" in mt:
-            return Level.DEBUG
-        elif "note" in mt:
-            return Level.NOTE
-        elif "success" in mt:
-            return Level.SUCCESS
-        return Level.INFO
-    
+    def is_valid(self) -> bool:
+        """Check if parsing was successful."""
+        return len(self.validation_errors) == 0
+
     @property
-    def depth(self) -> int:
-        """Get nesting depth from task_level."""
-        return len(self.task_level)
-    
+    def has_error(self) -> bool:
+        """Check if any error entries exist."""
+        return any(e.is_error for e in self.entries)
+
     @property
-    def is_error(self) -> bool:
-        """Check if this is an error entry."""
-        return self.level in (Level.ERROR, Level.CRITICAL)
-    
-    @property
-    def is_action(self) -> bool:
-        """Check if this is an action entry."""
-        return self.action_type is not None
-    
-    @property
-    def is_message(self) -> bool:
-        """Check if this is a message entry."""
-        return not self.is_action
-    
-    @property
-    def has_duration(self) -> bool:
-        """Check if entry has timing information."""
-        return self.duration is not None
-    
-    def get(self, key: str, default: Any = None) -> Any:
-        """Get field value by key (checks fields dict first)."""
-        if key in ("timestamp", "task_uuid", "task_level", "message_type", 
-                   "message", "action_type", "action_status", "duration"):
-            return getattr(self, key, default)
-        return self.fields.get(key, default)
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert back to dictionary format."""
-        result: dict[str, Any] = {
-            "timestamp": self.timestamp,
-            "task_uuid": self.task_uuid,
-            "task_level": list(self.task_level),
-            "message_type": self.message_type,
-        }
-        if self.message:
-            result["message"] = self.message
-        if self.action_type:
-            result["action_type"] = self.action_type
-        if self.action_status:
-            result["action_status"] = self.action_status.value
-        if self.duration is not None:
-            result["duration_ns"] = int(self.duration * 1e9)
-        result.update(self.fields)
-        return result
-    
-    @classmethod
-    def from_dict(cls, data: dict[str, Any], line_number: int = 0) -> LogXPyEntry:
-        """Create entry from logxpy JSON dictionary.
-        
-        Args:
-            data: JSON dictionary from log line
-            line_number: Line number in source file (0 if unknown)
+    def has_critical(self) -> bool:
+        """Check if any critical entries exist."""
+        return any(e.level == Level.CRITICAL for e in self.entries)
+
+    def has_level(self, *levels: str) -> bool:
+        """Check if entries with specified levels exist."""
+        level_set = set(Level(l) for l in levels)
+        return any(e.level in level_set for e in self.entries)
+
+    def has_action(self, *action_types: str) -> bool:
+        """Check if entries with specified action types exist."""
+        action_set = set(action_types)
+        return any(e.action_type in action_set for e in self.entries if e.action_type)
+
+    def has_field(self, field_name: str) -> bool:
+        """Check if any entry contains the specified field."""
+        return any(field_name in e.fields for e in self.entries)
+
+    def contains(self, **criteria: Any) -> bool:
+        """Check if entries matching all criteria exist.
+
+        >>> result.contains(level="error")
+        >>> result.contains(action_type="db:query", status="failed")
         """
-        # Parse task_level (array format: [1] or [1,1])
-        task_level_raw = data.get("task_level", [])
-        if isinstance(task_level_raw, list):
-            task_level = tuple(task_level_raw)
-        else:
-            task_level = ()
-        
-        # Parse action_status
-        action_status = None
-        status_val = data.get("action_status") or data.get("status")
-        if status_val:
-            try:
-                action_status = ActionStatus(status_val)
-            except ValueError:
-                action_status = None
-        
-        # Parse duration
-        duration = None
-        if "duration_ns" in data:
-            duration = data["duration_ns"] / 1e9
-        elif "logxpy:duration" in data:
-            duration = data["logxpy:duration"]
-        
-        # Extract known fields
-        known_fields = {
-            "timestamp", "task_uuid", "task_level", "message_type", "message",
-            "action_type", "action_status", "status", "duration_ns", 
-            "logxpy:duration", "logxpy:traceback", "level",
-        }
-        fields = {k: v for k, v in data.items() if k not in known_fields}
-        
-        # Parse timestamp
-        ts = data.get("timestamp", 0)
-        if isinstance(ts, str):
-            try:
-                ts = float(ts)
-            except ValueError:
-                ts = 0
-        
-        return cls(
-            timestamp=ts,
-            task_uuid=data.get("task_uuid", ""),
-            task_level=task_level,
-            message_type=data.get("message_type", ""),
-            message=data.get("message"),
-            action_type=data.get("action_type"),
-            action_status=action_status,
-            duration=duration,
-            fields=fields,
-            raw=data,
-            line_number=line_number,
+        return any(
+            all(
+                getattr(e, k, None) == v
+                or (k in e.fields and e.fields[k] == v)
+                for k, v in criteria.items()
+            )
+            for e in self.entries
+        )
+
+    def find(self, **criteria: Any) -> list[LogEntry]:
+        """Find all entries matching criteria."""
+        return [
+            e for e in self.entries
+            if all(
+                getattr(e, k, None) == v
+                or (k in e.fields and e.fields[k] == v)
+                for k, v in criteria.items()
+            )
+        ]
+
+    def first(self, **criteria: Any) -> LogEntry | None:
+        """Get first entry matching criteria."""
+        for e in self.entries:
+            if all(
+                getattr(e, k, None) == v
+                or (k in e.fields and e.fields[k] == v)
+                for k, v in criteria.items()
+            ):
+                return e
+        return None
+
+    def count(self, **criteria: Any) -> int:
+        """Count entries matching criteria."""
+        return sum(
+            1 for e in self.entries
+            if all(
+                getattr(e, k, None) == v
+                or (k in e.fields and e.fields[k] == v)
+                for k, v in criteria.items()
+            )
+        )
+
+    def where(self, predicate: Callable[[LogEntry], bool]) -> list[LogEntry]:
+        """Filter entries by predicate function."""
+        return [e for e in self.entries if predicate(e)]
+
+
+# ============================================================================
+# Stats Result - Type & count (Feature b)
+# ============================================================================
+
+@dataclass(frozen=True, slots=True)
+class LogStats:
+    """Statistics for log entries.
+
+    Feature: Type & count - pre-computed distributions
+    """
+    total: int
+    level_counts: dict[str, int]
+    action_counts: dict[str, int]
+    task_count: int
+    error_count: int
+    max_depth: int
+    has_duration: int
+
+    @property
+    def success_rate(self) -> float:
+        """Get success rate (succeeded / total actions)."""
+        started = self.action_counts.get("started", 0)
+        if started == 0:
+            return 0.0
+        succeeded = self.action_counts.get("succeeded", 0)
+        return succeeded / started
+
+    @property
+    def error_rate(self) -> float:
+        """Get error rate."""
+        if self.total == 0:
+            return 0.0
+        return self.error_count / self.total
+
+    def summary(self) -> str:
+        """Get formatted summary string."""
+        return (
+            f"Entries: {self.total}, "
+            f"Tasks: {self.task_count}, "
+            f"Errors: {self.error_count}, "
+            f"Max Depth: {self.max_depth}"
         )
 
 
-@dataclass
-class ParseResult:
-    """Result of parsing a log file."""
-    
-    entries: list[LogXPyEntry]
-    total_lines: int
-    parsed_count: int
-    skipped_count: int
-    errors: list[str]
-    
-    def __len__(self) -> int:
-        return len(self.entries)
-    
-    def __iter__(self) -> Iterator[LogXPyEntry]:
-        return iter(self.entries)
-    
-    def __getitem__(self, index: int) -> LogXPyEntry:
-        return self.entries[index]
+# ============================================================================
+# Analysis Result - Productive (Feature d)
+# ============================================================================
 
-
-@dataclass
-class CheckResult:
-    """Result of checking/validating a log file."""
-    
-    # Parse info
-    entries: list[LogXPyEntry]
-    total_lines: int
-    parsed_count: int
-    skipped_count: int
-    
-    # Validation
-    validation_errors: list[str]
-    is_valid: bool
-    
-    # Statistics
-    stats: LogStats = field(repr=False)
-    
-    def __len__(self) -> int:
-        return len(self.entries)
-    
-    def __iter__(self) -> Iterator[LogXPyEntry]:
-        return iter(self.entries)
-
-
-@dataclass
-class LogStats:
-    """Statistics for a log file."""
-    
-    unique_tasks: int
-    max_depth: int
-    entries_with_duration: int
-    total_fields: int
-    
-    # Actions
-    actions_started: int
-    actions_succeeded: int
-    actions_failed: int
-    
-    # Levels
-    levels: dict[str, int]
-    
-    # Action types
-    action_types: dict[str, int]
-    
-    # Errors
-    error_count: int
-    
-    def to_dict(self) -> dict[str, Any]:
-        """Convert stats to dictionary."""
-        return {
-            "unique_tasks": self.unique_tasks,
-            "max_depth": self.max_depth,
-            "entries_with_duration": self.entries_with_duration,
-            "total_fields": self.total_fields,
-            "actions": {
-                "started": self.actions_started,
-                "succeeded": self.actions_succeeded,
-                "failed": self.actions_failed,
-            },
-            "levels": self.levels,
-            "action_types": self.action_types,
-            "errors": self.error_count,
-        }
-
-
-@dataclass
+@dataclass(frozen=True, slots=True)
 class AnalysisReport:
-    """Complete analysis report for a log file."""
-    
-    # Basic info
+    """Complete analysis report.
+
+    Feature: Productive - rich results with minimal code
+    """
     file_path: Path
-    entries: list[LogXPyEntry]
-    
-    # Statistics
+    check: CheckResult
     stats: LogStats
-    
-    # Validation
-    validation_errors: list[str]
-    is_valid: bool
-    
-    # Analysis
-    slowest_actions: list[tuple[str, float]]  # (action_type, duration)
-    errors: list[LogXPyEntry]
-    
+    slowest: list[tuple[str, float]]
+    errors: list[LogEntry]
+
     def print_summary(self) -> None:
-        """Print a summary of the analysis."""
+        """Print formatted summary to stdout."""
         print(f"\n📊 Log Analysis: {self.file_path.name}")
-        print("=" * 60)
-        print(f"  Total entries: {len(self.entries)}")
-        print(f"  Unique tasks:  {self.stats.unique_tasks}")
-        print(f"  Max depth:     {self.stats.max_depth}")
-        print(f"  Errors:        {self.stats.error_count}")
-        print(f"\n  Actions: {self.stats.actions_started} started, "
-              f"{self.stats.actions_succeeded} succeeded, "
-              f"{self.stats.actions_failed} failed")
-        
-        if self.slowest_actions:
-            print(f"\n  Slowest actions:")
-            for action, duration in self.slowest_actions[:3]:
+        print("=" * 50)
+        print(self.stats.summary())
+        print(f"  Levels: {self.stats.level_counts}")
+        print(f"  Actions: {self.stats.action_counts}")
+        if self.slowest:
+            print("\n  Slowest actions:")
+            for action, duration in self.slowest[:5]:
                 print(f"    - {action}: {duration*1000:.2f}ms")
-        
-        if not self.is_valid:
-            print(f"\n  ⚠️  Validation errors: {len(self.validation_errors)}")
-    
+        if self.errors:
+            print(f"\n  Errors: {len(self.errors)}")
+            for e in self.errors[:3]:
+                msg = e.message or e.message_type
+                print(f"    - {msg[:60]}")
+
     def to_dict(self) -> dict[str, Any]:
-        """Convert report to dictionary."""
+        """Convert to dictionary."""
         return {
             "file": str(self.file_path),
-            "entry_count": len(self.entries),
-            "is_valid": self.is_valid,
-            "stats": self.stats.to_dict(),
-            "slowest_actions": self.slowest_actions,
+            "total": self.stats.total,
+            "tasks": self.stats.task_count,
+            "errors": self.stats.error_count,
+            "levels": self.stats.level_counts,
+            "actions": self.stats.action_counts,
+            "slowest": self.slowest,
+            "error_rate": self.stats.error_rate,
         }
 
 
-def parse_log(source: str | Path) -> ParseResult:
+# ============================================================================
+# One-Line API Functions
+# ============================================================================
+
+def parse_log(source: str | Path) -> list[LogEntry]:
     """Parse a log file in ONE LINE.
-    
+
+    Feature: Python-native - returns standard list[LogEntry]
+
     Args:
         source: Path to log file
-        
+
     Returns:
-        ParseResult with entries and metadata
-        
+        List of LogEntry objects
+
     Example:
-        >>> result = parse_log("app.log")
-        >>> print(f"Parsed {len(result)} entries")
-        >>> for entry in result:
+        >>> entries = parse_log("app.log")
+        >>> for entry in entries:
         ...     print(entry.message)
     """
     path = Path(source)
-    entries: list[LogXPyEntry] = []
-    errors: list[str] = []
-    total_lines = 0
-    
+    entries: list[LogEntry] = []
+
     with open(path, encoding="utf-8") as f:
         for line_num, line in enumerate(f, 1):
-            total_lines += 1
             line = line.strip()
             if not line:
                 continue
             try:
                 data = json.loads(line)
-                entries.append(LogXPyEntry.from_dict(data, line_number=line_num))
-            except (json.JSONDecodeError, ValueError, KeyError) as e:
-                errors.append(f"Line {line_num}: {e}")
-    
-    return ParseResult(
-        entries=entries,
-        total_lines=total_lines,
-        parsed_count=len(entries),
-        skipped_count=total_lines - len(entries),
-        errors=errors,
-    )
+                entries.append(LogEntry.from_dict(data, line_number=line_num))
+            except (json.JSONDecodeError, ValueError):
+                pass  # Skip invalid lines
+
+    return entries
 
 
-def parse_line(line: str) -> LogXPyEntry | None:
+def parse_line(line: str) -> LogEntry | None:
     """Parse a single log line.
-    
+
     Args:
         line: JSON log line
-        
+
     Returns:
-        LogXPyEntry or None if invalid
-        
+        LogEntry or None if invalid
+
     Example:
-        >>> entry = parse_line('{"timestamp": 123, "task_uuid": "abc", ...}')
+        >>> entry = parse_line('{"ts": 123, "tid": "Xa.1", ...}')
         >>> if entry:
         ...     print(entry.message)
     """
     try:
         data = json.loads(line.strip())
-        return LogXPyEntry.from_dict(data)
-    except (json.JSONDecodeError, ValueError, KeyError):
+        return LogEntry.from_dict(data)
+    except (json.JSONDecodeError, ValueError):
         return None
 
 
 def check_log(source: str | Path) -> CheckResult:
     """Parse and validate a log file in ONE LINE.
-    
+
+    Feature: Check presence - comprehensive validation
+
     Args:
         source: Path to log file
-        
+
     Returns:
-        CheckResult with entries, validation, and stats
-        
+        CheckResult with has_error, has_level(), contains(), etc.
+
     Example:
         >>> result = check_log("app.log")
-        >>> if result.is_valid:
-        ...     print(f"All {len(result)} entries valid")
-        ... else:
-        ...     print(f"Found {len(result.validation_errors)} errors")
+        >>> if result.has_error:
+        ...     print(f"Found {result.error_count} errors")
+        >>> if result.has_action("db:query"):
+        ...     print("Has database queries")
+        >>> if result.contains(level="error", action_type="http"):
+        ...     print("Has HTTP errors")
     """
-    # Parse
-    parse_result = parse_log(source)
-    
-    # Validate each entry
+    path = Path(source)
+    entries = parse_log(path)
+
+    # Count errors
+    error_count = sum(1 for e in entries if e.is_error)
+
+    # Validate entries
     validation_errors: list[str] = []
-    for i, entry in enumerate(parse_result.entries, 1):
-        # Check required fields
-        if not entry.task_uuid:
-            validation_errors.append(f"Line {i}: Missing task_uuid")
+    for i, entry in enumerate(entries, 1):
         if entry.timestamp <= 0:
             validation_errors.append(f"Line {i}: Invalid timestamp")
-        if not entry.message_type and not entry.action_type:
-            validation_errors.append(f"Line {i}: Missing message_type and action_type")
-        
-        # Check action consistency
-        if entry.is_action and entry.action_status == ActionStatus.FAILED:
-            if not entry.is_error and "exception" not in entry.fields:
-                validation_errors.append(f"Line {i}: Failed action without error details")
-    
-    # Calculate stats
-    stats = _calculate_stats(parse_result.entries)
-    
+        if not entry.task_uuid:
+            validation_errors.append(f"Line {i}: Missing task_uuid")
+
     return CheckResult(
-        entries=parse_result.entries,
-        total_lines=parse_result.total_lines,
-        parsed_count=parse_result.parsed_count,
-        skipped_count=parse_result.skipped_count,
+        entries=entries,
+        file_path=path,
+        total_lines=sum(1 for _ in open(path, encoding="utf-8")),
+        error_count=error_count,
         validation_errors=validation_errors,
-        is_valid=len(validation_errors) == 0,
-        stats=stats,
     )
 
 
 def analyze_log(source: str | Path) -> AnalysisReport:
     """Parse, validate, and analyze a log file in ONE LINE.
-    
+
+    Feature: Productive - rich analysis with minimal code
+
     Args:
         source: Path to log file
-        
+
     Returns:
-        AnalysisReport with complete analysis
-        
+        AnalysisReport with stats, slowest actions, errors
+
     Example:
         >>> report = analyze_log("app.log")
         >>> report.print_summary()
     """
     check_result = check_log(source)
-    path = Path(source)
-    
-    # Find slowest actions
-    action_durations: dict[str, list[float]] = {}
-    for entry in check_result.entries:
-        if entry.action_type and entry.duration is not None:
-            if entry.action_type not in action_durations:
-                action_durations[entry.action_type] = []
-            action_durations[entry.action_type].append(entry.duration)
-    
+    entries = check_result.entries
+
+    # Count by level using bucketize
+    level_groups = bucketize(entries, lambda e: e.level.value)  # type: ignore
+    level_counts = {k: len(v) for k, v in level_groups.items()}
+
+    # Count by action status using bucketize
+    status_groups = bucketize(entries, lambda e: e.action_status.value if e.action_status else "message")  # type: ignore
+    action_counts = {k: len(v) for k, v in status_groups.items()}
+
+    task_count = len({e.task_uuid for e in entries})
+    error_count = sum(1 for e in entries if e.is_error)
+    max_depth = max((e.depth for e in entries), default=0)
+    has_duration = sum(1 for e in entries if e.duration is not None)
+
+    stats = LogStats(
+        total=len(entries),
+        level_counts=level_counts,
+        action_counts=action_counts,
+        task_count=task_count,
+        error_count=error_count,
+        max_depth=max_depth,
+        has_duration=has_duration,
+    )
+
+    # Find slowest actions using bucketize
+    with_duration = [e for e in entries if e.duration is not None and e.action_type]
+    action_groups = bucketize(with_duration, lambda e: e.action_type or "")  # type: ignore
+
     slowest = [
-        (action, sum(durations)/len(durations))
-        for action, durations in action_durations.items()
+        (action, sum(e.duration for e in group) / len(group))
+        for action, group in sorted(action_groups.items())
     ]
     slowest.sort(key=lambda x: x[1], reverse=True)
-    
-    # Find errors
-    errors = [e for e in check_result.entries if e.is_error]
-    
+
+    # Get errors
+    errors = [e for e in entries if e.is_error]
+
     return AnalysisReport(
-        file_path=path,
-        entries=check_result.entries,
-        stats=check_result.stats,
-        validation_errors=check_result.validation_errors,
-        is_valid=check_result.is_valid,
-        slowest_actions=slowest,
+        file_path=check_result.file_path,
+        check=check_result,
+        stats=stats,
+        slowest=slowest,
         errors=errors,
     )
 
 
-def _calculate_stats(entries: list[LogXPyEntry]) -> LogStats:
-    """Calculate statistics for entries."""
-    # Unique tasks
-    unique_tasks = len(set(e.task_uuid for e in entries))
-    
-    # Max depth
-    max_depth = max((e.depth for e in entries), default=0)
-    
-    # Duration count
-    entries_with_duration = sum(1 for e in entries if e.duration is not None)
-    
-    # Total fields
-    total_fields = sum(len(e.fields) for e in entries)
-    
-    # Action counts
-    actions_started = sum(1 for e in entries if e.action_status == ActionStatus.STARTED)
-    actions_succeeded = sum(1 for e in entries if e.action_status == ActionStatus.SUCCEEDED)
-    actions_failed = sum(1 for e in entries if e.action_status == ActionStatus.FAILED)
-    
-    # Level distribution
-    level_counts = Counter(e.level.value for e in entries)
-    
-    # Action types
-    action_type_counts = Counter(
-        e.action_type for e in entries if e.action_type
-    )
-    
-    # Error count
-    error_count = sum(1 for e in entries if e.is_error)
-    
-    return LogStats(
-        unique_tasks=unique_tasks,
-        max_depth=max_depth,
-        entries_with_duration=entries_with_duration,
-        total_fields=total_fields,
-        actions_started=actions_started,
-        actions_succeeded=actions_succeeded,
-        actions_failed=actions_failed,
-        levels=dict(level_counts),
-        action_types=dict(action_type_counts),
-        error_count=error_count,
+# ============================================================================
+# Type & Count Helper Functions (Feature b)
+# ============================================================================
+
+def count_by(
+    entries: Iterable[LogEntry],
+    *,
+    level: str | None = None,
+    action_type: str | None = None,
+    action_status: str | None = None,
+) -> int:
+    """Count entries matching criteria.
+
+    Feature: Type & count - simplified counting
+
+    Args:
+        entries: Iterable of log entries
+        level: Filter by log level
+        action_type: Filter by action type
+        action_status: Filter by action status
+
+    Returns:
+        Count of matching entries
+
+    Example:
+        >>> errors = count_by(entries, level="error")
+        >>> db_queries = count_by(entries, action_type="db:query")
+        >>> failed = count_by(entries, action_status="failed")
+    """
+    return sum(
+        1 for e in entries
+        if (level is None or e.level.value == level)
+        and (action_type is None or e.action_type == action_type)
+        and (action_status is None or (e.action_status and e.action_status.value == action_status))
     )
 
 
-# Convenience exports
+def group_by(
+    entries: Iterable[LogEntry],
+    key: str,
+) -> dict[str, list[LogEntry]]:
+    """Group entries by a field value.
+
+    Feature: Type & count - using boltons bucketize
+
+    Args:
+        entries: Iterable of log entries
+        key: Field name to group by (can be attribute or fields dict key)
+
+    Returns:
+        Dictionary mapping values to lists of entries
+
+    Example:
+        >>> by_level = group_by(entries, "level")
+        >>> by_action = group_by(entries, "action_type")
+    """
+    def get_key(e: LogEntry) -> str:
+        val = getattr(e, key, None)
+        if val is None:
+            val = e.fields.get(key)
+        return str(val) if val is not None else ""
+
+    return bucketize(entries, get_key)  # type: ignore[no-untyped-call]
+
+
+def types(entries: Iterable[LogEntry], field_name: str = "action_type") -> set[str]:
+    """Get unique values for a field.
+
+    Feature: Type & count - get unique types
+
+    Args:
+        entries: Iterable of log entries
+        field_name: Field name to get unique values for
+
+    Returns:
+        Set of unique values
+
+    Example:
+        >>> action_types = types(entries, "action_type")
+        >>> levels = types(entries, "level")
+    """
+    unique_values = set()
+    for e in entries:
+        val = getattr(e, field_name, None)
+        if val is None:
+            val = e.fields.get(field_name)
+        if val is not None:
+            unique_values.add(str(val))
+    return unique_values
+
+
+# ============================================================================
+# Exports
+# ============================================================================
+
 __all__ = [
-    # Core classes
-    "LogXPyEntry",
-    "ParseResult",
+    # One-line API
+    "parse_log",
+    "parse_line",
+    "check_log",
+    "analyze_log",
+    # Result classes
     "CheckResult",
     "LogStats",
     "AnalysisReport",
-    # One-line functions
-    "parse_log",
-    "parse_line", 
-    "check_log",
-    "analyze_log",
+    # Type & count helpers
+    "count_by",
+    "group_by",
+    "types",
 ]

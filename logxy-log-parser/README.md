@@ -5,6 +5,10 @@ A Python library for parsing, analyzing, and querying LogXPy log files with rich
 ## Features
 
 - **Simple One-Line API** - Parse entire files in one call
+  a. **Check presence** - Verify if specific entries exist (single or multiple log lines)
+  b. **Type & count** - Identify entry types and count occurrences by level/type
+  c. **Python-native** - Work with results using standard itertools and list operations
+  d. **Productive** - Rich, ready-to-use log checking with minimal boilerplate
 - **Indexing System** - Fast lookups for large log files
 - **Powerful Filtering** - By level, time, action type, field values
 - **Time Series Analysis** - Anomaly detection, heatmaps, burst detection

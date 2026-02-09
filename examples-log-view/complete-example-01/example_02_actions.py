@@ -13,9 +13,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "logxpy"))
 
 from logxpy import Message, start_action, to_file
 
-# Setup logging to file
+# Setup logging to file (delete old log first)
 log_file = Path(__file__).parent / "example_02_actions.log"
-to_file(open(log_file, "w"))
+if log_file.exists():
+    log_file.unlink()
+with open(log_file, "w", encoding="utf-8") as f:
+    to_file(f)
 
 # Simple action
 with start_action(action_type="order:process", order_id="ORD-001"):

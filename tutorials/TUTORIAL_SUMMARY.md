@@ -2,7 +2,7 @@
 
 ## Overview
 
-This tutorial suite demonstrates the complete workflow of using **logxpy** (Eliot-based logging library) for creating structured logs and **logxpy_cli_view** (logxpy-tree2) for viewing them with a beautiful tree structure.
+This tutorial suite demonstrates the complete workflow of using **logxpy** (logging library) for creating structured logs and **logxpy-cli-view** for viewing them with a beautiful tree structure.
 
 ## What Was Created
 
@@ -83,7 +83,7 @@ python ../examples-log-view/view_tree.py tutorial_01_basic.log --ascii
 
 #### Option B: Full Featured Viewer (Requires Installation)
 
-First, install logxpy_cli_view:
+First, install logxpy-cli-view:
 
 ```bash
 cd ../logxpy_cli_view
@@ -96,22 +96,22 @@ Then use the powerful tree viewer:
 
 ```bash
 # Basic view with tree structure
-logxpy-tree2 tutorial_01_basic.log
+logxpy-view tutorial_01_basic.log
 
 # View with human-readable timestamps
-logxpy-tree2 --human-readable tutorial_02_actions.log
+logxpy-view tutorial_02_actions.log
 
 # Filter by action status
-logxpy-tree2 --action-status failed tutorial_04_errors.log
+logxpy-view --status failed tutorial_04_errors.log
 
 # Filter by action type
-logxpy-tree2 --action-type 'api:*' tutorial_05_api.log
+logxpy-view --action-type 'api:*' tutorial_05_api.log
 
 # Search by keyword
-logxpy-tree2 --keyword 'payment' tutorial_05_api.log
+logxpy-view --keyword 'payment' tutorial_05_api.log
 
 # Export to HTML
-logxpy-tree2 --export-html report.html tutorial_05_api.log
+logxpy-view export tutorial_05_api.log -f html -o report.html
 ```
 
 ## Log File Format
@@ -259,37 +259,31 @@ Explore the full documentation:
 
 ```bash
 # View with tree structure
-logxpy-tree2 tutorial_02_actions.log
+logxpy-view tutorial_02_actions.log
 
 # Show only errors
-logxpy-tree2 --action-status failed tutorial_*.log
+logxpy-view --status failed tutorial_*.log
 
 # Filter by action type
-logxpy-tree2 --action-type 'payment:*' tutorial_05_api.log
+logxpy-view --action-type 'payment:*' tutorial_05_api.log
 
 # Search for specific text
-logxpy-tree2 --keyword 'database' tutorial_*.log
+logxpy-view --keyword 'database' tutorial_*.log
 
 # JMESPath query
-logxpy-tree2 --select 'level == `ERROR`' tutorial_04_errors.log
-
-# Human-readable times
-logxpy-tree2 --human-readable tutorial_02_actions.log
-
-# Limit field length
-logxpy-tree2 --field-limit 100 tutorial_*.log
+logxpy-view --select 'level == `ERROR`' tutorial_04_errors.log
 
 # ASCII output (no Unicode)
-logxpy-tree2 --ascii tutorial_*.log
+logxpy-view --ascii tutorial_*.log
 
 # No colors
-logxpy-tree2 --color never tutorial_*.log
+logxpy-view --color never tutorial_*.log
 
 # Export to HTML
-logxpy-tree2 --export-html report.html tutorial_05_api.log
+logxpy-view export tutorial_05_api.log -f html -o report.html
 
 # View all tutorials together
-logxpy-tree2 tutorial_*.log
+logxpy-view tutorial_*.log
 ```
 
 ## Troubleshooting

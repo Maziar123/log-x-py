@@ -2,13 +2,14 @@
 Filtering functionality for logxy-log-parser.
 
 Contains LogEntries collection and LogFilter for chainable filtering operations.
-Uses boltons for efficient grouping and iteration utilities.
+Uses boltons and more-itertools for efficient grouping and iteration utilities.
+
+Supports both compact and legacy field naming conventions.
 """
 
 from __future__ import annotations
 
 import re
-from collections import Counter
 from collections.abc import Callable, Iterator
 from datetime import datetime
 from itertools import islice
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from .core import LogEntry
-from .utils import bucketize, parse_timestamp
+from .utils import bucketize, parse_timestamp, unique
 
 
 class LogEntries:
@@ -71,14 +72,15 @@ class LogEntries:
             LogEntries: Sorted collection.
         """
         def sort_key(entry: LogEntry) -> Any:
-            if key == "timestamp":
-                return entry.timestamp
-            elif key == "level":
-                return entry.level.value
-            elif key == "duration":
-                return entry.duration or 0
-            else:
-                return entry.get(key)
+            match key:
+                case "timestamp":
+                    return entry.timestamp
+                case "level":
+                    return entry.level.value
+                case "duration":
+                    return entry.duration or 0
+                case _:
+                    return entry.get(key)
 
         return LogEntries(sorted(self._entries, key=sort_key, reverse=reverse))
 
@@ -96,6 +98,8 @@ class LogEntries:
     def unique(self, key: str | None = None) -> LogEntries:
         """Get unique entries based on a key.
 
+        Uses boltons' unique for efficient deduplication.
+
         Args:
             key: Field name to check uniqueness. If None, uses full entry.
 
@@ -103,43 +107,34 @@ class LogEntries:
             LogEntries: Collection with unique entries.
         """
         if key is None:
-            seen = set()
-            unique = []
-            for entry in self._entries:
-                entry_tuple = tuple(sorted(entry.to_dict().items()))
-                if entry_tuple not in seen:
-                    seen.add(entry_tuple)
-                    unique.append(entry)
-            return LogEntries(unique)
-        else:
-            seen = set()
-            unique = []
-            for entry in self._entries:
-                value = entry.get(key)
-                if value not in seen:
-                    seen.add(value)
-                    unique.append(entry)
-            return LogEntries(unique)
+            # Use boltons unique for full entry uniqueness
+            return LogEntries(list(unique(self._entries)))
+        # Use boltons unique with key function
+        return LogEntries(list(unique(self._entries, key=lambda e: e.get(key))))
 
     # Aggregation methods
 
     def count_by_level(self) -> dict[str, int]:
         """Count entries by log level.
 
+        Uses boltons' bucketize for efficient grouping.
+
         Returns:
             dict[str, int]: Mapping of level to count.
         """
-        counter = Counter(entry.level.value for entry in self._entries)
-        return dict(counter)
+        groups = bucketize(self._entries, lambda e: e.level.value)  # type: ignore[no-untyped-call]
+        return {k: len(v) for k, v in groups.items()}
 
     def count_by_type(self) -> dict[str, int]:
         """Count entries by action type.
 
+        Uses boltons' bucketize for efficient grouping.
+
         Returns:
             dict[str, int]: Mapping of action type to count.
         """
-        counter = Counter(entry.action_type or "message" for entry in self._entries)
-        return dict(counter)
+        groups = bucketize(self._entries, lambda e: e.action_type or "message")  # type: ignore[no-untyped-call]
+        return {k: len(v) for k, v in groups.items()}
 
     def group_by(self, key: str) -> dict[str, LogEntries]:
         """Group entries by a field value.
@@ -156,7 +151,7 @@ class LogEntries:
             return str(entry.get(key, ""))
 
         # Use boltons bucketize for efficient grouping
-        groups = bucketize(self._entries, _get_key)
+        groups: dict[str, list[LogEntry]] = bucketize(self._entries, _get_key)  # type: ignore[no-untyped-call]
         return {k: LogEntries(v) for k, v in groups.items()}
 
     # Export methods (delegates to export module)
@@ -275,11 +270,16 @@ class LogFilter:
         Returns:
             LogEntries: Filtered entries.
         """
-        if regex:
-            compiled = re.compile(pattern, re.IGNORECASE)
-            return self._entries.filter(lambda e: e.message is not None and compiled.search(e.message) is not None)
-        else:
-            return self._entries.filter(lambda e: e.message is not None and pattern.lower() in e.message.lower())
+        match regex:
+            case True:
+                compiled = re.compile(pattern, re.IGNORECASE)
+                return self._entries.filter(
+                    lambda e: e.message is not None and compiled.search(e.message) is not None
+                )
+            case False:
+                return self._entries.filter(
+                    lambda e: e.message is not None and pattern.lower() in e.message.lower()
+                )
 
     def by_action_type(self, *types: str) -> LogEntries:
         """Filter by action type(s).

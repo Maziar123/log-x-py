@@ -101,7 +101,6 @@ def print_stats(entries: list[Any]) -> None:
     Args:
         entries: List of log entries.
     """
-    from .types import Level
 
     if not entries:
         print("No entries to analyze.")
@@ -422,7 +421,7 @@ if CLICK_AVAILABLE:
             os.environ["NO_COLOR"] = "1"
 
         from .core import LogParser
-        from .filter import LogFilter
+        from .filter import LogEntries, LogFilter
 
         # Parse log file
         print_header(f"Querying: {log_file}")
@@ -441,37 +440,38 @@ if CLICK_AVAILABLE:
             print("No entries found.")
             return
 
-        # Apply filters
+        # Apply filters using LogFilter for chaining
+        from .filter import LogFilter
+
         result = LogFilter(entries)
 
         if level:
-            result = result.by_level(*level)
+            result = LogFilter(result.by_level(*level))
         if message:
-            from .filter import LogFilter as LF
-            result = LF(result._entries).by_message(message, regex=regex)
+            result = LogFilter(result.by_message(message, regex=regex))
         if action:
-            result = result.by_action_type(action)
+            result = LogFilter(result.by_action_type(action))
         if task:
-            result = result.by_task_uuid(task)
+            result = LogFilter(result.by_task_uuid(task))
         if after:
-            result = result.after(float(after))
+            result = LogFilter(result.after(float(after)))
         if before:
-            result = result.before(float(before))
+            result = LogFilter(result.before(float(before)))
         if duration_min > 0 or duration_max < float('inf'):
-            result = result.by_duration(duration_min, duration_max)
+            result = LogFilter(result.by_duration(duration_min, duration_max))
         if failed:
-            result = result.failed_actions()
+            result = LogFilter(result.failed_actions())
         if with_traceback:
-            result = result.with_traceback()
+            result = LogFilter(result.with_traceback())
 
         # Sort
-        result = result.sort(key=sort, reverse=reverse)
+        filtered = result.sort(key=sort, reverse=reverse)
 
         # Limit
         if limit > 0:
-            result = result.limit(limit)
+            filtered = filtered.limit(limit)
 
-        filtered_entries = list(result)
+        filtered_entries = list(filtered)
 
         print(f"  Matched {style(str(len(filtered_entries)), 'cyan', bold=True)} of {len(entries)} entries")
 
@@ -527,8 +527,8 @@ if CLICK_AVAILABLE:
             import os
             os.environ["NO_COLOR"] = "1"
 
-        from .core import LogParser
         from .analyzer import LogAnalyzer
+        from .core import LogParser
         from .filter import LogEntries
 
         # Parse log file
@@ -594,8 +594,8 @@ if CLICK_AVAILABLE:
             import os
             os.environ["NO_COLOR"] = "1"
 
-        from .monitor import LogFile
         from .filter import LogFilter
+        from .monitor import LogFile
 
         logfile = LogFile.open(log_file)
         if logfile is None:
@@ -605,14 +605,13 @@ if CLICK_AVAILABLE:
         if follow:
             # Follow mode
             print_header(f"Following: {log_file}")
-            print(f"  Press Ctrl+C to stop\n")
+            print("  Press Ctrl+C to stop\n")
 
             try:
                 for entry in logfile.watch():
                     # Apply level filter
-                    if level:
-                        if entry.level.value not in level:
-                            continue
+                    if level and entry.level.value not in level:
+                        continue
                     print_entry(entry)
             except KeyboardInterrupt:
                 print(f"\n{style('✓', 'green')} Stopped following")
@@ -644,7 +643,6 @@ if CLICK_AVAILABLE:
 
         from .core import LogParser
         from .tree import TaskTree
-        from .utils import extract_task_uuid
 
         # Parse log file
         print_header(f"Building tree: {log_file}")

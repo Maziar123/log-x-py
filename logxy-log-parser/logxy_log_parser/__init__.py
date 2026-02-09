@@ -3,15 +3,19 @@ LogXPy Log Parser & Analyzer
 
 A Python library for parsing, analyzing, and querying LogXPy log files.
 
+Supports both:
+- New LogXPy compact format (ts, tid, lvl, mt, at, st, dur, msg)
+- Legacy Eliot format (timestamp, task_uuid, task_level, etc.)
+
 SIMPLE ONE-LINE API (recommended for logxpy logs):
     >>> from logxy_log_parser import parse_log, check_log, analyze_log
-    >>> 
+    >>>
     >>> # One line to parse
     >>> entries = parse_log("app.log")
-    >>> 
-    >>> # One line to parse + validate  
+    >>>
+    >>> # One line to parse + validate
     >>> result = check_log("app.log")
-    >>> 
+    >>>
     >>> # One line to parse + validate + analyze
     >>> report = analyze_log("app.log")
     >>> report.print_summary()
@@ -22,6 +26,12 @@ FULL API:
     >>> logs = parser.parse()
     >>> errors = LogFilter(logs).by_level("error")
     >>> errors.to_html("errors.html")
+
+COMPATIBILITY:
+    >>> # Works with both compact and legacy formats
+    >>> from logxy_log_parser import TS, TID, MT, get_field
+    >>> entry = {"ts": 1234567890.0, "tid": "Xa.1", "mt": "info", "msg": "Hello"}
+    >>> timestamp = get_field(entry, TS)  # Works with both "ts" and "timestamp"
 """
 
 from __future__ import annotations
@@ -31,58 +41,6 @@ from typing import Any
 __version__ = "0.1.0"
 
 # SIMPLE ONE-LINE API (import these for easiest use)
-from .simple import (
-    # Core classes
-    LogXPyEntry,
-    ParseResult,
-    CheckResult,
-    LogStats,
-    AnalysisReport,
-    # One-line functions
-    parse_log,
-    parse_line,
-    check_log,
-    analyze_log,
-)
-
-# Core API
-from .analyzer import (
-    ActionStat,
-    DurationStats,
-    ErrorSummary,
-    LogAnalyzer,
-)
-from .core import LogEntry, LogParser, ParseError
-from .filter import LogEntries, LogFilter
-from .monitor import LogFile, LogFileError
-from .tree import TaskNode, TaskTree
-from .types import ActionStatus, Level, TaskLevel
-from .utils import (
-    bucketize,
-    chunked,
-    extract_task_uuid,
-    first,
-    flatten,
-    format_timestamp,
-    is_iterable,
-    level_from_message_type,
-    merge_fields,
-    pairwise,
-    parse_duration,
-    parse_timestamp,
-    subdict,
-    unique,
-    windowed,
-)
-
-# Indexing
-from .index import (
-    IndexedLogParser,
-    IndexStats,
-    LogIndex,
-    LogPosition,
-)
-
 # Aggregation
 from .aggregation import (
     AggregatedStats,
@@ -92,11 +50,112 @@ from .aggregation import (
     TimeSeriesAnalyzer,
 )
 
+# Core API
+from .analyzer import (
+    ActionStat,
+    DurationStats,
+    ErrorSummary,
+    LogAnalyzer,
+)
+
 # Configuration
 from .config import (
     ConfigManager,
     ParserConfig,
     get_config,
+)
+from .core import LogEntry, LogParser, ParseError
+from .filter import LogEntries, LogFilter
+
+# Indexing
+from .index import (
+    IndexedLogParser,
+    IndexStats,
+    LogIndex,
+    LogPosition,
+)
+from .monitor import LogFile, LogFileError
+from .simple import (
+    AnalysisReport,
+    CheckResult,
+    LogStats,
+    # One-line functions
+    analyze_log,
+    check_log,
+    parse_line,
+    parse_log,
+    # Type & count helpers
+    count_by,
+    group_by,
+    types,
+)
+
+# Sqid task ID parsing
+from .sqid import (
+    LogFormat as SqidLogFormat,
+)
+from .sqid import (
+    SqidInfo,
+    SqidParser,
+    parse_sqid,
+    sqid_depth,
+    sqid_parent,
+    sqid_root,
+)
+from .tree import TaskNode, TaskTree
+from .types import (
+    ACTION_STATUS,
+    ACTION_TYPE,
+    AT,
+    DUR,
+    DURATION_NS,
+    LVL,
+    MESSAGE,
+    MESSAGE_TYPE,
+    MSG,
+    MT,
+    ST,
+    TASK_LEVEL,
+    TASK_UUID,
+    TID,
+    TIMESTAMP,
+    TS,
+    ActionStatus,
+    Level,
+    LevelValue,
+    LogFormat,
+    TaskLevel,
+    detect_format,
+    get_field,
+    is_compact_field,
+    is_legacy_field,
+    legacy_field_name,
+    normalize_field_name,
+)
+from .utils import (
+    bucketize,
+    chunked,
+    extract_duration,
+    extract_task_uuids,
+    first,
+    flatten,
+    format_timestamp,
+    get_field_value,
+    get_task_level,
+    get_task_uuid,
+    get_timestamp,
+    is_iterable,
+    level_from_entry,
+    level_from_message_type,
+    merge_fields,
+    normalize_entry,
+    pairwise,
+    parse_duration,
+    parse_timestamp,
+    subdict,
+    unique,
+    unique_everseen,
+    windowed,
 )
 
 # CLI (optional)
@@ -116,11 +175,13 @@ __all__ = [
     "parse_line",
     "check_log",
     "analyze_log",
-    "LogXPyEntry",
-    "ParseResult",
     "CheckResult",
     "LogStats",
     "AnalysisReport",
+    # Type & count helpers
+    "count_by",
+    "group_by",
+    "types",
     # Core
     "LogEntry",
     "LogParser",
@@ -141,16 +202,50 @@ __all__ = [
     "TaskTree",
     # Types
     "Level",
+    "LevelValue",
     "ActionStatus",
     "TaskLevel",
+    "LogFormat",
+    # Field name constants (compact)
+    "TS",
+    "TID",
+    "LVL",
+    "MT",
+    "AT",
+    "ST",
+    "DUR",
+    "MSG",
+    # Field name constants (legacy)
+    "TIMESTAMP",
+    "TASK_UUID",
+    "TASK_LEVEL",
+    "MESSAGE_TYPE",
+    "ACTION_TYPE",
+    "ACTION_STATUS",
+    "DURATION_NS",
+    "MESSAGE",
+    # Field utilities
+    "detect_format",
+    "get_field",
+    "is_compact_field",
+    "is_legacy_field",
+    "legacy_field_name",
+    "normalize_field_name",
     # Utils
     "parse_timestamp",
     "format_timestamp",
     "parse_duration",
+    "extract_duration",
     "level_from_message_type",
-    "extract_task_uuid",
+    "level_from_entry",
+    "extract_task_uuids",
     "merge_fields",
     "subdict",
+    "normalize_entry",
+    "get_field_value",
+    "get_timestamp",
+    "get_task_uuid",
+    "get_task_level",
     # boltons utilities (re-exported)
     "bucketize",
     "chunked",
@@ -159,6 +254,7 @@ __all__ = [
     "is_iterable",
     "pairwise",
     "unique",
+    "unique_everseen",
     "windowed",
     # Indexing
     "LogIndex",
@@ -175,6 +271,14 @@ __all__ = [
     "ConfigManager",
     "ParserConfig",
     "get_config",
+    # Sqid task ID parsing
+    "SqidParser",
+    "SqidInfo",
+    "parse_sqid",
+    "sqid_depth",
+    "sqid_parent",
+    "sqid_root",
+    "SqidLogFormat",
     # CLI
     "main",
 ]
