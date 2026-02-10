@@ -1,0 +1,27 @@
+{
+    "decorateFiles.filePaths": {
+        ".markdownlint-cli2.yaml": "#55555560",
+        ".markdownlint.yaml": "#55555560",
+        "AGENTS.md": "#55555560",
+        "AI_CONTEXT.md": "#55555560",
+        "MIGRATION.md": "#55555560",
+        "uv.lock": "#55555560",
+        "CLAUDE.md": "#ff0000"
+    },
+    "decorateFiles.decorations.apply": {
+        "enableFilePaths": true
+    },
+    "workbench.colorCustomizations": {
+        "decorateFiles.path..markdownlint__cli2.yaml": "#55555560",
+        "decorateFiles.path..markdownlint.yaml": "#55555560",
+        "decorateFiles.path.AGENTS.md": "#c2b9b960",
+        "decorateFiles.path.AI__CONTEXT.md": "#55555560",
+        "decorateFiles.path.MIGRATION.md": "#82808060",
+        "decorateFiles.path.uv.lock": "#88838360",
+        "decorateFiles.path.CLAUDE.md": "#ff0000"
+    },
+    "explorer.decorations.colors": true,
+    "explorer.decorations.badges": true,
+    "workbench.editor.decorations.colors": true,
+    "workbench.editor.decorations.badges": true
+}

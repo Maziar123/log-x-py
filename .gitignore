@@ -59,8 +59,6 @@ pythonenv*
 # ==========================================
 # IDEs and Editors
 # ==========================================
-# VSCode
-.vscode/
 *.code-workspace
 .history/
 

@@ -1,0 +1,21 @@
+{
+  "recommendations": [
+    // Python & Debugging
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.vscode-pylance",
+    
+    // Linting & Formatting
+    "ms-python.mypy-type-checker",
+    "charliermarsh.ruff",
+    
+    // Markdown
+    "DavidAnson.vscode-markdownlint",
+    
+    // Git
+    "eamodio.gitlens",
+    
+    // File Decoration (gray out specific files)
+    "ArturoDent.decorate-files-and-folders"
+  ]
+}
