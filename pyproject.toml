@@ -1,90 +1,154 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "log-x-py"
-version = "0.1.0"
+version = "0.4.0"
 description = "Structured logging ecosystem with tree visualization and log parsing"
+readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "boltons>=24.0.0",      # Core utilities (cacheutils, dictutils, iterutils, etc.)
-    "zope.interface>=5.0",  # Interface definitions
-    "pyrsistent>=0.11.8",   # Persistent data structures
-    "orjson; implementation_name=='cpython'",  # Fast JSON serialization
+license = { text = "MIT" }
+authors = [
+    { name = "LogXPy Contributors" }
+]
+keywords = ["logging", "logxpy", "tree-view", "log-parser", "structured-logging"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Logging",
 ]
 
-[tool.setuptools]
-packages = []
+# Core dependencies (shared by all packages)
+dependencies = [
+    "boltons>=24.0.0",      # Core utilities (cacheutils, dictutils, iterutils, etc.)
+    "more-itertools>=10.0.0",  # 160+ functions extending itertools
+]
 
-# MyPy configuration
+[tool.hatch.build.targets.wheel]
+packages = [
+    "logxpy",
+    "logxpy_cli_view",
+    "logxy_log_parser",
+    "common",
+]
+
+[tool.hatch.build.targets.editable]
+packages = [
+    "logxpy",
+    "logxpy_cli_view",
+    "logxy_log_parser",
+    "common",
+]
+
+[project.optional-dependencies]
+# Core logxpy dependencies
+logxpy = [
+    "zope.interface>=5.0",
+    "pyrsistent>=0.11.8",
+    "orjson; implementation_name=='cpython'",
+]
+
+# CLI viewer dependencies
+cli-view = [
+    "jmespath>=1.0.0",
+    "iso8601>=2.0.0",
+    "colored>=2.0.0",
+    "toolz>=0.12.0",
+    "win-unicode-console>=0.5;platform_system=='Windows'",
+]
+
+# Parser dependencies
+parser = [
+    "pandas>=2.0",
+    "rich>=13.0",
+    "click>=8.0",
+    "jinja2>=3.0",
+]
+
+# Development dependencies
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.8",
+    "ruff>=0.1",
+]
+
+# Everything
+all = [
+    "log-x-py[logxpy,cli-view,parser,dev]",
+]
+
+[project.scripts]
+# CLI viewer commands
+logxpy-view = "logxpy_cli_view.src._cli:main"
+logxpy-cli-view = "logxpy_cli_view.src._cli:main"
+
+# Parser commands
+logxy = "logxy_log_parser.src.cli:main"
+logxy-query = "logxy_log_parser.src.cli:main"
+logxy-analyze = "logxy_log_parser.src.cli:main"
+logxy-view = "logxy_log_parser.src.cli:main"
+logxy-tree = "logxy_log_parser.src.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+]
+
 [tool.mypy]
 python_version = "3.12"
+mypy_path = "logxpy/src:logxpy_cli_view/src:logxy_log_parser/src:common"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-follow_imports = "silent"
-show_column_numbers = true
 show_error_codes = true
 
-# Add logxpy to mypy path
-mypy_path = "logxpy"
+[[tool.mypy.overrides]]
+module = ["logxpy.*", "logxpy_cli_view.*", "logxy_log_parser.*"]
+ignore_missing_imports = true
 
-# Pylint configuration (via pylint.toml or pyproject.toml)
-[tool.pylint.MASTER]
-init-hook = "import sys; sys.path.insert(0, 'logxpy')"
-
-[tool.pylint.messages_control]
-disable = [
-    "C0111",  # Missing docstring
-    "C0103",  # Invalid name
-    "C0301",  # Line too long (handled by ruff/black)
-    "R0903",  # Too few public methods
-    "W0613",  # Unused argument
-    # example_09_comprehensive.py specific suppressions
-    "R0913",  # Too many arguments (logged decorator has 11 params)
-    "C0413",  # Wrong import position (logxpy import after sys.path.insert)
-    "C0415",  # Import outside toplevel (lazy imports in example functions)
-]
-
-# Ruff configuration
 [tool.ruff]
 target-version = "py312"
 line-length = 120
+src = ["logxpy/src", "logxpy_cli_view/src", "logxy_log_parser/src", "common", "tests"]
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "F",   # Pyflakes
-    "W",   # pycodestyle warnings
-    "I",   # isort
-    "N",   # pep8-naming
-    "D",   # pydocstyle
-    "UP",  # pyupgrade
+    "E",      # pycodestyle errors
+    "F",      # Pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "W",      # pycodestyle warnings
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "TID",    # flake8-tidy-imports
+    "Q",      # flake8-quotes
+    "FLY",    # flynt
+    "PERF",   # perflint
+    "RUF",    # Ruff-specific rules
 ]
 ignore = [
-    "D100",  # Missing docstring in public module
-    "D102",  # Missing docstring in public method
-    "D103",  # Missing docstring in public function
-    "D104",  # Missing docstring in public package
-    "D105",  # Missing docstring in magic method
-    "D107",  # Missing docstring in __init__
-    "D203",  # 1 blank line required before class docstring
-    "D212",  # Multi-line docstring summary should start at the first line
-    "D213",  # Multi-line docstring summary should start at the second line
-    "D400",  # First line should end with a period
-    "D415",  # First line should end with a period, question mark, or exclamation point
-    "ANN",   # Missing type annotations (handled separately)
-    "EXE001", # Shebang present but file is not executable
+    "E501",   # Line too long (handled by formatter)
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[dependency-groups]
-dev = [
-    "mypy>=1.19.1",
-    "playwright>=1.58.0",
-    "types-boltons>=25.0.0.20250919",
-    "types-jinja2>=2.11.9",
-]
+[tool.ruff.lint.isort]
+known-first-party = ["logxpy", "logxpy_cli_view", "logxy_log_parser", "common"]

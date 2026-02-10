@@ -78,7 +78,7 @@ jobs:
       # Build logxy-log-parser (new package) - Use API token for first publish
       # ============================================================================
       - name: Build logxy-log-parser
-        working-directory: ./logxy-log-parser
+        working-directory: ./logxy_log_parser
         run: |
           python -m build
 
@@ -86,12 +86,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: logxy-log-parser-distributions
-          path: logxy-log-parser/dist/
+          path: logxy_log_parser/dist/
 
       - name: Publish logxy-log-parser to PyPI (using API token for new package)
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: logxy-log-parser/dist/
+          packages-dir: logxy_log_parser/dist/
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
 

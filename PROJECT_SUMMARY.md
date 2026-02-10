@@ -15,10 +15,10 @@
 ## Component 1: logxpy (Logging Library)
 
 ### Location
-- `logxpy/logxpy/` - Core library source code
+- `logxpy/src/` - Core library source code
 
 ### Purpose
-Zero-dependency structured logging that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
+Structured logging with minimal dependencies (boltons) that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
 
 ### Key Features
 - **Zero Dependencies** - Pure Python 3.12+
@@ -33,7 +33,7 @@ Zero-dependency structured logging that outputs causal chains of actions. Forked
 - Pattern matching (PEP 634): `match value: case int():`
 - Dataclasses with slots (PEP 681): `@dataclass(slots=True)`
 - StrEnum (PEP 663): Type-safe enums
-- Walrus operator (PEP 572): `if uuid := entry.get("task_uuid")`
+- Walrus operator (PEP 572): `if tid := entry.get("tid")`
 
 ### Statistics
 - **Lines of Code**: ~2000
@@ -68,7 +68,7 @@ Zero-dependency structured logging that outputs causal chains of actions. Forked
 ### Module Structure
 
 ```
-logxpy/logxpy/
+logxpy/src/
 ├── __init__.py          # Main exports
 ├── _action.py           # Action context management
 ├── _message.py          # Message logging
@@ -88,7 +88,7 @@ logxpy/logxpy/
 ## Component 2: logxpy-cli-view (Tree Viewer)
 
 ### Location
-- `logxpy_cli_view/src/logxpy_cli_view/` - Viewer source code
+- `logxpy_cli_view/src/` - Viewer source code
 
 ### Purpose
 Render LogXPy logs as beautiful colored ASCII trees with filtering, export, and monitoring capabilities.
@@ -138,7 +138,7 @@ Render LogXPy logs as beautiful colored ASCII trees with filtering, export, and 
 ### Module Structure
 
 ```
-logxpy_cli_view/src/logxpy_cli_view/
+logxpy_cli_view/src/
 ├── __init__.py          # Main exports
 ├── _parse.py            # Log parsing
 ├── _render.py           # Tree rendering
@@ -158,7 +158,7 @@ logxpy_cli_view/src/logxpy_cli_view/
 ## Component 3: logxy-log-parser (Log Parser & Analyzer)
 
 ### Location
-- `logxy-log-parser/logxy_log_parser/` - Parser source code
+- `logxy_log_parser/src/` - Parser source code
 
 ### Purpose
 Python library for parsing, analyzing, and querying LogXPy log files with rich export formats and real-time monitoring.
@@ -213,7 +213,7 @@ Python library for parsing, analyzing, and querying LogXPy log files with rich e
 ### Module Structure
 
 ```
-logxy-log-parser/logxy_log_parser/
+logxy_log_parser/src/
 ├── __init__.py          # Main exports
 ├── simple.py            # Simple one-line API
 ├── core.py              # LogParser, LogEntry
@@ -256,33 +256,27 @@ logxy-log-parser/logxy_log_parser/
 ```
 log-x-py/
 ├── logxpy/                          # Component 1: Core logging library
-│   ├── logxpy/                      # Main package
-│   ├── setup.py                     # Installation config
-│   └── examples/                    # Library usage examples
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
 ├── logxpy_cli_view/                 # Component 2: CLI tree viewer
-│   ├── src/logxpy_cli_view/         # Main package
-│   ├── pyproject.toml               # Installation config
-│   └── tests/                       # Test suite
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
-├── logxy-log-parser/                # Component 3: Log parser & analyzer
-│   ├── logxy_log_parser/            # Main package
-│   ├── pyproject.toml               # Installation config
-│   └── examples/                    # Usage examples
+├── logxy_log_parser/                # Component 3: Log parser & analyzer
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
-├── examples-log-view/               # Standalone examples
-│   ├── view_tree.py                # Simple tree viewer script
-│   ├── example_01_basic.py         # Basic logging
-│   ├── example_02_actions.py       # Nested actions
-│   ├── example_03_errors.py        # Error handling
-│   ├── example_04_api_server.py    # API simulation
-│   ├── example_05_data_pipeline.py # ETL pipeline
-│   ├── example_06_deep_nesting.py  # 7-level nesting
-│   └── example_07_all_data_types.py # All data types
+├── common/                          # Shared utilities (types, sqid, etc.)
+├── examples/                        # All examples
+│   ├── logxpy/                      # Logging library examples
+│   ├── cli_view/                    # CLI viewer examples
+│   ├── parser/                      # Parser examples
+│   └── tutorials/                   # Detailed tutorials
 │
-├── tutorials/                       # Detailed tutorials
+├── tests/                           # All tests
+├── docs/                            # Documentation
 ├── README.md                        # Main documentation
-├── README.rst                       # PyPI documentation
 ├── AGENTS.md                        # AI agent guide
 ├── AI_CONTEXT.md                    # Complete API reference
 └── PROJECT_SUMMARY.md               # This file
@@ -292,27 +286,29 @@ log-x-py/
 
 ## Key Concepts
 
-### Log Entry Structure
+### Log Entry Structure (Compact Field Names)
 
 ```python
 {
-    "task_uuid": "abc123-...",  # Groups related entries
-    "timestamp": "14:30:00",     # HH:MM:SS format
-    "action_type": "http:request",  # Determines emoji
-    "level": "/1",               # Hierarchical level
-    "status": "succeeded",       # started, succeeded, failed
-    "duration_ns": 145000000,    # Nanoseconds
-    # ... additional key-value pairs
+    "ts": 1770562483.38,      # Timestamp (unix seconds)
+    "tid": "Xa.1",            # Task ID (Sqid format)
+    "lvl": [1],               # Task level hierarchy
+    "mt": "info",             # Message type
+    "at": "http:request",     # Action type (determines emoji)
+    "st": "succeeded",        # Action status
+    "dur": 0.145,             # Duration in seconds
+    "msg": "User logged in",  # Message text
+    # ... additional user-defined key-value pairs
 }
 ```
 
 ### Task Level Format
 
 ```
-/1              # Root level, 1st action
-/2/1            # Child of 2nd action, 1st sub-action
-/3/2/1          # 3 levels deep
-/3/3/3/3/3/3/3  # 7 levels deep (maximum tested)
+[1]              # Root level, 1st action
+[2, 1]           # Child of 2nd action, 1st sub-action
+[3, 2, 1]        # 3 levels deep
+[3, 3, 3, 3, 3, 3, 3]  # 7 levels deep (maximum tested)
 ```
 
 ### Emoji Auto-Detection
@@ -338,7 +334,7 @@ Based on `action_type` keywords:
 | Success strings | Bright Green | `\033[92m` |
 | Regular strings | White | `\033[37m` |
 | Timestamps | Dim Gray | `\033[90m` |
-| Task UUIDs | Bright Magenta | `\033[95m` |
+| Task IDs (`tid`) | Bright Magenta | `\033[95m` |
 
 ---
 

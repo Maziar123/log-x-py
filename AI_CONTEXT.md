@@ -17,7 +17,7 @@
 # Install all components
 uv pip install -e ./logxpy
 uv pip install -e ./logxpy_cli_view
-uv pip install -e ./logxy-log-parser
+uv pip install -e ./logxy_log_parser
 
 # Or use pip
 pip install -e ./logxpy
@@ -321,23 +321,25 @@ def my_function():
 | `STARTED_STATUS` | "started" | Action started |
 | `SUCCEEDED_STATUS` | "succeeded" | Action succeeded |
 | `FAILED_STATUS` | "failed" | Action failed |
-| `MESSAGE_TYPE_FIELD` | "message_type" | Message type key |
-| `ACTION_TYPE_FIELD` | "action_type" | Action type key |
-| `ACTION_STATUS_FIELD` | "action_status" | Action status key |
-| `TASK_UUID_FIELD` | "task_uuid" | Task UUID key |
-| `TASK_LEVEL_FIELD` | "task_level" | Task level key |
-| `TIMESTAMP_FIELD` | "timestamp" | Timestamp key |
+| `MT` | "mt" | Message type key (compact) |
+| `AT` | "at" | Action type key (compact) |
+| `ST` | "st" | Action status key (compact) |
+| `TID` | "tid" | Task ID key (compact) |
+| `LVL` | "lvl" | Task level key (compact) |
+| `TS` | "ts" | Timestamp key (compact) |
+| `DUR` | "dur" | Duration key (compact) |
+| `MSG` | "msg" | Message key (compact) |
 
 ## System Message Types
 
-### Eliot System Messages
+### LogXPy System Messages
 
 | Message Type | Purpose |
 |--------------|---------|
-| `eliot:traceback` | Exception traceback |
-| `eliot:destination_failure` | Destination write failure |
-| `eliot:serialization_failure` | Message serialization failure |
-| `eliot:remote_task` | Remote/cross-process task |
+| `logxpy:traceback` | Exception traceback |
+| `logxpy:destination_failure` | Destination write failure |
+| `logxpy:serialization_failure` | Message serialization failure |
+| `logxpy:remote_task` | Remote/cross-process task |
 
 ### LoggerX Message Types
 
@@ -723,13 +725,14 @@ A single log entry (dataclass with slots):
 
 | Field | Type | Purpose |
 |-------|------|---------|
-| `timestamp` | float | Unix timestamp |
-| `task_uuid` | str | Task ID (Sqid or UUID4) |
-| `task_level` | list[int] | Hierarchy level |
-| `message_type` | str | Log level/type |
-| `action_type` | str or None | Action type |
-| `action_status` | str or None | started/succeeded/failed |
-| `message` | dict | Full entry data |
+| `ts` | float | Unix timestamp |
+| `tid` | str | Task ID (Sqid or UUID4) |
+| `lvl` | list[int] | Hierarchy level |
+| `mt` | str | Log level/type |
+| `at` | str or None | Action type |
+| `st` | str or None | started/succeeded/failed |
+| `msg` | str | Message text |
+| `dur` | float or None | Duration in seconds |
 
 ### ParseResult
 
@@ -780,11 +783,11 @@ entries = parse_log("app.log")
 
 # Iterate
 for entry in entries:
-    print(entry.message_type, entry.timestamp)
+    print(entry.mt, entry.ts)
 
 # Count by level
 from logxy_log_parser import count_by
-levels = count_by(entries, "message_type")
+levels = count_by(entries, "mt")
 print(levels)  # {'info': 100, 'error': 5, ...}
 ```
 
@@ -834,8 +837,8 @@ except TimeoutError:
 
 # Watch for errors
 for entry in logfile.watch():
-    if entry.message_type == "loggerx:error":
-        print("Error:", entry.message)
+    if entry.mt == "error":
+        print("Error:", entry.msg)
 ```
 
 ---

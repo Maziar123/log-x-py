@@ -1,4 +1,0 @@
-{"task_uuid": "f3a32bb3-ea6b-457c-aa99-08a3d0491ab4", "action_type": "simple_task", "action_status": "started", "timestamp": 1705312200.123456, "task_level": [1]}
-{"task_uuid": "f3a32bb3-ea6b-457c-aa99-08a3d0491ab4", "action_type": "simple_task", "action_status": "succeeded", "timestamp": 1705312201.123456, "task_level": [2]}
-{"task_uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890", "action_type": "another_task", "action_status": "started", "timestamp": 1705312202.123456, "task_level": [1]}
-{"task_uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890", "action_type": "another_task", "action_status": "succeeded", "timestamp": 1705312203.123456, "task_level": [2]}

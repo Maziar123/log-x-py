@@ -6,6 +6,6 @@
   "field_limit": 0,
   "utc_timestamps": false,
   "theme_overrides": {
-    "root": ["magenta", ["bold"]]
+    "root": ["magenta", null, ["bold"]]
   }
 }

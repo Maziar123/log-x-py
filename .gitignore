@@ -145,6 +145,7 @@ temp/
 *.tmp
 *.temp
 *.bak
+*.log
 
 # ==========================================
 # OS Generated Files

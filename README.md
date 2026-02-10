@@ -225,7 +225,7 @@ These methods create **colored blocks or lines** when viewed with logxpy-cli-vie
 
 ![Color Methods Demo](https://raw.githubusercontent.com/Maziar123/log-x-py/main/docs/images/logxpy-colors-demo.png)
 
-> 📁 **Source**: [`examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py`](examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py)
+> 📁 **Source**: [`examples/cli_view/3level-nested-colored/xxx_3level_nested_colored.py`](examples/cli_view/3level-nested-colored/xxx_3level_nested_colored.py)
 
 | Method | Purpose | Example |
 |--------|---------|---------|
@@ -322,7 +322,7 @@ with log.span("database_query", table="users", sql="SELECT *"):
 
 ![Nested Actions Demo](https://raw.githubusercontent.com/Maziar123/log-x-py/main/docs/images/logxpy-nested-demo.png)
 
-> 📁 **Source**: [`examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py`](examples-log-view/3level-nested-colored/xxx_3level_nested_colored.py)
+> 📁 **Source**: [`examples/cli_view/3level-nested-colored/xxx_3level_nested_colored.py`](examples/cli_view/3level-nested-colored/xxx_3level_nested_colored.py)
 
 ### Quick Start
 ```bash
@@ -330,7 +330,7 @@ with log.span("database_query", table="users", sql="SELECT *"):
 logxpy-view app.log
 
 # Or use the standalone script
-python examples-log-view/view_tree.py app.log
+python examples/cli_view/complete-example-01/view_tree.py app.log
 ```
 
 ### CLI Commands
@@ -813,8 +813,8 @@ Xa.1
 ## Quick Start (Try It Now)
 
 ```bash
-cd examples-log-view
-python example_01_basic.py
+cd examples/logxpy
+python 01_simple_logging.py
 logxpy-view example_01_basic.log
 ```
 
@@ -840,35 +840,28 @@ logxpy-view example_01_basic.log
 ```
 log-x-py/
 ├── logxpy/                          # Component 1: Core logging library
-│   ├── logxpy/                      # Main package
-│   ├── setup.py                     # Installation config
-│   └── examples/                    # Library usage examples
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
 ├── logxpy_cli_view/                 # Component 2: CLI tree viewer
-│   ├── src/logxpy_cli_view/         # Main package
-│   ├── pyproject.toml               # Installation config
-│   └── tests/                       # Test suite
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
-├── logxy-log-parser/                # Component 3: Log parser & analyzer
-│   ├── logxy_log_parser/            # Main package
-│   ├── pyproject.toml               # Installation config
-│   └── examples/                    # Usage examples
+├── logxy_log_parser/                # Component 3: Log parser & analyzer
+│   ├── __init__.py                  # Thin shim → src/
+│   └── src/                         # Main package source
 │
-├── examples-log-view/               # Standalone examples (demo both packages)
-│   ├── view_tree.py                # Simple tree viewer script
-│   ├── example_01_basic.py         # Basic logging
-│   ├── example_02_actions.py       # Nested actions
-│   ├── example_03_errors.py        # Error handling
-│   ├── example_04_api_server.py    # API simulation
-│   ├── example_05_data_pipeline.py # ETL pipeline
-│   ├── example_06_deep_nesting.py  # 7-level nesting
-│   ├── example_07_all_data_types.py # All data types
-│   └── run_all.sh                  # Run all examples
+├── common/                          # Shared utilities (types, sqid, etc.)
+├── examples/                        # All examples
+│   ├── logxpy/                      # Logging library examples
+│   ├── cli_view/                    # CLI viewer examples
+│   ├── parser/                      # Parser examples
+│   └── tutorials/                   # Tutorials
 │
-├── tutorials/                       # Detailed tutorials
+├── tests/                           # All tests
+├── docs/                            # Documentation
 ├── README.md                        # This file
 ├── AGENTS.md                        # AI agent guide
-├── PLAN_DOCUMENTATION_UPDATE.md     # Documentation update plan
 └── PROJECT_SUMMARY.md               # Project overview
 ```
 

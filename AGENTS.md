@@ -14,7 +14,7 @@ Guide for AI agents and assistants working on the log-x-py project.
 ## Component 1: logxpy (Logging Library)
 
 ### Location
-- `logxpy/logxpy/` - Core library source code
+- `logxpy/src/` - Core library source code
 
 ### Purpose
 Modern structured logging that outputs causal chains of actions. Forked from Eliot, modernized with Python 3.12+ features.
@@ -35,7 +35,7 @@ Modern structured logging that outputs causal chains of actions. Forked from Eli
 - Pattern matching (PEP 634): `match value: case int():`
 - Dataclasses with slots (PEP 681): `@dataclass(slots=True)`
 - StrEnum (PEP 663): Type-safe enums
-- Walrus operator (PEP 572): `if tid := entry.get("task_uuid")`
+- Walrus operator (PEP 572): `if tid := entry.get("tid")`
 - **Sqid Task IDs** - Hierarchical short IDs (4-12 chars vs 36-char UUID4)
 
 ### Core API
@@ -240,7 +240,7 @@ Log entries can include color hints that are rendered by logxpy-cli-view:
 ### Module Structure
 
 ```
-logxpy/logxpy/
+logxpy/src/
 ├── __init__.py          # Main exports
 ├── _action.py           # Action context management
 ├── _message.py          # Message logging
@@ -267,7 +267,7 @@ logxpy/logxpy/
 ## Component 2: logxpy-cli-view (Tree Viewer)
 
 ### Location
-- `logxpy_cli_view/src/logxpy_cli_view/` - Viewer source code
+- `logxpy_cli_view/src/` - Viewer source code
 
 ### Purpose
 Render LogXPy logs as beautiful colored ASCII trees with filtering, export, statistics, and monitoring capabilities.
@@ -398,7 +398,7 @@ Render LogXPy logs as beautiful colored ASCII trees with filtering, export, stat
 ### Module Structure
 
 ```
-logxpy_cli_view/src/logxpy_cli_view/
+logxpy_cli_view/src/
 ├── __init__.py          # Main exports
 ├── _parse.py            # Log parsing
 ├── _render.py           # Tree rendering
@@ -421,7 +421,7 @@ logxpy_cli_view/src/logxpy_cli_view/
 ## Component 3: logxy-log-parser (Log Parser & Analyzer)
 
 ### Location
-- `logxy-log-parser/logxy_log_parser/` - Parser source code
+- `logxy_log_parser/src/` - Parser source code
 
 ### Purpose
 Python library for parsing, analyzing, and querying LogXPy log files with rich export formats, real-time monitoring, indexing, and time-series analysis.
@@ -563,7 +563,7 @@ For fast lookups in large log files:
 ### Module Structure
 
 ```
-logxy-log-parser/logxy_log_parser/
+logxy_log_parser/src/
 ├── __init__.py          # Main exports
 ├── simple.py            # Simple one-line API
 ├── core.py              # LogParser, LogEntry
@@ -635,7 +635,7 @@ python script.py
 ### Running Examples
 
 ```bash
-cd examples-log-view
+cd examples
 
 # Generate log file
 python example_01_basic.py
@@ -783,7 +783,7 @@ Based on `action_type` keywords:
 
 ### Adding a New Example
 
-1. Create `example_XX_name.py` in `examples-log-view/`
+1. Create `example_XX_name.py` in `examples/`
 2. Import from logxpy: `from logxpy import start_action, Message, to_file`
 3. Set output: `to_file(open("example_XX_name.log", "w"))`
 4. Write logging code
@@ -890,7 +890,7 @@ entry[MT] = "info"           # "mt"
 | `socketutils` | Sockets | `BufferedSocket`, `NetstringSocket` |
 | `statsutils` | Statistics | `Stats`, `describe`, `format_histogram` |
 
-📖 **Full Reference**: See [DOC/boltons-ref.md](DOC/boltons-ref.md) for complete API documentation.
+📖 **Full Reference**: See [docs/boltons-ref.md](docs/boltons-ref.md) for complete API documentation.
 
 ## Contributing
 

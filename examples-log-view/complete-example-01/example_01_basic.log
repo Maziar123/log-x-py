@@ -1,6 +1,0 @@
-{"version":"1.0.0","environment":"production","timestamp":1770558626.9886518,"task_uuid":"eae31e2c-7aa4-4946-a3bf-8a1d506ee861","task_level":[1],"message_type":"app:startup"}
-{"text":"Application started successfully","timestamp":1770558626.9887443,"task_uuid":"e8268efb-d987-4429-9cee-c48bda63a2c1","task_level":[1],"message_type":"app:info"}
-{"user_id":123,"username":"alice","ip":"192.168.1.100","timestamp":1770558626.9888015,"task_uuid":"03ab0754-7253-4e53-ad33-b8058d468861","task_level":[1],"message_type":"user:login"}
-{"host":"localhost","port":5432,"status":"connected","timestamp":1770558626.9888384,"task_uuid":"8b66bb2c-d0ea-4442-a8d3-cdda5148fe70","task_level":[1],"message_type":"database:connect"}
-{"text":"High memory usage","memory_percent":85,"timestamp":1770558626.9888744,"task_uuid":"dad9b518-fa0e-4012-9d7e-d8a66c09fe70","task_level":[1],"message_type":"app:warning"}
-{"text":"Data processed","records":1000,"duration_ms":234,"timestamp":1770558626.9889076,"task_uuid":"14c3271f-9223-4a24-b75a-06edcd7d7865","task_level":[1],"message_type":"app:success"}

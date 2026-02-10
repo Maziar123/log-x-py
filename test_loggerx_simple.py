@@ -1,15 +1,7 @@
 import asyncio
 import sys
 
-try:
-    import eliot
-
-    print(f"Eliot file: {eliot.__file__}")
-    print(f"Eliot dir: {dir(eliot)}")
-    from logxpy import aaction, log, start_action, to_file
-except ImportError as e:
-    print(f"ImportError: {e}")
-    sys.exit(1)
+from logxpy import aaction, log, start_action, to_file
 
 
 def test_sync():

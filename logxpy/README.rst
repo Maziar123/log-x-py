@@ -260,7 +260,7 @@ Or use the standalone viewer from the examples:
 
 .. code-block:: bash
 
-    python examples-log-view/view_tree.py app.log
+    python examples/cli_view/complete-example-01/view_tree.py app.log
 
 Requirements
 ------------
