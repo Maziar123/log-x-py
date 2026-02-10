@@ -28,7 +28,7 @@ from ._async import aaction
 from ._output import FileDestination, ILogger, Logger, MemoryLogger, init_file_destination, to_file
 from ._traceback import write_traceback, writeFailure
 from ._validation import ActionType, Field, MessageType, ValidationError, fields
-from .loggerx import log
+from .logx import log
 
 # System info module (lazy import support)
 from .system_info import (
@@ -161,6 +161,24 @@ def use_asyncio_context():
     )
 
 
+# Async logging support
+from ._async_writer import (
+    QueuePolicy,
+    AsyncConfig,
+    AsyncMetrics,
+    AsyncWriter,
+    create_default_writer,
+)
+from ._async_destinations import (
+    AsyncDestination,
+    AsyncFileDestination,
+    AsyncConsoleDestination,
+    AsyncRotatingFileDestination,
+    AsyncDestinationProxy,
+    create_file_destination,
+    create_console_destination,
+)
+
 # Sqid support (ultra-short task IDs)
 from ._sqid import (
     SqidGenerator,
@@ -205,6 +223,7 @@ del _parse_compat
 
 
 __all__ = [
+    # Core logging
     "Message",
     "writeTraceback",
     "writeFailure",
@@ -226,6 +245,19 @@ __all__ = [
     "current_action",
     "use_asyncio_context",
     "ValidationError",
+    # Async logging
+    "QueuePolicy",
+    "AsyncConfig",
+    "AsyncMetrics",
+    "AsyncWriter",
+    "create_default_writer",
+    "AsyncDestination",
+    "AsyncFileDestination",
+    "AsyncConsoleDestination",
+    "AsyncRotatingFileDestination",
+    "AsyncDestinationProxy",
+    "create_file_destination",
+    "create_console_destination",
     # PEP 8 variants:
     "write_traceback",
     "write_failure",

@@ -10,7 +10,7 @@ import sys
 import warnings
 from typing import Any, TYPE_CHECKING
 
-from .loggerx import log
+from .logx import log
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -403,18 +403,18 @@ SendScreenshot = send_screenshot
 SendParents = send_parents
 
 # Also add to Logger class
-from . import loggerx
+from . import logx
 
 # Monkey-patch Logger class for fluent API
-loggerx.Logger.send_system_info = lambda self, msg="System Info": (send_system_info(msg), self)[1]
-loggerx.Logger.send_memory_status = lambda self, msg="Memory Status": (send_memory_status(msg), self)[1]
-loggerx.Logger.send_heap_status = lambda self, msg="Heap/GC Status": (send_heap_status(msg), self)[1]
-loggerx.Logger.send_memory_manager_status = lambda self, msg="Memory Manager": (send_memory_manager_status(msg), self)[1]
-loggerx.Logger.send_memory_as_hex = lambda self, data, msg="Memory Hex", max_size=256: (send_memory_as_hex(data, msg, max_size), self)[1]
-loggerx.Logger.send_stack_trace = lambda self, msg="Stack Trace", limit=10: (send_stack_trace(msg, limit), self)[1]
-loggerx.Logger.send_window_handle = lambda self, window=None, msg="Window Handle": (send_window_handle(window, msg), self)[1]
-loggerx.Logger.send_screenshot = lambda self, msg="Screenshot", save_path=None: (send_screenshot(msg, save_path), self)[1]
-loggerx.Logger.send_parents = lambda self, obj, msg="Parent Hierarchy": (send_parents(obj, msg), self)[1]
+logx.Logger.send_system_info = lambda self, msg="System Info": (send_system_info(msg), self)[1]
+logx.Logger.send_memory_status = lambda self, msg="Memory Status": (send_memory_status(msg), self)[1]
+logx.Logger.send_heap_status = lambda self, msg="Heap/GC Status": (send_heap_status(msg), self)[1]
+logx.Logger.send_memory_manager_status = lambda self, msg="Memory Manager": (send_memory_manager_status(msg), self)[1]
+logx.Logger.send_memory_as_hex = lambda self, data, msg="Memory Hex", max_size=256: (send_memory_as_hex(data, msg, max_size), self)[1]
+logx.Logger.send_stack_trace = lambda self, msg="Stack Trace", limit=10: (send_stack_trace(msg, limit), self)[1]
+logx.Logger.send_window_handle = lambda self, window=None, msg="Window Handle": (send_window_handle(window, msg), self)[1]
+logx.Logger.send_screenshot = lambda self, msg="Screenshot", save_path=None: (send_screenshot(msg, save_path), self)[1]
+logx.Logger.send_parents = lambda self, obj, msg="Parent Hierarchy": (send_parents(obj, msg), self)[1]
 
 __all__ = [
     "send_system_info",

@@ -10,7 +10,7 @@ import io
 from pathlib import Path
 from typing import Any, BinaryIO, TextIO
 
-from .loggerx import log
+from .logx import log
 
 
 def send_file_as_hex(
@@ -223,21 +223,21 @@ SendStreamAsHex = send_stream_as_hex
 SendStreamAsText = send_stream_as_text
 
 # Monkey-patch Logger class for fluent API
-from . import loggerx
+from . import logx
 
-loggerx.Logger.send_file_as_hex = lambda self, filename, msg="File Hex", max_size=1024, offset=0: (
+logx.Logger.send_file_as_hex = lambda self, filename, msg="File Hex", max_size=1024, offset=0: (
     send_file_as_hex(filename, msg, max_size, offset), self
 )[1]
-loggerx.Logger.send_text_file = lambda self, filename, msg="Text File", max_lines=100, encoding="utf-8": (
+logx.Logger.send_text_file = lambda self, filename, msg="Text File", max_lines=100, encoding="utf-8": (
     send_text_file(filename, msg, max_lines, encoding), self
 )[1]
-loggerx.Logger.send_stream_as_hex = lambda self, stream, msg="Stream Hex", max_size=1024: (
+logx.Logger.send_stream_as_hex = lambda self, stream, msg="Stream Hex", max_size=1024: (
     send_stream_as_hex(stream, msg, max_size), self
 )[1]
-loggerx.Logger.send_stream_as_text = lambda self, stream, msg="Stream Text", max_lines=100: (
+logx.Logger.send_stream_as_text = lambda self, stream, msg="Stream Text", max_lines=100: (
     send_stream_as_text(stream, msg, max_lines), self
 )[1]
-loggerx.Logger.send_file_info = lambda self, filename, msg="File Info": (
+logx.Logger.send_file_info = lambda self, filename, msg="File Info": (
     send_file_info(filename, msg), self
 )[1]
 

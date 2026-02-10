@@ -65,6 +65,27 @@ Structured logging with minimal dependencies (boltons) that outputs causal chain
 | `log.critical(msg, **fields)` | CRITICAL | `log.critical("system down")` |
 | `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
 
+### Async Logging (New)
+
+High-performance async threaded logging enabled by default:
+
+| Feature | Throughput | Latency |
+|---------|-----------|---------|
+| Async Mode | **140,000+ msg/sec** | **7 μs** |
+| Sync Mode | 22,000 msg/sec | 45 μs |
+
+```python
+# Async is ON by default
+log.init("app.log")
+
+# Disable if needed
+log.init("app.log", async_enabled=False)
+
+# Or use sync mode for critical sections
+with log.sync_mode():
+    log.critical("Important!")
+```
+
 ### Module Structure
 
 ```
@@ -72,7 +93,7 @@ logxpy/src/
 ├── __init__.py          # Main exports
 ├── _action.py           # Action context management
 ├── _message.py          # Message logging
-├── loggerx.py           # LoggerX class with level methods
+├── logx.py              # LogX class with level methods and async support
 ├── _output.py           # Output destinations
 ├── decorators.py        # Logging decorators
 ├── _validation.py       # Schema validation

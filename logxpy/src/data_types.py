@@ -11,7 +11,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any
 
-from .loggerx import log
+from .logx import log
 
 
 def _lazy_import(module_name: str) -> Any | None:
@@ -410,43 +410,43 @@ SendAssigned = send_assigned
 SendFmtMsg = send_fmt_msg
 
 # Monkey-patch Logger class for fluent API
-from . import loggerx
+from . import logx
 
-loggerx.Logger.send_color = lambda self, color, msg="Color", as_hex=True: (
+logx.Logger.send_color = lambda self, color, msg="Color", as_hex=True: (
     send_color(color, msg, as_hex), self
 )[1]
-loggerx.Logger.send_currency = lambda self, value, currency="USD", msg="Currency": (
+logx.Logger.send_currency = lambda self, value, currency="USD", msg="Currency": (
     send_currency(value, currency, msg), self
 )[1]
-loggerx.Logger.send_datetime = lambda self, dt=None, msg="DateTime": (
+logx.Logger.send_datetime = lambda self, dt=None, msg="DateTime": (
     send_datetime(dt, msg), self
 )[1]
-loggerx.Logger.send_datetime_if = lambda self, condition, dt=None, msg="DateTime": (
+logx.Logger.send_datetime_if = lambda self, condition, dt=None, msg="DateTime": (
     send_datetime_if(condition, dt, msg), self
 )[1]
-loggerx.Logger.send_enum = lambda self, enum_value, msg=None: (
+logx.Logger.send_enum = lambda self, enum_value, msg=None: (
     send_enum(enum_value, msg), self
 )[1]
-loggerx.Logger.send_set = lambda self, s, msg="Set", max_items=100: (
+logx.Logger.send_set = lambda self, s, msg="Set", max_items=100: (
     send_set(s, msg, max_items), self
 )[1]
-loggerx.Logger.send_pointer = lambda self, obj, msg="Pointer": (
+logx.Logger.send_pointer = lambda self, obj, msg="Pointer": (
     send_pointer(obj, msg), self
 )[1]
-loggerx.Logger.send_variant = lambda self, value, msg="Variant": (
+logx.Logger.send_variant = lambda self, value, msg="Variant": (
     send_variant(value, msg), self
 )[1]
 
 # Conditional & Formatted Sending fluent API
-loggerx.Logger.send_if = lambda self, condition, msg, **fields: (
+logx.Logger.send_if = lambda self, condition, msg, **fields: (
     send_if(condition, msg, **fields), self
 )[1] if condition else self
 
-loggerx.Logger.send_assigned = lambda self, value, msg=None, **extra_fields: (
+logx.Logger.send_assigned = lambda self, value, msg=None, **extra_fields: (
     send_assigned(value, msg, **extra_fields), self
 )[1] if value is not None else self
 
-loggerx.Logger.send_fmt_msg = lambda self, fmt, *args, msg="Formatted", **fields: (
+logx.Logger.send_fmt_msg = lambda self, fmt, *args, msg="Formatted", **fields: (
     send_fmt_msg(fmt, *args, msg=msg, **fields), self
 )[1]
 

@@ -90,7 +90,7 @@ from logxpy import (
     start_task,        # Top-level action
     Message,           # Structured messages
     to_file,           # Set output destination
-    log,               # LoggerX instance
+    log,               # LogX instance
     current_action,    # Get active action
     write_traceback,   # Log exceptions
 )
@@ -161,7 +161,7 @@ LOGXPY_DISTRIBUTED=1  # Forces UUID4 for distributed tracing
 | `child()` | TaskLevel | Child level | `level.child()` |
 | `parent()` | TaskLevel or None | Parent level | `level.parent()` |
 
-## LoggerX Fluent API
+## LogX Fluent API
 
 ### Level Methods (all return `Logger` for chaining)
 
@@ -230,7 +230,7 @@ LOGXPY_DISTRIBUTED=1  # Forces UUID4 for distributed tracing
 | `log.memory_status()` | Memory statistics | `log.memory_status()` |
 | `log.stack_trace(limit)` | Call stack | `log.stack_trace(10)` |
 
-### LoggerX Initialization
+### LogX Initialization
 
 | Method | Purpose | Example |
 |--------|---------|---------|
@@ -254,7 +254,7 @@ LOGXPY_DISTRIBUTED=1  # Forces UUID4 for distributed tracing
 ```python
 from logxpy import logged, timed, retry, generator, aiterator, trace
 
-# Or via LoggerX
+# Or via LogX
 @log.logged()
 def my_function():
     pass
@@ -341,7 +341,7 @@ def my_function():
 | `logxpy:serialization_failure` | Message serialization failure |
 | `logxpy:remote_task` | Remote/cross-process task |
 
-### LoggerX Message Types
+### LogX Message Types
 
 | Message Type | Level | Purpose |
 |--------------|-------|---------|

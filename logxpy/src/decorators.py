@@ -124,7 +124,7 @@ def timed(metric: str | None = None) -> Any:
             try:
                 return await cast("Awaitable[T]", func(*a, **kw))
             finally:
-                from .loggerx import log
+                from .logx import log
 
                 log.debug(f"⏱ {func.__name__}", metric=name, duration_ms=round((time.monotonic() - start) * 1000, 2))
 
@@ -134,7 +134,7 @@ def timed(metric: str | None = None) -> Any:
             try:
                 return func(*a, **kw)
             finally:
-                from .loggerx import log
+                from .logx import log
 
                 log.debug(f"⏱ {func.__name__}", metric=name, duration_ms=round((time.monotonic() - start) * 1000, 2))
 
@@ -200,7 +200,7 @@ def generator(name: str | None = None, every: int = 100) -> Any:
 
         @wraps(func)
         def wrapper(*a: Any, **kw: Any) -> Iterator[T]:
-            from .loggerx import log
+            from .logx import log
 
             for i, item in enumerate(func(*a, **kw), 1):
                 if i % every == 0:
@@ -220,7 +220,7 @@ def aiterator(name: str | None = None, every: int = 100) -> Any:
 
         @wraps(func)
         async def wrapper(*a: Any, **kw: Any) -> AsyncIterator[T]:
-            from .loggerx import log
+            from .logx import log
 
             i = 0
             async for item in func(*a, **kw):

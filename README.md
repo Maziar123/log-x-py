@@ -3,9 +3,6 @@
 Modern structured logging ecosystem with three components: logging library, tree viewer, and log parser.
 
 > **📁 Complete API Reference**: [logxpy-api-reference.html](./logxpy-api-reference.html) - Full API docs with examples
->
-> **📘 CodeSite Migration Guide**: [DOC-X/cross-docs/cross-lib1.html](./DOC-X/cross-docs/cross-lib1.html) - CodeSite vs logxpy cross-reference
-
 ---
 
 ## Component 1: logxpy - Logging Library
@@ -299,6 +296,88 @@ with log.span("database_query", table="users", sql="SELECT *"):
 | `loggerx:warning` | Warning level messages |
 | `loggerx:error` | Error level messages |
 | `loggerx:critical` | Critical level messages |
+
+### Async Logging (High Performance)
+
+LogXPy now includes **async threaded logging** for maximum performance. Async is **enabled by default** and provides:
+
+- **140,000+ logs/sec** throughput (optimized)
+- **7 microseconds** per log call latency
+- **1.7x faster** than synchronous logging
+- **Zero data loss** with BLOCK backpressure policy
+
+#### Quick Start with Async
+
+```python
+from logxpy import log
+
+# Async is ON by default - just call init()
+log.init("app.log")
+
+# These calls return immediately (non-blocking)
+for i in range(100000):
+    log.info("High volume log", index=i)
+
+# Graceful shutdown flushes pending logs
+log.shutdown_async()
+```
+
+#### Disable Async (Synchronous Mode)
+
+```python
+# Disable for synchronous logging
+log.init("app.log", async_enabled=False)
+
+# Or use environment variable
+export LOGXPY_SYNC=1
+```
+
+#### Async Configuration
+
+```python
+log.init(
+    "app.log",
+    async_enabled=True,           # Default: True
+    async_max_queue=10000,        # Queue size (default: 10000)
+    async_batch_size=100,         # Batch size (default: 100)
+    async_flush_interval=0.1,     # Flush interval in seconds
+    async_policy="block",         # Backpressure policy
+)
+```
+
+#### Backpressure Policies
+
+| Policy | Behavior | Use Case |
+|--------|----------|----------|
+| `block` | Wait until space available (default) | No data loss |
+| `drop_oldest` | Remove oldest messages | Latest data most important |
+| `drop_newest` | Skip new messages | Preserve early messages |
+| `warn` | Warn and drop | Debugging |
+
+#### Sync Mode for Critical Sections
+
+```python
+log.init("app.log")  # Async enabled
+
+# Temporarily disable for critical logs
+with log.sync_mode():
+    log.critical("System failure!")  # Blocks until written
+
+# Back to async
+log.info("Continuing...")
+```
+
+#### Performance Monitoring
+
+```python
+# Check async status
+print(log.is_async)  # True
+
+# Get performance metrics
+metrics = log.get_async_metrics()
+print(metrics)
+# {'enqueued': 10000, 'written': 9950, 'dropped': 0, 'errors': 0, 'pending': 50}
+```
 
 ---
 

@@ -30,7 +30,7 @@ from .src._async import aaction
 from .src._output import FileDestination, ILogger, Logger, MemoryLogger, init_file_destination, to_file
 from .src._traceback import write_traceback, writeFailure
 from .src._validation import ActionType, Field, MessageType, ValidationError, fields
-from .src.loggerx import log
+from .src.logx import log
 
 # System info module
 from .src.system_info import (
@@ -152,6 +152,24 @@ def use_asyncio_context():
     )
 
 
+# Async logging support
+from .src._async_writer import (
+    QueuePolicy,
+    AsyncConfig,
+    AsyncMetrics,
+    AsyncWriter,
+    create_default_writer,
+)
+from .src._async_destinations import (
+    AsyncDestination,
+    AsyncFileDestination,
+    AsyncConsoleDestination,
+    AsyncRotatingFileDestination,
+    AsyncDestinationProxy,
+    create_file_destination,
+    create_console_destination,
+)
+
 # Sqid support (ultra-short task IDs)
 from .src._sqid import (
     SqidGenerator,
@@ -244,6 +262,12 @@ __all__ = [
     "truncate", "strip_ansi_codes", "escape_html_text",
     "pluralize", "clean_text", "get_first", "is_non_string_iterable",
     "memoize", "memoize_method", "throttle", "CacheStats",
+    # Async logging
+    "QueuePolicy", "AsyncConfig", "AsyncMetrics", "AsyncWriter",
+    "create_default_writer",
+    "AsyncDestination", "AsyncFileDestination", "AsyncConsoleDestination",
+    "AsyncRotatingFileDestination", "AsyncDestinationProxy",
+    "create_file_destination", "create_console_destination",
     # Sqid
     "SqidGenerator", "sqid", "child_sqid", "generate_task_id",
 ]

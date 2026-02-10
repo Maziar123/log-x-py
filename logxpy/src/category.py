@@ -10,7 +10,7 @@ import threading
 from contextlib import contextmanager
 from typing import Any
 
-from .loggerx import log, Logger
+from .logx import log, Logger
 
 # Thread-local storage for current category
 _local = threading.local()

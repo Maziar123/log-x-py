@@ -50,9 +50,9 @@ Modern structured logging that outputs causal chains of actions. Forked from Eli
 | `current_action()` | Get current action context | `action = current_action()` |
 | `write_traceback()` | Log exception traceback | `except: write_traceback()` |
 
-### LoggerX - Fluent API
+### LogX - Fluent API
 
-LoggerX provides a **fluent API** where all methods return `self` for method chaining:
+LogX provides a **fluent API** where all methods return `self` for method chaining:
 
 ```python
 from logxpy import log
@@ -64,7 +64,7 @@ log.debug("starting").info("processing").success("done")
 log.set_foreground("cyan").info("Cyan text").reset_foreground()
 ```
 
-### LoggerX Level Methods
+### LogX Level Methods
 
 All level methods return `self` for chaining:
 
@@ -80,7 +80,7 @@ All level methods return `self` for chaining:
 | `log.checkpoint(msg, **fields)` | CHECKPOINT (📍 prefix) | `log.checkpoint("step1")` |
 | `log.exception(msg, **fields)` | ERROR + traceback | `except: log.exception("error")` |
 
-### LoggerX Flexible __call__
+### LogX Flexible __call__
 
 The `log()` callable provides flexible shortcuts:
 
@@ -90,7 +90,7 @@ The `log()` callable provides flexible shortcuts:
 | `log("title", data)` | `log.info("title", value=data)` | `log("User", {"id": 1})` |
 | `log(data)` | `log.send(auto_title, data)` | `log({"key": "val"})` |
 
-### LoggerX Data Type Methods
+### LogX Data Type Methods
 
 | Method | Purpose | Example |
 |--------|---------|---------|
@@ -117,7 +117,7 @@ The `log()` callable provides flexible shortcuts:
 | `log.stream_hex(stream)` | Log binary stream as hex | `log.stream_hex(bio)` |
 | `log.stream_text(stream)` | Log text stream contents | `log.stream_text(io)` |
 
-### LoggerX Context Management
+### LogX Context Management
 
 | Method | Purpose | Example |
 |--------|---------|---------|
@@ -141,7 +141,7 @@ db_log = log.new("database")
 db_log.info("Query executed")  # Shows "root.database" as logger name
 ```
 
-### LoggerX Initialization
+### LogX Initialization
 
 ```python
 from logxpy import log
@@ -162,6 +162,89 @@ log.configure(
     format="rich",
     mask_fields=["password", "token"]
 )
+```
+
+### Async Logging (High Performance)
+
+LogXPy includes **async threaded logging** for maximum performance. Async is **enabled by default**.
+
+#### Performance
+
+| Mode | Throughput | Latency | Speedup |
+|------|-----------|---------|---------|
+| **Async** | **140,000+ msg/sec** | **7 μs** | **6.4x** |
+| Sync | 22,000 msg/sec | 45 μs | 1.0x |
+
+#### Quick Start
+
+```python
+from logxpy import log
+
+# Async is ON by default
+log.init("app.log")
+
+# High-volume logging (non-blocking)
+for i in range(100000):
+    log.info("Processing", index=i)
+
+# Graceful shutdown
+log.shutdown_async()
+```
+
+#### Configuration
+
+```python
+log.init(
+    "app.log",
+    async_enabled=True,           # Default: True
+    async_max_queue=10000,        # Queue size
+    async_batch_size=100,         # Batch size
+    async_flush_interval=0.1,     # Flush interval (seconds)
+    async_policy="block",         # Backpressure policy
+)
+```
+
+#### Backpressure Policies
+
+| Policy | Behavior | Use Case |
+|--------|----------|----------|
+| `block` | Wait until space available | No data loss (default) |
+| `drop_oldest` | Remove oldest messages | Latest data important |
+| `drop_newest` | Skip new messages | Preserve early data |
+| `warn` | Warn and drop message | Debugging |
+
+#### Disable Async
+
+```python
+# Via parameter
+log.init("app.log", async_enabled=False)
+
+# Via environment variable
+export LOGXPY_SYNC=1
+```
+
+#### Sync Mode for Critical Sections
+
+```python
+log.init("app.log")  # Async enabled
+
+# Temporarily disable for critical logs
+with log.sync_mode():
+    log.critical("System failure!")  # Blocks until written
+
+# Back to async
+log.info("Continuing...")
+```
+
+#### Monitoring
+
+```python
+# Check status
+print(log.is_async)  # True
+
+# Get metrics
+metrics = log.get_async_metrics()
+# {'enqueued': 10000, 'written': 9950, 'dropped': 0, 'errors': 0, 'pending': 50}
 ```
 
 ### Color and Style Methods (for CLI Viewer)
@@ -245,7 +328,7 @@ logxpy/src/
 ├── _action.py           # Action context management
 ├── _message.py          # Message logging
 ├── _sqid.py             # Hierarchical task ID generation (Sqid)
-├── loggerx.py           # LoggerX class with fluent API
+├── logx.py           # LogX class with fluent API
 ├── _output.py           # Output destinations
 ├── _cache.py            # Caching utilities
 ├── decorators.py        # Logging decorators

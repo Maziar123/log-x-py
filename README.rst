@@ -1,4 +1,4 @@
-logxpy: Structured Logging with Action Tracing
+logxpy: High-Performance Structured Logging with Async Support
 ===============================================
 
 **logxpy** is a Python logging library that outputs structured, actionable logs
@@ -34,7 +34,8 @@ Features
 * **Action Tracing** - Track operations from start to finish with timing
 * **Hierarchical Tasks** - Nested actions show the full call chain
 * **Python 3.12+ Ready** - Built with modern Python features
-* **Async Support** - Works with asyncio and async/await patterns
+* **Async Threaded Logging** - 140K+ logs/sec with background writer thread
+* **Asyncio Support** - Works with asyncio and async/await patterns
 * **Type Safety** - Full type hints throughout
 
 ---

@@ -168,7 +168,7 @@ _emit_handlers: list[Callable[[Record], None]] = []
 def _emit(record: Record) -> None:
     """Emit to destinations + any registered handlers."""
     from ._output import Logger
-    from .loggerx import get_global_masker
+    from .logx import get_global_masker
 
     data = record.to_dict()
 
