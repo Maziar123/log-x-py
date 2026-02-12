@@ -295,7 +295,8 @@ class BaseFileWriterThread(ABC):
         """Send a line to be written."""
         if self._closed:
             raise RuntimeError("Writer closed")
-        self._metrics.record_enqueued()
+        if self._metrics.record_enqueued() is None:  # type: ignore[func-returns-value]
+            pass
         return self._q.put(text, self._policy)
 
     def trigger(self) -> None:

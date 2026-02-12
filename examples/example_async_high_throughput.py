@@ -3,23 +3,33 @@
 
 This example demonstrates tuning the async writer for maximum
 throughput and using sync_mode() for critical sections.
+
+Updated for choose-L2 based writer.
 """
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import time
 
-from logxpy import QueuePolicy, log
+from logxpy import log
 
 
 def main() -> None:
     """Run the high-throughput example."""
-    # Configure for maximum throughput
+    # Configure for maximum throughput using new API
     log.init(
         "example_async_high_throughput.log",
         async_en=True,
-        queue=50_000,        # Large queue to handle bursts
-        size=500,            # Larger batches = fewer syscalls
-        flush=0.5,           # Flush every 500ms
-        policy="replace",  # Allow dropping old messages if needed
+        writer_type="mmap",     # Memory-mapped for max throughput
+        writer_mode="trigger",  # Event-driven mode
+        queue=50_000,           # Large queue to handle bursts
+        size=500,               # Larger batches = fewer syscalls
+        flush=0.5,              # Flush every 500ms
+        policy="drop_oldest",   # Allow dropping old messages if needed
     )
 
     # High-volume logging

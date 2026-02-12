@@ -2,6 +2,7 @@
 """Quick debug and trace for 1000 log.info calls.
 
 Simple script to test async logging performance.
+Updated for choose-L2 based writer.
 """
 
 import time
@@ -16,16 +17,21 @@ from logxpy import log
 def main():
     print("=" * 50)
     print("Quick Debug: 1000 log.info() calls")
+    print("Using choose-L2 based writer")
     print("=" * 50)
 
-    # Initialize async logging
+    # Initialize async logging with new API
     log.init(
         "quick_debug.log",
-        async_enabled=True,
-        async_batch_size=100,
+        async_en=True,
+        writer_type="block",  # BLOCK buffered writer
+        writer_mode="trigger",  # Event-driven mode
+        size=100,
     )
 
     print(f"\nAsync enabled: {log.is_async}")
+    print(f"Writer type: block (64KB buffer)")
+    print(f"Writer mode: trigger")
     print(f"Batch size: 100")
 
     # Test 1: Time 1000 log calls

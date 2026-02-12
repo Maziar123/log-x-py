@@ -20,11 +20,18 @@ from typing import Any, Self
 from . import decorators
 from ._action import current_action
 from ._async import _emit, current_scope, scope
-from ._async_destinations import AsyncFileDestination
-from ._async_writer import AdaptiveFlushConfig, AsyncConfig, AsyncWriter, QueuePolicy
+# Use choose-L2 based writer
+from ._writer import (
+    create_writer,
+    WriterType,
+    Mode,
+    QueuePolicy,
+    BaseFileWriterThread,
+)
+from ._json_line import build_json_line
+
 from ._base import now, uuid
 from ._fmt import format_value
-from ._output import to_file
 from ._si_time import parse_time
 from ._types import Level, Record
 
@@ -44,6 +51,9 @@ class Logger:
         "_level",
         "_masker",
         "_name",
+        "_writer_type",
+        "_writer_mode",
+        "_task_id_mode",
     )
 
     def __init__(self, name: str = "root", context: dict[str, Any] | None = None):
@@ -53,7 +63,10 @@ class Logger:
         self._masker = None
         self._auto_log_file = None
         self._initialized = False
-        self._async_writer: AsyncWriter | None = None
+        self._async_writer: BaseFileWriterThread | None = None
+        self._writer_type = WriterType.BLOCK
+        self._writer_mode = Mode.TRIGGER
+        self._task_id_mode = "sqid"
 
     # === Level Methods (fluent - return self) ===
     def debug(self, msg: str, **f: Any) -> Self:
@@ -528,6 +541,10 @@ class Logger:
         flush: float | str = 0.1,
         deadline: float | str | None = None,
         policy: str = "block",
+        writer_type: str = "block",
+        writer_mode: str = "trigger",
+        tick: float = 0.01,
+        task_id_mode: str = "sqid",
     ) -> Self:
         """Simplified logging initialization with async support.
 
@@ -538,6 +555,20 @@ class Logger:
             log.init(level="INFO")        # With log level
             log.init("app.log", mode="a") # Append mode
             log.init(async_en=False)      # Disable async (sync mode)
+            
+            # Writer type selection:
+            log.init("app.log", writer_type="line")   # Line buffered (immediate)
+            log.init("app.log", writer_type="block")  # Block buffered 64KB (default)
+            log.init("app.log", writer_type="mmap")   # Memory mapped (fastest)
+            
+            # Writer mode selection:
+            log.init("app.log", writer_mode="trigger")  # Event-driven (default)
+            log.init("app.log", writer_mode="loop")     # Periodic poll
+            log.init("app.log", writer_mode="manual")   # Explicit trigger()
+            
+            # Task ID mode selection:
+            log.init("app.log", task_id_mode="sqid")   # Short Sqid (default, 4-12 chars)
+            log.init("app.log", task_id_mode="uuid")   # UUID4 (36 chars, distributed)
 
         Args:
             target: File path, None for auto filename from caller's __file__
@@ -548,9 +579,12 @@ class Logger:
             queue: Maximum queue size before backpressure (default: 10000)
             size: Messages per batch (default: 100, 0=disable)
             flush: Seconds between flushes, or SI string like '1ms', '10µs'
-            deadline: Max seconds before force flush, or SI string like '10s'
-            policy: Backpressure policy ("block", "replace",
-                    "skip", "warn")
+            policy: Backpressure policy ("block", "drop_oldest",
+                    "drop_newest", "warn")
+            writer_type: Writer type ("line", "block", "mmap")
+            writer_mode: Writer mode ("trigger", "loop", "manual")
+            tick: Poll interval for LOOP mode (default: 0.01s)
+            task_id_mode: Task ID format ("sqid" or "uuid")
 
         Returns:
             Self for method chaining
@@ -563,7 +597,8 @@ class Logger:
 
         # Parse time values (support SI units like '1ms', '10µs')
         flush_sec = parse_time(flush)
-        deadline_sec = parse_time(deadline)
+        # deadline is deprecated but accepted for backward compatibility
+        _ = parse_time(deadline) if deadline is not None else None
 
         # Check environment override for async
         if os.environ.get("LOGXPY_SYNC", "0") == "1":
@@ -571,6 +606,20 @@ class Logger:
 
         # Set level
         self._level = Level[level.upper()]
+        
+        # Parse writer type and mode
+        self._writer_type = WriterType(writer_type)
+        self._writer_mode = Mode(writer_mode)
+        
+        # Store task ID mode
+        self._task_id_mode = task_id_mode
+        
+        # Policy backward compatibility mapping
+        policy_map = {
+            "skip": "drop_newest",
+            "replace": "drop_oldest",
+        }
+        mapped_policy = policy_map.get(policy, policy)
 
         # Determine file path and handle file setup
         if not target:  # None or empty string
@@ -599,18 +648,17 @@ class Logger:
             self._auto_log_file = target
 
             if async_en:
-                # Async mode: Use AsyncWriter with AsyncFileDestination
-                self.use_async(
-                    max_queue=queue,
+                # Async mode: Use choose-L2 based writer
+                self._async_writer = create_writer(
+                    path=target,
+                    writer_type=self._writer_type,
+                    mode=self._writer_mode,
+                    queue_size=queue,
                     batch_size=size,
                     flush_interval=flush_sec,
-                    deadline=deadline_sec,
-                    policy=policy,
+                    tick=tick,
+                    policy=QueuePolicy(mapped_policy),
                 )
-                # Add file destination to async writer
-                if self._async_writer is not None:
-                    file_dest = AsyncFileDestination(target)
-                    self._async_writer.add_destination(file_dest)
             else:
                 # Sync mode: Use traditional FileDestination
                 f = open(target, mode, encoding="utf-8", buffering=1)
@@ -645,6 +693,9 @@ class Logger:
         flush_interval: float = 0.1,
         deadline: float | None = None,
         policy: str = "block",
+        writer_type: str = "block",
+        writer_mode: str = "trigger",
+        tick: float = 0.01,
     ) -> Self:
         """Enable async logging with custom configuration.
 
@@ -655,9 +706,12 @@ class Logger:
             max_queue: Maximum queue size before backpressure.
             batch_size: Messages per batch before flush.
             flush_interval: Seconds between flushes.
-            deadline: Max seconds before force flush (default: None).
-            policy: Backpressure policy ("block", "replace",
-                   "skip", "warn").
+            deadline: Deprecated, not used.
+            policy: Backpressure policy ("block", "drop_oldest",
+                   "drop_newest", "warn").
+            writer_type: Writer type ("line", "block", "mmap").
+            writer_mode: Writer mode ("trigger", "loop", "manual").
+            tick: Poll interval for LOOP mode.
 
         Returns:
             Self for chaining
@@ -667,16 +721,19 @@ class Logger:
             self._async_writer.stop()
 
         # Create and start new writer
-        policy_enum = QueuePolicy(policy)
-        config = AsyncConfig(
-            max_queue_size=max_queue,
+        if self._auto_log_file is None:
+            raise RuntimeError("No log file configured. Call init() first.")
+        
+        self._async_writer = create_writer(
+            path=self._auto_log_file,
+            writer_type=WriterType(writer_type),
+            mode=Mode(writer_mode),
+            queue_size=max_queue,
             batch_size=batch_size,
-            flush_interval_ms=flush_interval * 1000,
-            deadline_ms=deadline * 1000 if deadline else None,
-            queue_policy=policy_enum,
+            flush_interval=flush_interval,
+            tick=tick,
+            policy=QueuePolicy(policy),
         )
-        self._async_writer = AsyncWriter(config)
-        self._async_writer.start()
 
         # Register cleanup at exit
         atexit.register(self.shutdown_async)
@@ -742,71 +799,63 @@ class Logger:
         finally:
             self._async_writer = writer_backup
 
+    def trigger(self) -> Self:
+        """Trigger a write in MANUAL mode.
+
+        Only effective when writer_mode="manual" was used in init().
+        
+        Returns:
+            Self for chaining.
+        """
+        if self._async_writer is not None:
+            self._async_writer.trigger()
+        return self
+
     def flush(self, timeout: float = 5.0) -> Self:
         """Force-flush all pending async messages to disk.
 
-        Signals the background writer thread to immediately write its
-        current batch and waits for completion. No-op if async is off.
+        Note: With choose-L2 based writer, this triggers an immediate
+        write for MANUAL mode. For TRIGGER and LOOP modes, messages
+        are flushed automatically based on batch_size and flush_interval.
+        
+        This method is kept for backward compatibility but is largely
+        unnecessary with the new writer design.
 
         Args:
-            timeout: Maximum seconds to wait for flush completion.
+            timeout: Maximum seconds to wait (ignored in new implementation).
 
         Returns:
             Self for chaining.
         """
         if self._async_writer is not None:
-            self._async_writer.flush(timeout)
+            # For MANUAL mode, trigger a write
+            # For other modes, messages are auto-flushed
+            self._async_writer.trigger()
         return self
 
-    def enable_adaptive(
-        self,
-        *,
-        min_batch: int = 10,
-        max_batch: int = 1000,
-        min_flush: float = 0.001,
-        max_flush: float = 1.0,
-        ema_alpha: float = 0.1,
-        low_rate: float = 100.0,
-        high_rate: float = 10_000.0,
-    ) -> Self:
-        """Enable adaptive flush that auto-tunes batch size and interval.
-
-        Uses Exponential Moving Average (EMA) of message rate to adjust
-        parameters dynamically between configured bounds.
-
-        Args:
-            min_batch: Batch size at low message rate.
-            max_batch: Batch size at high message rate.
-            min_flush: Flush interval at low rate (seconds).
-            max_flush: Flush interval at high rate (seconds).
-            ema_alpha: EMA smoothing factor (0.05-0.2 typical).
-            low_rate: Messages/sec threshold for low rate.
-            high_rate: Messages/sec threshold for high rate.
-
+    def enable_adaptive(self, *args: Any, **kwargs: Any) -> Self:
+        """Deprecated: Adaptive flush not implemented.
+        
+        This method is kept for backward compatibility but does nothing.
+        Use fixed batch_size in init() instead.
+        
         Returns:
             Self for chaining.
         """
-        if self._async_writer is not None:
-            config = AdaptiveFlushConfig(
-                ema_alpha=ema_alpha,
-                min_batch_size=min_batch,
-                max_batch_size=max_batch,
-                min_flush_interval=min_flush,
-                max_flush_interval=max_flush,
-                low_rate_threshold=low_rate,
-                high_rate_threshold=high_rate,
-            )
-            self._async_writer.enable_adaptive(config)
+        import warnings
+        warnings.warn(
+            "enable_adaptive() is deprecated. Use fixed batch_size in init().",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self
 
     def disable_adaptive(self) -> Self:
-        """Disable adaptive flush, reverting to static configuration.
-
+        """Deprecated: Adaptive flush not implemented.
+        
         Returns:
             Self for chaining.
         """
-        if self._async_writer is not None:
-            self._async_writer.disable_adaptive()
         return self
 
     # === Color Methods (for CLI viewer) ===
@@ -878,35 +927,63 @@ class Logger:
         # Merge context: global scope + logger instance context
         ctx = current_scope()
         if self._context:
-            ctx = {**ctx, **self._context}
+            fields = {**ctx, **self._context, **fields}
+        elif ctx:
+            fields = {**ctx, **fields}
 
+        # Route to async writer if enabled (fast path)
+        if self._async_writer is not None:
+            # Use optimized JSON builder instead of Record + json.dumps
+            # This is 2-3x faster than the Record dataclass path
+            try:
+                log_line = build_json_line(
+                    message=msg,
+                    message_type=level.name.lower(),
+                    task_uuid=task_uuid,
+                    task_level=task_level,
+                    fields=fields if fields else None,
+                    timestamp=now(),
+                )
+                self._async_writer.send(log_line)
+                return self
+            except Exception:
+                # Fall through to sync path on error
+                pass
+
+        # Sync path: Use traditional Record + _emit
         record = Record(
             timestamp=now(),
             level=level,
             message=msg,
             message_type=level.name.lower(),
             fields=fields,
-            context=ctx,
+            context={},
             task_uuid=task_uuid,
             task_level=task_level,
         )
-
-        # Route to async writer if enabled
-        if self._async_writer is not None:
-            enqueued = self._async_writer.enqueue(record)
-            if enqueued:
-                return self
-            # If enqueue failed (dropped), fall through to sync path
-
-        # Sync path: Use traditional _emit
         _emit(record)
         return self
+
+
+# Cache for root task UUID (avoids generating new UUID for every log line)
+_root_task_uuid: str | None = None
+_root_task_uuid_mode: str | None = None
 
 
 def _get_task_info(act) -> tuple[str, tuple[int, ...]]:
     """Extract task info from Action or AsyncAction."""
     if act is None:
-        return uuid(), (1,)
+        # Use cached root task UUID to avoid expensive uuid() calls
+        global _root_task_uuid
+        global _root_task_uuid_mode
+        
+        # Check if we need to regenerate (mode changed)
+        current_mode = getattr(log, '_task_id_mode', 'sqid')
+        if _root_task_uuid is None or _root_task_uuid_mode != current_mode:
+            _root_task_uuid_mode = current_mode
+            use_sqid = current_mode == "sqid"
+            _root_task_uuid = uuid(use_sqid=use_sqid)
+        return _root_task_uuid, (1,)
     task_uuid = act.task_uuid
     # Action uses _task_level (TaskLevel), AsyncAction uses task_level (tuple)
     if hasattr(act, "task_level"):  # AsyncAction

@@ -161,24 +161,30 @@ def use_asyncio_context():
     )
 
 
-# Async logging support
-from ._async_writer import (
-    AdaptiveFlushConfig,
+# Async logging support - using choose-L2 based writer
+# Force refactor: clean design, no backward compatibility for internal APIs
+from ._writer import (
+    # Core classes
+    Q, 
+    Mode,
+    WriterType,
     QueuePolicy,
-    AsyncConfig,
-    AsyncMetrics,
-    AsyncWriter,
-    create_default_writer,
+    WriterMetrics,
+    BaseFileWriterThread,
+    # Writer implementations
+    LineBufferedWriter,
+    BlockBufferedWriter,
+    MemoryMappedWriter,
+    # Factory
+    create_writer,
 )
-from ._async_destinations import (
-    AsyncDestination,
-    AsyncFileDestination,
-    AsyncConsoleDestination,
-    AsyncRotatingFileDestination,
-    AsyncDestinationProxy,
-    create_file_destination,
-    create_console_destination,
-)
+
+# Backward compatible aliases (clean API - no deprecation)
+AsyncWriter = BaseFileWriterThread
+AsyncMetrics = WriterMetrics
+
+# Factory function alias
+create_default_writer = create_writer
 
 # Sqid support (ultra-short task IDs)
 from ._sqid import (
@@ -246,20 +252,21 @@ __all__ = [
     "current_action",
     "use_asyncio_context",
     "ValidationError",
-    # Async logging
-    "AdaptiveFlushConfig",
+    # Async logging / Writer (choose-L2 based)
+    "Q",
+    "Mode",
+    "WriterType",
     "QueuePolicy",
-    "AsyncConfig",
-    "AsyncMetrics",
-    "AsyncWriter",
+    "WriterMetrics",
+    "BaseFileWriterThread",
+    "LineBufferedWriter",
+    "BlockBufferedWriter",
+    "MemoryMappedWriter",
+    "create_writer",
     "create_default_writer",
-    "AsyncDestination",
-    "AsyncFileDestination",
-    "AsyncConsoleDestination",
-    "AsyncRotatingFileDestination",
-    "AsyncDestinationProxy",
-    "create_file_destination",
-    "create_console_destination",
+    # Backward compatible aliases
+    "AsyncWriter",
+    "AsyncMetrics",
     # PEP 8 variants:
     "write_traceback",
     "write_failure",

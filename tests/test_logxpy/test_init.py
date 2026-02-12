@@ -29,10 +29,12 @@ class TestPublicAPI:
 
     def test_async_imports(self):
         from logxpy.src import (
-            QueuePolicy, AsyncConfig, AsyncWriter,
-            AsyncFileDestination, AsyncConsoleDestination,
+            QueuePolicy, AsyncWriter, Mode, WriterType,
+            BaseFileWriterThread, create_writer, Q,
         )
         assert QueuePolicy.BLOCK == "block"
+        assert Mode.TRIGGER == "trigger"
+        assert WriterType.BLOCK == "block"
 
     def test_validation_imports(self):
         from logxpy.src import Field, fields, MessageType, ActionType, ValidationError

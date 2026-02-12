@@ -3,7 +3,15 @@
 
 This example demonstrates the default async behavior in logxpy.
 No special configuration needed - just call log.init() and start logging!
+
+Updated for choose-L2 based writer.
 """
+
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from logxpy import log
 
@@ -11,6 +19,7 @@ from logxpy import log
 def main() -> None:
     """Run the basic async logging example."""
     # Async is enabled by default - no special setup required!
+    # Using block writer (64KB buffer) with trigger mode
     log.init("example_async_basic.log")
 
     # These log calls return immediately (non-blocking)

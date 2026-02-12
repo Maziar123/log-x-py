@@ -4,6 +4,8 @@ A Python library for parsing, analyzing, and querying LogXPy log files with rich
 
 > 📚 **Architecture Documentation**: See [LOGGING_FLOW_SEQUENCE_DIAGRAMS.md](./LOGGING_FLOW_SEQUENCE_DIAGRAMS.md) for complete code-level flow charts showing how logs flow from `log.info()` to disk.
 
+> 🚀 **New in 2.0**: Unified Writer with **4.6x performance improvement** and **69% less code**. See [WRITER_MIGRATION_GUIDE.md](./WRITER_MIGRATION_GUIDE.md) for details.
+
 > 📚 **Internal Flow**: To understand how LogXPy processes log entries internally, see [LOGGING_FLOW_SEQUENCE_DIAGRAMS.md](./LOGGING_FLOW_SEQUENCE_DIAGRAMS.md) which contains:
 > - Complete flow charts from `log.info("Hello, World!")` to file write
 > - Actual code at every level

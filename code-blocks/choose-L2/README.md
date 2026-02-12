@@ -1,174 +1,170 @@
-# choose-L2: Unified File Writer Library
+# Choose-L2 Async Writer
 
-Cross-platform file writer with **unified base class** and **3 I/O strategies**.
+Standalone async file writer implementation for logxpy with three writer types and three operating modes.
+
+## Features
+
+- **Three Writer Types:**
+  - `LineBufferedWriter` - Immediate flush (real-time logging)
+  - `BlockBufferedWriter` - 64KB buffer (balanced performance, default)
+  - `MemoryMappedWriter` - OS-managed memory mapping (max throughput)
+
+- **Three Operating Modes:**
+  - `TRIGGER` - Event-driven, wake on message (best throughput)
+  - `LOOP` - Timer-based periodic flush (predictable timing)
+  - `MANUAL` - Explicit `trigger()` control (full control)
+
+- **Backpressure Policies:**
+  - `BLOCK` - Pause until space available (no data loss)
+  - `DROP_OLDEST` - Remove oldest messages (fixed memory)
+  - `DROP_NEWEST` - Discard new messages (overflow OK)
+  - `WARN` - Warn and drop (debugging)
+
+- **Thread-safe Queue:** GIL-atomic operations, no locks needed in CPython
 
 ## Quick Start
 
 ```python
-from writer import FileWriter, Mode, Q
+from writer import create_writer, Mode, WriterType
+
+# Simple - use defaults (BlockBuffered, Trigger mode)
+writer = create_writer("app.log")
+
+for i in range(1000):
+    writer.send(f"Log line {i}")
+
+writer.stop()
+print(f"Written: {writer.lines_written}")
+```
+
+## Configuration
+
+```python
+from writer import create_writer, Mode, WriterType, QueuePolicy
+
+writer = create_writer(
+    "app.log",
+    writer_type=WriterType.BLOCK,    # line | block | mmap
+    mode=Mode.TRIGGER,                # trigger | loop | manual
+    queue_size=10_000,                # Max queue size
+    batch_size=100,                   # Messages per batch
+    flush_interval=0.1,               # Seconds between flushes
+    policy=QueuePolicy.BLOCK,         # Backpressure policy
+)
+```
+
+## Writer Types
+
+### LineBufferedWriter
+```python
+from writer import LineBufferedWriter, Mode, Q
 
 q = Q()
-writer = FileWriter(q, "output.txt", Mode.TRIGGER)
+writer = LineBufferedWriter(q, "app.log", Mode.TRIGGER)
+# Each line flushed immediately (buffering=1)
+```
 
-for i in range(100000):
+### BlockBufferedWriter (Default)
+```python
+from writer import BlockBufferedWriter, Mode, Q
+
+q = Q()
+writer = BlockBufferedWriter(q, "app.log", Mode.TRIGGER)
+# 64KB kernel buffer for batching
+```
+
+### MemoryMappedWriter
+```python
+from writer import MemoryMappedWriter, Mode, Q
+
+q = Q()
+writer = MemoryMappedWriter(q, "app.log", Mode.TRIGGER)
+# OS-managed memory mapping
+```
+
+## Operating Modes
+
+### TRIGGER Mode (Default)
+```python
+writer = create_writer("app.log", mode=Mode.TRIGGER, batch_size=100)
+# Flushes when batch_size reached or on timeout
+```
+
+### LOOP Mode
+```python
+writer = create_writer("app.log", mode=Mode.LOOP, flush_interval=0.1)
+# Flushes every 100ms OR when batch_size reached
+```
+
+### MANUAL Mode
+```python
+writer = create_writer("app.log", mode=Mode.MANUAL)
+writer.send("line 1")
+writer.send("line 2")
+writer.trigger()  # Explicit flush
+writer.stop()
+```
+
+## Metrics
+
+```python
+writer = create_writer("app.log")
+
+for i in range(100):
     writer.send(f"line {i}")
 
-q.stop()
-writer.join()  # ~3M lines/second
+writer.stop()
+
+metrics = writer.metrics
+print(f"Enqueued: {metrics.enqueued}")
+print(f"Written:  {metrics.written}")
+print(f"Dropped:  {metrics.dropped}")
+print(f"Pending:  {metrics.pending}")
+
+# Full snapshot
+print(metrics.get_snapshot())
 ```
 
-## Architecture
-
-```
-writer/
-├── __init__.py          # Default export: BlockBufferedWriter
-├── base.py              # BaseFileWriterThread, Q, Mode
-└── sync/
-    ├── __init__.py      # Exports all 3 writers
-    ├── line_buffered.py # LineBufferedWriter
-    ├── block_buffered.py# BlockBufferedWriter (default)
-    └── memory_mapped.py # MemoryMappedWriter
-```
-
-**Key Design:**
-- One `BaseFileWriterThread` handles all 3 modes (TRIGGER/LOOP/MANUAL)
-- Implementations only override `_write_batch()` method
-- ~15 lines per implementation
-
-## Three Writers
-
-| Writer | Lines | Buffer | 100K Perf | Use Case |
-|--------|-------|--------|-----------|----------|
-| `LineBufferedWriter` | ~15 | 1 line | 37ms / 2.7M L/s | Real-time logging |
-| `BlockBufferedWriter` | ~15 | 64KB | 39ms / 2.5M L/s | **Default** - balanced |
-| `MemoryMappedWriter` | ~35 | OS-managed | 36ms / 2.7M L/s | Max throughput |
-
-## Three Modes
-
-### TRIGGER (Event-Driven)
-```python
-writer = FileWriter(q, "output.txt", Mode.TRIGGER)
-# Writer wakes immediately on each send()
-```
-
-### LOOP (Periodic)
-```python
-writer = FileWriter(q, "output.txt", Mode.LOOP, tick=0.1)  # 100ms
-# Writer checks queue every 100ms
-```
-
-### MANUAL (Explicit)
-```python
-writer = FileWriter(q, "output.txt", Mode.MANUAL)
-# Writer only writes when you call writer.trigger()
-```
-
-## Usage Examples
-
-### Default Writer
-```python
-from writer import FileWriter, Mode, Q
-
-q = Q()
-writer = FileWriter(q, "output.txt", Mode.TRIGGER)
-# Uses BlockBufferedWriter (64KB buffer)
-```
-
-### Explicit Writers
-```python
-from writer.sync import (
-    LineBufferedWriter,
-    BlockBufferedWriter, 
-    MemoryMappedWriter,
-)
-
-# Line-buffered for immediate flush
-writer = LineBufferedWriter(q, "output.txt", Mode.TRIGGER)
-
-# Block-buffered for throughput
-writer = BlockBufferedWriter(q, "output.txt", Mode.LOOP, tick=0.5)
-
-# Memory-mapped for OS-managed flush
-writer = MemoryMappedWriter(q, "output.txt", Mode.TRIGGER)
-```
-
-### Context Manager
-```python
-q = Q()
-with FileWriter(q, "output.txt", Mode.TRIGGER) as writer:
-    for i in range(1000):
-        writer.send(f"line {i}")
-q.stop()
-```
-
-## Running
+## Testing
 
 ```bash
-# Examples
-PYTHONPATH=$(pwd) python examples/basic_usage.py
+# Run tests
+cd code-blocks/choose-L2
+pytest tests/ -v
 
-# Tests
-PYTHONPATH=$(pwd) python -m pytest tests/ -v
+# Run examples
+PYTHONPATH=writer python examples/basic_usage.py
 ```
 
-## Benchmark Results
+## Performance
 
-> **Note:** Run benchmarks from the **root directory** (`../benchmark*.py`)
+| Writer | Buffer | Best For | Throughput |
+|--------|--------|----------|------------|
+| Line | 1 line | Real-time | ~260K L/s |
+| Block | 64KB | Balanced | ~275K L/s |
+| MMAP | OS-managed | Max throughput | ~250K L/s |
 
-Expected performance (100,000 lines):
-```
-MemoryMapped TRIGGER   36.39ms  2,748,326 L/s  (5 flushes)
-LineBuffered  TRIGGER  37.54ms  2,663,675 L/s  (5 flushes)
-BlockBuffered TRIGGER  39.26ms  2,547,113 L/s  (4 flushes)
-```
+## API Reference
 
-## Platform Support
+### Classes
 
-| Platform | Support | Best Writer |
-|----------|---------|-------------|
-| Linux | ✅ | All 3 |
-| macOS | ✅ | All 3 |
-| Windows | ✅ | All 3 |
+- `Q` - Thread-safe queue with backpressure policies
+- `WriterMetrics` - Performance metrics tracking
+- `BaseFileWriterThread` - Abstract base class
+- `LineBufferedWriter` - Line-buffered implementation
+- `BlockBufferedWriter` - Block-buffered implementation  
+- `MemoryMappedWriter` - Memory-mapped implementation
 
-**Dependencies:** None (stdlib only)
+### Enums
 
-## Implementation Example
+- `Mode.TRIGGER | LOOP | MANUAL` - Operating modes
+- `WriterType.LINE | BLOCK | MMAP` - Writer types
+- `QueuePolicy.BLOCK | DROP_OLDEST | DROP_NEWEST | WARN` - Policies
 
-New writer implementations are ~15 lines:
+### Functions
 
-```python
-from writer.base import BaseFileWriterThread, Mode, Q
+- `create_writer(path, **kwargs)` - Factory function
 
-class MyWriter(BaseFileWriterThread):
-    """Custom writer implementation."""
-    
-    def _write_batch(self, items: list[str]) -> None:
-        """Write batch - only method to implement."""
-        if not items:
-            return
-        with open(self._path, "a") as f:
-            f.write("\n".join(items) + "\n")
-            self._record(len(items))
-```
+## License
 
-Base class handles:
-- Thread lifecycle
-- Mode loops (TRIGGER/LOOP/MANUAL)
-- Queue management
-- Batching
-- Statistics (lines_written, flush_count)
-
-## Files
-
-| File | Purpose |
-|------|---------|
-| `writer/base.py` | Base class, Q, Mode (~200 lines) |
-| `writer/sync/line_buffered.py` | Line-buffered writer |
-| `writer/sync/block_buffered.py` | Block-buffered writer (default) |
-| `writer/sync/memory_mapped.py` | Memory-mapped writer |
-| `examples/basic_usage.py` | Usage examples |
-| `tests/test_*.py` | Unit tests |
-
-## See Also
-
-- `PLAN.md` — Design document and architecture decisions
+MIT - Same as logxpy

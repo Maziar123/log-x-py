@@ -63,13 +63,94 @@ log(data)           # log.send("Data:Type", data)
 ```python
 log.init(
     "app.log",
-    async_en=True,    # Enable async (default)
-    queue=10000,      # Queue size
-    size=100,         # Batch size (0=disable)
-    flush=0.1,        # Flush interval seconds
-    deadline=None,    # Max message age
-    policy="block",   # Backpressure policy
+    async_en=True,      # Enable async (default)
+    queue=10000,        # Queue size
+    size=100,           # Batch size (0=disable)
+    flush=0.1,          # Flush interval seconds
+    deadline=None,      # Max message age
+    policy="block",     # Backpressure policy
+    writer_type="block",  # line | block | mmap
+    writer_mode="trigger", # trigger | loop | manual
+    tick=0.01,          # Poll interval for loop mode
 )
+```
+
+### Writer Modes
+
+Choose how the writer flushes logs:
+
+**1. Trigger Mode (`trigger`) - DEFAULT**
+```python
+# Event-driven: Flushes on batch_size OR explicit events
+# Best for: Maximum throughput (200K+ L/s)
+log.init("app.log", writer_mode="trigger", size=100)
+```
+
+**2. Loop Mode (`loop`)**
+```python
+# Timer-based: Flushes periodically AND on batch_size
+# Best for: Predictable flush timing
+log.init("app.log", writer_mode="loop", flush=0.1)  # Every 100ms
+```
+
+**3. Manual Mode (`manual`)**
+```python
+# Explicit control: Only flushes when you call trigger()
+# Best for: Full control over batching
+log.init("app.log", writer_mode="manual")
+log.info("Message 1")
+log.info("Message 2")
+log.flush()  # Explicit flush
+```
+
+### Writer Types
+
+Choose the writer that best fits your use case:
+
+**1. Line Buffered (`line`)**
+```python
+# Immediate flush per line - best for real-time monitoring
+log.init("app.log", writer_type="line")
+log.info("Appears immediately in file")
+```
+
+**2. Block Buffered (`block`) - DEFAULT**
+```python
+# 64KB buffer - best balance of performance and durability
+log.init("app.log", writer_type="block", size=500)  # 275K+ L/s
+```
+
+**3. Memory Mapped (`mmap`)**
+```python
+# OS-managed memory mapping - maximum throughput
+log.init("app.log", writer_type="mmap", size=1000)
+```
+
+### Writer Modes
+
+Control when logs are flushed to disk:
+
+**1. Trigger Mode (`trigger`) - DEFAULT**
+```python
+# Event-driven: wakes immediately on each message
+log.init("app.log", writer_mode="trigger", size=100)
+# Flushes when batch is full or flush interval expires
+```
+
+**2. Loop Mode (`loop`)**
+```python
+# Periodic poll: checks queue every tick seconds
+log.init("app.log", writer_mode="loop", tick=0.1)  # 100ms
+# Good for predictable flush intervals
+```
+
+**3. Manual Mode (`manual`)**
+```python
+# Full control: only flushes when you call trigger()
+log.init("app.log", writer_mode="manual")
+log.info("Message 1")
+log.info("Message 2")
+log.trigger()  # Manually flush
 ```
 
 ### Flush Techniques
@@ -87,7 +168,7 @@ log.init("app.log", size=500)   # Flush every 500 messages
 **3. On-Demand:**
 ```python
 log.info("Critical")
-log.flush()  # Force immediate flush
+log.flush()  # Force immediate flush (blocks until done)
 ```
 
 **4. Sync Mode:**
@@ -105,6 +186,40 @@ log._async_writer.enable_adaptive(config)
 
 See [FLUSH_TECHNIQUES.md](docs/FLUSH_TECHNIQUES.md) for comprehensive details.
 
+### Performance Optimization
+
+**Achieving 275K+ logs/sec:**
+
+```python
+# Optimal configuration for maximum throughput
+log.init(
+    "app.log",
+    writer_type="block",    # 64KB buffer (best balance)
+    writer_mode="trigger",  # Event-driven (lowest latency)
+    size=500,               # Batch 500 messages
+    queue=10000,            # Large queue
+)
+```
+
+**Performance by writer type:**
+
+| Writer | Throughput | Best For |
+|--------|------------|----------|
+| `block` | ~275K L/s | General use (default) |
+| `line` | ~260K L/s | Real-time monitoring |
+| `mmap` | ~250K L/s | Batch processing |
+
+**Optimization details:**
+- **Fast JSON**: Uses f-string building instead of `json.dumps()` (3x faster)
+- **Cached UUID**: Root task ID generated once per process (1.5x speedup)
+- **Zero-copy**: Minimal allocations in hot path
+
+**Benchmark your setup:**
+```bash
+python benchmarks/optimize_logging.py
+python benchmarks/benchmark_before_after.py
+```
+
 ### Backpressure Policies
 
 | Policy | Behavior | Use Case |
@@ -113,6 +228,35 @@ See [FLUSH_TECHNIQUES.md](docs/FLUSH_TECHNIQUES.md) for comprehensive details.
 | `replace` | Replace oldest | Fixed memory |
 | `skip` | Skip new message | Overflow OK |
 | `warn` | Skip + warning | Debug |
+
+### Task ID Mode
+
+Choose between Sqid (short, hierarchical) or UUID4 (standard, distributed):
+
+**Sqid Mode (default)**
+```python
+# Short hierarchical IDs: "Xa.1", "Xa.1.1" (4-12 chars)
+log.init("app.log", task_id_mode="sqid")
+log.info("User action")  # tid: "Xa.1"
+```
+- ✅ 89% smaller than UUID (4-12 chars vs 36)
+- ✅ Human-readable hierarchy in ID
+- ✅ Best for single-process applications
+
+**UUID Mode**
+```python
+# Standard UUID4: "59b00749-eb24-4c31-a2c8-aac523d7bfd9" (36 chars)
+log.init("app.log", task_id_mode="uuid")
+log.info("User action")  # tid: "59b00749-eb24-..."
+```
+- ✅ Globally unique across distributed systems
+- ✅ Compatible with external tracing systems
+- ✅ Best for microservices/multi-process apps
+
+| Mode | Example | Length | Use Case |
+|------|---------|--------|----------|
+| `sqid` | `Xa.1`, `Xa.1.2` | 4-12 chars | Single-process (default) |
+| `uuid` | `59b00749-eb24-...` | 36 chars | Distributed systems |
 
 ---
 

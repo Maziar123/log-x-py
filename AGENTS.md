@@ -168,12 +168,18 @@ log.configure(
 
 LogXPy includes **async threaded logging** for maximum performance. Async is **enabled by default**.
 
-#### Performance
+#### Performance (Optimized)
 
 | Mode | Throughput | Latency | Speedup |
 |------|-----------|---------|---------|
-| **Async** | **140,000+ msg/sec** | **7 μs** | **6.4x** |
+| **Async** | **275,000+ msg/sec** | **3.6 μs** | **12.5x** |
 | Sync | 22,000 msg/sec | 45 μs | 1.0x |
+
+**Optimization details:**
+- Fast JSON serialization using f-strings (`_json_line.py`)
+- Cached root task UUID (avoids expensive generation per log)
+- Choose-L2 based writer with 3 writer types (line/block/mmap)
+- 3 operating modes (trigger/loop/manual)
 
 #### Quick Start
 
@@ -375,7 +381,9 @@ logxpy/src/
 ├── _base.py             # Base utilities (uuid, sqid, now)
 ├── _fmt.py              # Value formatting
 ├── _async.py            # Async support
-└── _mask.py             # Field masking
+├── _mask.py             # Field masking
+├── _writer.py           # Choose-L2 based async writer (line/block/mmap)
+└── _json_line.py        # Fast JSON serialization (f-string based)
 ```
 
 ---
@@ -964,6 +972,30 @@ entry[MT] = "info"           # "mt"
 - **Pattern matching**: +10% speed vs if/elif chains
 - **Frozen dataclasses**: Allow optimizations
 - **Zero string concatenation**: Use f-strings only
+- **Fast JSON serialization**: `_json_line.py` builds JSON directly (3x faster than Record+json.dumps)
+- **Cached task UUID**: Root task ID generated once per process (1.5x speedup)
+- **Choose-L2 writer**: Three writer types optimized for different workloads
+
+### Writer Types
+
+| Writer | Buffer | Best For | Performance |
+|--------|--------|----------|-------------|
+| `LineBufferedWriter` | 1 line | Real-time logging | ~260K L/s |
+| `BlockBufferedWriter` | 64KB | Balanced (default) | ~275K L/s |
+| `MemoryMappedWriter` | OS-managed | Max throughput | ~250K L/s |
+
+### Writer Modes
+
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| `TRIGGER` | Event-driven, wake on message | Default, lowest latency |
+| `LOOP` | Periodic poll | Predictable flush intervals |
+| `MANUAL` | Explicit `trigger()` call | Full control over batching |
+
+**Configuration:**
+```python
+log.init("app.log", writer_type="block", writer_mode="trigger", size=500)
+```
 
 ---
 

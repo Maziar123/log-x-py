@@ -32,6 +32,19 @@ from .src._traceback import write_traceback, writeFailure
 from .src._validation import ActionType, Field, MessageType, ValidationError, fields
 from .src.logx import log
 
+# Writer classes (choose-L2 based)
+from .src._writer import (
+    Mode,
+    WriterType,
+    QueuePolicy,
+    BaseFileWriterThread,
+    LineBufferedWriter,
+    BlockBufferedWriter,
+    MemoryMappedWriter,
+    create_writer,
+    Q,
+)
+
 # System info module
 from .src.system_info import (
     send_system_info,
@@ -152,23 +165,27 @@ def use_asyncio_context():
     )
 
 
-# Async logging support
-from .src._async_writer import (
+# Async logging support - using choose-L2 based writer
+from .src._writer import (
+    # Core classes
+    Q,
+    Mode,
+    WriterType,
     QueuePolicy,
-    AsyncConfig,
-    AsyncMetrics,
-    AsyncWriter,
-    create_default_writer,
+    WriterMetrics,
+    BaseFileWriterThread,
+    # Writer implementations
+    LineBufferedWriter,
+    BlockBufferedWriter,
+    MemoryMappedWriter,
+    # Factory
+    create_writer,
 )
-from .src._async_destinations import (
-    AsyncDestination,
-    AsyncFileDestination,
-    AsyncConsoleDestination,
-    AsyncRotatingFileDestination,
-    AsyncDestinationProxy,
-    create_file_destination,
-    create_console_destination,
-)
+
+# Backward compatible aliases
+AsyncWriter = BaseFileWriterThread
+AsyncMetrics = WriterMetrics
+create_default_writer = create_writer
 
 # Sqid support (ultra-short task IDs)
 from .src._sqid import (
@@ -262,12 +279,13 @@ __all__ = [
     "truncate", "strip_ansi_codes", "escape_html_text",
     "pluralize", "clean_text", "get_first", "is_non_string_iterable",
     "memoize", "memoize_method", "throttle", "CacheStats",
-    # Async logging
-    "QueuePolicy", "AsyncConfig", "AsyncMetrics", "AsyncWriter",
-    "create_default_writer",
-    "AsyncDestination", "AsyncFileDestination", "AsyncConsoleDestination",
-    "AsyncRotatingFileDestination", "AsyncDestinationProxy",
-    "create_file_destination", "create_console_destination",
+    # Async logging / Writer (choose-L2 based)
+    "Q", "Mode", "WriterType", "QueuePolicy",
+    "WriterMetrics", "BaseFileWriterThread",
+    "LineBufferedWriter", "BlockBufferedWriter", "MemoryMappedWriter",
+    "create_writer", "create_default_writer",
+    # Backward compatible aliases (clean API)
+    "AsyncWriter", "AsyncMetrics", "create_default_writer",
     # Sqid
     "SqidGenerator", "sqid", "child_sqid", "generate_task_id",
 ]

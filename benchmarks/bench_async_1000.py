@@ -7,6 +7,8 @@ This script provides detailed performance analysis of async logging:
 - Queue behavior monitoring
 - Memory usage tracking
 - File output verification
+
+Updated for choose-L2 based writer.
 """
 
 from __future__ import annotations
@@ -21,7 +23,7 @@ from pathlib import Path
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from logxpy import log, QueuePolicy
+from logxpy import log, Mode, WriterType
 
 
 class PerformanceMonitor:
@@ -84,9 +86,12 @@ def benchmark_async_mode() -> dict:
         os.remove(log_file)
 
     # Initialize with async enabled (default)
+    # Using new choose-L2 based writer
     log.init(
         log_file,
         async_en=True,
+        writer_type="block",  # BLOCK buffered writer (64KB)
+        writer_mode="trigger",  # Event-driven mode
         queue=10_000,
         size=100,
         flush=0.1,
@@ -94,6 +99,8 @@ def benchmark_async_mode() -> dict:
     )
 
     print(f"Async enabled: {log.is_async}")
+    print(f"Writer type: block (64KB buffer)")
+    print(f"Writer mode: trigger")
     print(f"Queue size: 10,000")
     print(f"Batch size: 100")
     print(f"Policy: BLOCK")
@@ -216,32 +223,38 @@ def benchmark_sync_mode() -> dict:
     }
 
 
-def benchmark_with_backpressure() -> dict:
-    """Benchmark with different backpressure policies.
+def benchmark_writer_types() -> dict:
+    """Benchmark different writer types.
 
     Returns:
         Dictionary with performance metrics.
     """
-    print("\n🔥 BENCHMARK: Backpressure Policies (1000 calls each)")
+    print("\n🔥 BENCHMARK: Writer Types (1000 calls each)")
     print("-" * 60)
 
     results = {}
 
-    for policy in [QueuePolicy.BLOCK, QueuePolicy.REPLACE, QueuePolicy.SKIP]:
-        log_file = f"bench_{policy}.log"
+    for writer_type in ["line", "block", "mmap"]:
+        log_file = f"bench_{writer_type}.log"
         if os.path.exists(log_file):
             os.remove(log_file)
 
-        print(f"\nTesting policy: {policy}")
+        print(f"\nTesting writer: {writer_type}")
 
         # Use small queue to trigger backpressure
         log.init(
             log_file,
             async_en=True,
-            queue=100,  # Small queue
-            size=50,
-            policy=str(policy),
+            writer_type=writer_type,
+            writer_mode="trigger",
+            queue=10_000,
+            size=100,
+            policy="block",
         )
+
+        # Pre-warm
+        log.info("warmup")
+        time.sleep(0.05)
 
         start = time.perf_counter()
         for i in range(1000):
@@ -253,16 +266,20 @@ def benchmark_with_backpressure() -> dict:
         metrics = log.get_async_metrics()
         log.shutdown_async()
 
-        print(f"  Enqueue time: {elapsed:.4f}s")
-        print(f"  Enqueued: {metrics['enqueued']}")
-        print(f"  Written: {metrics['written']}")
-        print(f"  Dropped: {metrics['dropped']}")
+        # Verify
+        with open(log_file) as f:
+            lines = sum(1 for _ in f)
 
-        results[str(policy)] = {
+        print(f"  Enqueue time: {elapsed:.4f}s")
+        print(f"  Throughput: {1000/elapsed:,.0f} logs/sec")
+        print(f"  Written: {metrics['written']}")
+        print(f"  File lines: {lines}")
+
+        results[writer_type] = {
             "elapsed": elapsed,
-            "enqueued": metrics['enqueued'],
+            "throughput": 1000 / elapsed,
             "written": metrics['written'],
-            "dropped": metrics['dropped'],
+            "lines": lines,
         }
 
         # Cleanup
@@ -281,7 +298,7 @@ def trace_execution() -> None:
     if os.path.exists(log_file):
         os.remove(log_file)
 
-    log.init(log_file, async_en=True)
+    log.init(log_file, async_en=True, writer_type="block", writer_mode="trigger")
 
     # Trace first 10 calls in detail
     print("\nTracing first 10 log calls:")
@@ -325,6 +342,7 @@ def compare_batch_sizes() -> None:
         log.init(
             log_file,
             async_en=True,
+            writer_type="block",
             size=batch_size,
             flush=1.0,  # Long interval to test batching
         )
@@ -351,11 +369,63 @@ def compare_batch_sizes() -> None:
     print(f"\nBest throughput: {max(results, key=lambda x: 1000/x[1])}")
 
 
+def compare_writer_modes() -> None:
+    """Compare TRIGGER vs LOOP vs MANUAL modes."""
+    print("\n📊 COMPARISON: Writer Modes (1000 calls each)")
+    print("-" * 60)
+
+    results = []
+
+    for mode in ["trigger", "loop", "manual"]:
+        log_file = f"bench_mode_{mode}.log"
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
+        tick = 0.01 if mode == "loop" else 0.1
+
+        log.init(
+            log_file,
+            async_en=True,
+            writer_type="block",
+            writer_mode=mode,
+            tick=tick,
+            size=100,
+        )
+
+        # Pre-warm
+        log.info("warmup")
+        time.sleep(0.05)
+
+        start = time.perf_counter()
+        for i in range(1000):
+            log.info(f"Test", index=i)
+            if mode == "manual":
+                log.trigger()
+        elapsed = time.perf_counter() - start
+
+        if mode == "manual":
+            log.trigger()  # Final trigger
+            time.sleep(0.05)
+        elif mode == "loop":
+            time.sleep(0.15)  # Give LOOP time
+
+        log.shutdown_async()
+
+        results.append((mode, elapsed))
+        print(f"Mode {mode:10s}: {elapsed:.4f}s ({1000/elapsed:,.0f} logs/sec)")
+
+        # Cleanup
+        if os.path.exists(log_file):
+            os.remove(log_file)
+
+    print(f"\nBest mode: {max(results, key=lambda x: 1000/x[1])}")
+
+
 def main() -> None:
     """Run all benchmarks."""
     print("\n" + "=" * 60)
     print("  ASYNC LOGGING PERFORMANCE BENCHMARK")
-    print("  1000 log.info() calls - Debug, Trace & Monitor")
+    print("  1000 log.info() calls - Choose-L2 Based Writer")
     print("=" * 60)
 
     # Run benchmarks
@@ -382,7 +452,8 @@ def main() -> None:
     # Additional tests
     trace_execution()
     compare_batch_sizes()
-    benchmark_with_backpressure()
+    compare_writer_modes()
+    benchmark_writer_types()
 
     print("\n" + "=" * 60)
     print("  BENCHMARK COMPLETE")

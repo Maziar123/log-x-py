@@ -24,8 +24,8 @@ Modern structured logging ecosystem with three components: logging library, tree
 
 ## Features
 
-- **⚡ High Performance** - **140,000+ logs/sec** (async), **5x faster** than sync
-- **🆔 Sqid Task IDs** - 89% smaller than UUID4 (4-12 chars vs 36)
+- **⚡ High Performance** - **275,000+ logs/sec** (async), **12x faster** than sync, **2.75x faster** than before optimization
+- **🆔 Configurable Task IDs** - Sqid (4-12 chars, default) or UUID4 (36 chars, distributed)
 - **🔗 Fluent API** - Method chaining for clean code
 - **📊 Structured** - JSON output with compact 1-2 char field names
 - **🎨 Colored Output** - ANSI colors and emoji indicators
@@ -35,12 +35,37 @@ Modern structured logging ecosystem with three components: logging library, tree
 
 ### Performance Benchmarks
 
-| Mode | Throughput | Latency | vs Sync |
-|------|------------|---------|---------|
-| **Async** | **140,000+ logs/sec** | ~7 μs | **5x faster** |
-| Sync | ~22,000 logs/sec | ~45 μs | baseline |
+| Mode | Throughput | Latency | vs Sync | Notes |
+|------|------------|---------|---------|-------|
+| **Async (optimized)** | **275,000+ logs/sec** | ~3.6 μs | **12x faster** | Fast JSON + choose-L2 writer |
+| Sync | ~22,000 logs/sec | ~45 μs | baseline | Direct file writes |
 
-> **Note:** Your results may vary based on hardware and system load. Run `python benchmarks/bench_async_1000.py` to measure on your system.
+**Optimization highlights:**
+- **Fast JSON serialization**: Direct f-string building (3x faster than `json.dumps()`)
+- **Cached task UUID**: Root UUID generated once per process (1.5x speedup)
+- **Choose-L2 writer**: Three optimized writer types (line/block/mmap)
+
+**Configuration for best performance:**
+```python
+# Optimal settings for 275K+ L/s
+log.init("app.log", writer_type="block", size=500, writer_mode="trigger")
+```
+
+**Writer Types:**
+| Type | Buffer | Best For | Performance |
+|------|--------|----------|-------------|
+| `line` | 1 line | Real-time | ~260K L/s |
+| `block` | 64KB | Balanced (default) | ~275K L/s |
+| `mmap` | OS-managed | Max throughput | ~250K L/s |
+
+**Writer Modes:**
+| Mode | Behavior | Use Case |
+|------|----------|----------|
+| `trigger` | Event-driven | Default, lowest latency |
+| `loop` | Periodic poll | Predictable flush intervals |
+| `manual` | Explicit `trigger()` | Full control |
+
+> **Note:** Your results may vary based on hardware, batch size, and message complexity. See [benchmarks/](./benchmarks/) for detailed benchmarks.
 
 ---
 
@@ -78,33 +103,45 @@ logxpy-view script.log
 
 ### Component 1: logxpy - Logging Library
 
-**Async logging with configurable flush modes:**
+**Async logging with configurable writer types and modes:**
 
 ```python
 from logxpy import log
 
-# Mode 1: Balanced (Timer OR Size)
-log.init("app.log", size=100, flush=0.1)
+# Fastest configuration (275K+ L/s)
+log.init("app.log", writer_type="block", writer_mode="trigger", size=500)
 
-# Mode 2: Time Only
-log.init("app.log", size=0, flush="10ms")
+# Real-time logging (immediate flush)
+log.init("app.log", writer_type="line", writer_mode="trigger")
 
-# Mode 3: On-Demand Flush
-log.init("app.log")
-log.info("Critical")
-log.flush()  # Force immediate
+# Periodic sync (good for batch processing)
+log.init("app.log", writer_mode="loop", tick=0.1)
 
-# Mode 4: Sync Mode
+# Manual control
+log.init("app.log", writer_mode="manual")
+log.info("Message 1")
+log.info("Message 2")
+log.trigger()  # Flush manually
+
+# Force immediate flush
+log.flush()  # Blocks until all pending logs written
+
+# Sync mode for critical sections
 with log.sync_mode():
     log.critical("Blocks until written")
+
+# Task ID mode selection
+log.init("app.log", task_id_mode="sqid")   # Short Sqid (default, 4-12 chars)
+log.init("app.log", task_id_mode="uuid")   # UUID4 (36 chars, distributed)
 ```
 
 **Key Features:**
-- **Sqid Task IDs** - `Xa.1`, `Xa.1.1` hierarchical IDs
-- **Compact Fields** - `ts`, `tid`, `lvl`, `mt`, `msg`
-- **Data Types** - `log.json()`, `log.df()`, `log.tensor()`, etc.
-- **Context** - `log.scope()`, `log.ctx()`, `log.new()`
-- **Colors** - `log.set_foreground()`, `log.colored()`
+- **⚡ High Performance** - 275K+ logs/sec with optimized writer
+- **🆔 Sqid Task IDs** - `Xa.1`, `Xa.1.1` hierarchical IDs
+- **📊 Compact Fields** - `ts`, `tid`, `lvl`, `mt`, `msg`
+- **📦 Data Types** - `log.json()`, `log.df()`, `log.tensor()`, etc.
+- **🔧 Context** - `log.scope()`, `log.ctx()`, `log.new()`
+- **🎨 Colors** - `log.set_foreground()`, `log.colored()`
 
 See [GUIDE.md](./GUIDE.md#loggerx-fluent-api-guide) for detailed API.
 
