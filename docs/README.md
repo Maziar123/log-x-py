@@ -2,6 +2,15 @@
 
 A Python library for parsing, analyzing, and querying LogXPy log files with rich export formats, powerful filtering capabilities, real-time monitoring, indexing, and time-series analysis.
 
+> 📚 **Architecture Documentation**: See [LOGGING_FLOW_SEQUENCE_DIAGRAMS.md](./LOGGING_FLOW_SEQUENCE_DIAGRAMS.md) for complete code-level flow charts showing how logs flow from `log.info()` to disk.
+
+> 📚 **Internal Flow**: To understand how LogXPy processes log entries internally, see [LOGGING_FLOW_SEQUENCE_DIAGRAMS.md](./LOGGING_FLOW_SEQUENCE_DIAGRAMS.md) which contains:
+> - Complete flow charts from `log.info("Hello, World!")` to file write
+> - Actual code at every level
+> - Async writer thread flow
+> - Sqid generation details
+> - Sync mode fallback path
+
 ## Features
 
 - **Simple One-Line API** - Parse entire files in one call

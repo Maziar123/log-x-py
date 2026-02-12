@@ -15,11 +15,11 @@ def main() -> None:
     # Configure for maximum throughput
     log.init(
         "example_async_high_throughput.log",
-        async_enabled=True,
-        async_max_queue=50_000,        # Large queue to handle bursts
-        async_batch_size=500,          # Larger batches = fewer syscalls
-        async_flush_interval=0.5,      # Flush every 500ms
-        async_policy="drop_oldest",    # Allow dropping old messages if needed
+        async_en=True,
+        queue=50_000,        # Large queue to handle bursts
+        size=500,            # Larger batches = fewer syscalls
+        flush=0.5,           # Flush every 500ms
+        policy="replace",  # Allow dropping old messages if needed
     )
 
     # High-volume logging

@@ -163,6 +163,7 @@ def use_asyncio_context():
 
 # Async logging support
 from ._async_writer import (
+    AdaptiveFlushConfig,
     QueuePolicy,
     AsyncConfig,
     AsyncMetrics,
@@ -246,6 +247,7 @@ __all__ = [
     "use_asyncio_context",
     "ValidationError",
     # Async logging
+    "AdaptiveFlushConfig",
     "QueuePolicy",
     "AsyncConfig",
     "AsyncMetrics",

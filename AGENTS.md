@@ -196,11 +196,12 @@ log.shutdown_async()
 ```python
 log.init(
     "app.log",
-    async_enabled=True,           # Default: True
-    async_max_queue=10000,        # Queue size
-    async_batch_size=100,         # Batch size
-    async_flush_interval=0.1,     # Flush interval (seconds)
-    async_policy="block",         # Backpressure policy
+    async_en=True,    # Default: True
+    queue=10000,      # Queue size
+    size=100,         # Messages per batch (0=disable)
+    flush=0.1,        # Flush interval seconds (0=disable)
+    deadline=None,    # Max seconds before force flush
+    policy="block",   # Backpressure policy
 )
 ```
 
@@ -208,19 +209,33 @@ log.init(
 
 | Policy | Behavior | Use Case |
 |--------|----------|----------|
-| `block` | Wait until space available | No data loss (default) |
-| `drop_oldest` | Remove oldest messages | Latest data important |
-| `drop_newest` | Skip new messages | Preserve early data |
-| `warn` | Warn and drop message | Debugging |
+| `block` | Pause app until log written | Backpressure (default) |
+| `replace` | Replace oldest pending | Circular buffer (fixed size) |
+| `skip` | Skip new message | Let app run, overflow OK |
+| `warn` | Skip + warning | Debug overflow issues |
 
 #### Disable Async
 
 ```python
 # Via parameter
-log.init("app.log", async_enabled=False)
+log.init("app.log", async_en=False)
 
 # Via environment variable
 export LOGXPY_SYNC=1
+```
+
+#### On-Demand Flush
+
+Force immediate flush without stopping async writer:
+
+```python
+log.init("app.log")
+
+log.info("Critical transaction")
+log.flush()  # Force to disk immediately, returns True/False
+
+# With timeout
+success = log.flush(timeout=2.0)
 ```
 
 #### Sync Mode for Critical Sections
@@ -234,6 +249,24 @@ with log.sync_mode():
 
 # Back to async
 log.info("Continuing...")
+```
+
+#### Adaptive Flush (Auto-Tuning)
+
+Automatically adjust batch size and flush interval based on message rate:
+
+```python
+from logxpy import AdaptiveFlushConfig
+
+log.init("app.log")
+
+config = AdaptiveFlushConfig(
+    min_batch_size=10,
+    max_batch_size=1000,
+    min_flush_interval_ms=10,
+    max_flush_interval_ms=1000,
+)
+log._async_writer.enable_adaptive(config)
 ```
 
 #### Monitoring

@@ -1,4 +1,11 @@
-"""Tests for logxpy/src/logx.py -- Main Logger fluent API."""
+"""Tests for logxpy/src/logx.py -- Main Logger fluent API.
+
+Tests cover:
+- Logger init, level methods, callable, send, data types
+- System methods, file methods, context, color, configure, span
+- Async methods: flush(), enable_adaptive(), disable_adaptive()
+- Real file I/O verification for async flush techniques
+"""
 from __future__ import annotations
 
 import datetime as _dt
@@ -7,10 +14,20 @@ from enum import Enum
 from io import BytesIO, StringIO
 from pathlib import Path
 
-import pytest
-
 from logxpy.src._types import Level
-from logxpy.src.logx import Logger, log, set_global_masker, get_global_masker
+from logxpy.src.logx import Logger
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _parse_log(path: Path) -> list[dict]:
+    """Read a log file and return parsed JSON lines."""
+    text = path.read_text().strip()
+    if not text:
+        return []
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
 # ============================================================================
@@ -431,7 +448,7 @@ class TestSpan:
 
 
 # ============================================================================
-# Async
+# Async Methods (unit)
 # ============================================================================
 
 class TestAsyncMethods:
@@ -450,3 +467,184 @@ class TestAsyncMethods:
         with l.sync_mode():
             l.info("sync message")
         assert len(captured_messages) >= 1
+
+
+# ============================================================================
+# Async Flush - Real File I/O
+# ============================================================================
+
+class TestAsyncFlushRealFile:
+    """Logger.flush() with real async writer and file verification."""
+
+    def test_flush_writes_to_file(self, tmp_path: Path):
+        """log.flush() forces all pending messages to disk."""
+        log_file = tmp_path / "flush.log"
+        logger = Logger()
+        logger.init(str(log_file), size=10000, flush=60.0)
+
+        for i in range(15):
+            logger.info(f"flush-{i}")
+
+        logger.flush(timeout=5.0)
+
+        entries = _parse_log(log_file)
+        assert len(entries) == 15
+        assert entries[0]["msg"] == "flush-0"
+        assert entries[14]["msg"] == "flush-14"
+        assert all(e["mt"] == "info" for e in entries)
+
+        logger.shutdown_async()
+
+    def test_flush_returns_self(self, tmp_path: Path):
+        """flush() returns self for method chaining."""
+        log_file = tmp_path / "chain.log"
+        logger = Logger()
+        logger.init(str(log_file), size=10000, flush=60.0)
+
+        result = logger.info("msg").flush()
+        assert result is logger
+
+        logger.shutdown_async()
+
+    def test_flush_multiple_levels(self, tmp_path: Path):
+        """flush() persists messages from different log levels."""
+        log_file = tmp_path / "levels.log"
+        logger = Logger()
+        logger.init(str(log_file), size=10000, flush=60.0)
+
+        logger.debug("d-msg")
+        logger.info("i-msg")
+        logger.warning("w-msg")
+        logger.error("e-msg")
+        logger.success("s-msg")
+        logger.flush(timeout=5.0)
+
+        entries = _parse_log(log_file)
+        assert len(entries) == 5
+        types = [e["mt"] for e in entries]
+        assert "debug" in types
+        assert "info" in types
+        assert "warning" in types
+        assert "error" in types
+        assert "success" in types
+
+        logger.shutdown_async()
+
+    def test_flush_noop_without_async(self):
+        """flush() on non-async logger is safe no-op."""
+        logger = Logger()
+        result = logger.flush()
+        assert result is logger
+
+
+# ============================================================================
+# Async Adaptive - Real File I/O
+# ============================================================================
+
+class TestAsyncAdaptiveRealFile:
+    """Logger.enable_adaptive() / disable_adaptive() with real file."""
+
+    def test_adaptive_logs_to_file(self, tmp_path: Path):
+        """Adaptive mode logs all messages correctly to disk."""
+        log_file = tmp_path / "adaptive.log"
+        logger = Logger()
+        logger.init(str(log_file), size=100, flush=0.1)
+        logger.enable_adaptive(min_batch=5, max_batch=500)
+
+        for i in range(25):
+            logger.info(f"adapt-{i}")
+
+        logger.flush(timeout=5.0)
+
+        entries = _parse_log(log_file)
+        assert len(entries) == 25
+        assert entries[0]["msg"] == "adapt-0"
+        assert entries[24]["msg"] == "adapt-24"
+
+        logger.disable_adaptive()
+        logger.shutdown_async()
+
+    def test_adaptive_enable_returns_self(self, tmp_path: Path):
+        """enable_adaptive() returns self for chaining."""
+        log_file = tmp_path / "chain.log"
+        logger = Logger()
+        logger.init(str(log_file), size=100, flush=0.1)
+
+        result = logger.enable_adaptive()
+        assert result is logger
+
+        logger.shutdown_async()
+
+    def test_adaptive_disable_returns_self(self, tmp_path: Path):
+        """disable_adaptive() returns self for chaining."""
+        log_file = tmp_path / "chain2.log"
+        logger = Logger()
+        logger.init(str(log_file), size=100, flush=0.1)
+
+        logger.enable_adaptive()
+        result = logger.disable_adaptive()
+        assert result is logger
+
+        logger.shutdown_async()
+
+    def test_adaptive_then_static(self, tmp_path: Path):
+        """Switch from adaptive to static — all messages persist."""
+        log_file = tmp_path / "toggle.log"
+        logger = Logger()
+        logger.init(str(log_file), size=10000, flush=60.0)
+
+        logger.enable_adaptive()
+        for i in range(10):
+            logger.info(f"a-{i}")
+        logger.flush(timeout=5.0)
+
+        logger.disable_adaptive()
+        for i in range(10):
+            logger.warning(f"s-{i}")
+        logger.flush(timeout=5.0)
+
+        entries = _parse_log(log_file)
+        assert len(entries) == 20
+        assert entries[0]["msg"] == "a-0"
+        assert entries[0]["mt"] == "info"
+        assert entries[10]["msg"] == "s-0"
+        assert entries[10]["mt"] == "warning"
+
+        logger.shutdown_async()
+
+    def test_adaptive_noop_without_async(self):
+        """enable/disable adaptive on non-async logger is safe no-op."""
+        logger = Logger()
+        result = logger.enable_adaptive()
+        assert result is logger
+        result = logger.disable_adaptive()
+        assert result is logger
+
+
+# ============================================================================
+# Async Metrics with Real File
+# ============================================================================
+
+class TestAsyncMetricsRealFile:
+    """Verify metrics reflect actual writes to disk."""
+
+    def test_metrics_after_flush(self, tmp_path: Path):
+        """Metrics track enqueued/written after flush."""
+        log_file = tmp_path / "metrics.log"
+        logger = Logger()
+        logger.init(str(log_file), size=10000, flush=60.0)
+
+        for i in range(10):
+            logger.info(f"m-{i}")
+
+        logger.flush(timeout=5.0)
+
+        metrics = logger.get_async_metrics()
+        assert metrics["enqueued"] >= 10
+        assert metrics["written"] >= 10
+        assert metrics["errors"] == 0
+
+        entries = _parse_log(log_file)
+        assert len(entries) == 10
+
+        logger.shutdown_async()

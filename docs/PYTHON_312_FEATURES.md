@@ -2,6 +2,8 @@
 
 This project showcases modern Python 3.12+ features for optimal performance and code clarity.
 
+> 📚 **Want to see these features in action?** Check [LOGGING_FLOW_SEQUENCE_DIAGRAMS.md](./LOGGING_FLOW_SEQUENCE_DIAGRAMS.md) for complete code-level flow charts showing the internal implementation.
+
 ## 🚀 Features Used
 
 ### 1. Type Aliases (PEP 695)
@@ -37,12 +39,12 @@ match seconds:
 
 ### 3. Walrus Operator (PEP 572)
 ```python
-# Group by task UUID
-if task_uuid := entry.get("task_uuid"):
-    tasks.setdefault(task_uuid, []).append(entry)
+# Group by task ID
+if tid := entry.get("tid"):
+    tasks.setdefault(tid, []).append(entry)
 
 # Get duration if exists
-if duration := entry.get("duration"):
+if duration := entry.get("dur"):
     node_text += f" {dur_icon}{self.format_duration(duration)}"
 ```
 
@@ -118,12 +120,12 @@ class TreeChars:
 ```python
 # frozenset for faster lookups
 skip_keys = frozenset({
-    "timestamp", "task_uuid", "task_level",
-    "message_type", "action_type", "action_status"
+    "ts", "tid", "lvl",
+    "mt", "at", "st"
 })
 
 # setdefault for grouping
-tasks.setdefault(task_uuid, []).append(entry)
+tasks.setdefault(tid, []).append(entry)
 ```
 
 **Benefits:**

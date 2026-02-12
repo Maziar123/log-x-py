@@ -86,11 +86,11 @@ def benchmark_async_mode() -> dict:
     # Initialize with async enabled (default)
     log.init(
         log_file,
-        async_enabled=True,
-        async_max_queue=10_000,
-        async_batch_size=100,
-        async_flush_interval=0.1,
-        async_policy="block",
+        async_en=True,
+        queue=10_000,
+        size=100,
+        flush=0.1,
+        policy="block",
     )
 
     print(f"Async enabled: {log.is_async}")
@@ -174,7 +174,7 @@ def benchmark_sync_mode() -> dict:
         os.remove(log_file)
 
     # Initialize with async disabled
-    log.init(log_file, async_enabled=False)
+    log.init(log_file, async_en=False)
 
     print(f"Async enabled: {log.is_async}")
     print("-" * 60)
@@ -227,7 +227,7 @@ def benchmark_with_backpressure() -> dict:
 
     results = {}
 
-    for policy in [QueuePolicy.BLOCK, QueuePolicy.DROP_OLDEST, QueuePolicy.DROP_NEWEST]:
+    for policy in [QueuePolicy.BLOCK, QueuePolicy.REPLACE, QueuePolicy.SKIP]:
         log_file = f"bench_{policy}.log"
         if os.path.exists(log_file):
             os.remove(log_file)
@@ -237,10 +237,10 @@ def benchmark_with_backpressure() -> dict:
         # Use small queue to trigger backpressure
         log.init(
             log_file,
-            async_enabled=True,
-            async_max_queue=100,  # Small queue
-            async_batch_size=50,
-            async_policy=str(policy),
+            async_en=True,
+            queue=100,  # Small queue
+            size=50,
+            policy=str(policy),
         )
 
         start = time.perf_counter()
@@ -281,7 +281,7 @@ def trace_execution() -> None:
     if os.path.exists(log_file):
         os.remove(log_file)
 
-    log.init(log_file, async_enabled=True)
+    log.init(log_file, async_en=True)
 
     # Trace first 10 calls in detail
     print("\nTracing first 10 log calls:")
@@ -324,9 +324,9 @@ def compare_batch_sizes() -> None:
 
         log.init(
             log_file,
-            async_enabled=True,
-            async_batch_size=batch_size,
-            async_flush_interval=1.0,  # Long interval to test batching
+            async_en=True,
+            size=batch_size,
+            flush=1.0,  # Long interval to test batching
         )
 
         # Pre-warm

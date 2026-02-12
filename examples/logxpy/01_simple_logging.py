@@ -10,7 +10,8 @@ Demonstrates:
 from logxpy import log
 
 # Setup output - auto-generate log file from __file__, clean old if exists
-log.init(clean=True)
+# log.init(clean=True)
+log.init("", size=0, flush="100µs", clean=True)
 
 
 def main():

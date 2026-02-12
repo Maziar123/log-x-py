@@ -10,8 +10,8 @@ from logxpy import log
 
 def main() -> None:
     """Run the sync logging example."""
-    # Disable async by passing async_enabled=False
-    log.init("example_async_disable.log", async_enabled=False)
+    # Disable async by passing async_en=False
+    log.init("example_async_disable.log", async_=False)
 
     # These calls block until written to disk
     log.info("Synchronous log message")

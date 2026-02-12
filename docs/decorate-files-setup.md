@@ -45,8 +45,15 @@ All toggles default to `false` - you MUST enable `enableFilePaths`.
 }
 ```
 
-Both parts are required. `filePaths` tells the extension which files to match.
-`colorCustomizations` tells VS Code what color to render.
+Both parts are required. Keep colors in sync between them.
+- `filePaths` — tells the extension **which files to match** (default color)
+- `colorCustomizations` — **overrides** the actual rendered color (wins if set)
+
+JSON has no variables, so document your color values in comments:
+```jsonc
+// dim:  #82808060  (gray, 37% opacity)
+// red:  #ff0000    (bright red)
+```
 
 ## Pattern Formats
 

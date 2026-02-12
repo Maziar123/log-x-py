@@ -21,10 +21,11 @@ from . import decorators
 from ._action import current_action
 from ._async import _emit, current_scope, scope
 from ._async_destinations import AsyncFileDestination
-from ._async_writer import AsyncConfig, AsyncWriter, QueuePolicy
+from ._async_writer import AdaptiveFlushConfig, AsyncConfig, AsyncWriter, QueuePolicy
 from ._base import now, uuid
 from ._fmt import format_value
 from ._output import to_file
+from ._si_time import parse_time
 from ._types import Level, Record
 
 
@@ -521,11 +522,12 @@ class Logger:
         level: str = "DEBUG",
         mode: str = "w",
         clean: bool = False,
-        async_enabled: bool = True,
-        async_max_queue: int = 10_000,
-        async_batch_size: int = 100,
-        async_flush_interval: float = 0.1,
-        async_policy: str = "block",
+        async_en: bool = True,
+        queue: int = 10_000,
+        size: int = 100,
+        flush: float | str = 0.1,
+        deadline: float | str | None = None,
+        policy: str = "block",
     ) -> Self:
         """Simplified logging initialization with async support.
 
@@ -535,19 +537,20 @@ class Logger:
             log.init("app.log")           # Custom path, async enabled
             log.init(level="INFO")        # With log level
             log.init("app.log", mode="a") # Append mode
-            log.init(async_enabled=False) # Disable async (sync mode)
+            log.init(async_en=False)      # Disable async (sync mode)
 
         Args:
             target: File path, None for auto filename from caller's __file__
             level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
             mode: File mode - 'w' write (default) or 'a' append
             clean: Delete existing log file before opening (default: False)
-            async_enabled: Enable async logging (default: True)
-            async_max_queue: Maximum queue size before backpressure
-            async_batch_size: Messages per batch flush
-            async_flush_interval: Seconds between flushes
-            async_policy: Backpressure policy ("block", "drop_oldest",
-                         "drop_newest", "warn")
+            async_en: Enable async logging (default: True).
+            queue: Maximum queue size before backpressure (default: 10000)
+            size: Messages per batch (default: 100, 0=disable)
+            flush: Seconds between flushes, or SI string like '1ms', '10µs'
+            deadline: Max seconds before force flush, or SI string like '10s'
+            policy: Backpressure policy ("block", "replace",
+                    "skip", "warn")
 
         Returns:
             Self for method chaining
@@ -558,22 +561,26 @@ class Logger:
         from ._output import FileDestination
         from ._output import Logger as OutputLogger
 
+        # Parse time values (support SI units like '1ms', '10µs')
+        flush_sec = parse_time(flush)
+        deadline_sec = parse_time(deadline)
+
         # Check environment override for async
         if os.environ.get("LOGXPY_SYNC", "0") == "1":
-            async_enabled = False
+            async_en = False
 
         # Set level
         self._level = Level[level.upper()]
 
         # Determine file path and handle file setup
-        if target is None:
+        if not target:  # None or empty string
             caller_frame = stack()[1]
             caller_file = caller_frame.filename
             if caller_file == "<stdin>":
                 # Interactive - use stdout
                 OutputLogger._destinations.add(FileDestination(file=sys.stdout))
                 # Don't enable async for stdout in interactive mode
-                async_enabled = False
+                async_en = False
             else:
                 log_path = Path(caller_file).with_suffix(".log")
                 log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -591,13 +598,14 @@ class Logger:
         if target is not None:
             self._auto_log_file = target
 
-            if async_enabled:
+            if async_en:
                 # Async mode: Use AsyncWriter with AsyncFileDestination
                 self.use_async(
-                    max_queue=async_max_queue,
-                    batch_size=async_batch_size,
-                    flush_interval=async_flush_interval,
-                    policy=async_policy,
+                    max_queue=queue,
+                    batch_size=size,
+                    flush_interval=flush_sec,
+                    deadline=deadline_sec,
+                    policy=policy,
                 )
                 # Add file destination to async writer
                 if self._async_writer is not None:
@@ -635,19 +643,21 @@ class Logger:
         max_queue: int = 10_000,
         batch_size: int = 100,
         flush_interval: float = 0.1,
+        deadline: float | None = None,
         policy: str = "block",
     ) -> Self:
         """Enable async logging with custom configuration.
 
-        This is called automatically by init() when async_enabled=True.
+        This is called automatically by init() when async_en=True.
         Use this for standalone configuration or to enable async after init.
 
         Args:
             max_queue: Maximum queue size before backpressure.
             batch_size: Messages per batch before flush.
             flush_interval: Seconds between flushes.
-            policy: Backpressure policy ("block", "drop_oldest",
-                   "drop_newest", "warn").
+            deadline: Max seconds before force flush (default: None).
+            policy: Backpressure policy ("block", "replace",
+                   "skip", "warn").
 
         Returns:
             Self for chaining
@@ -662,6 +672,7 @@ class Logger:
             max_queue_size=max_queue,
             batch_size=batch_size,
             flush_interval_ms=flush_interval * 1000,
+            deadline_ms=deadline * 1000 if deadline else None,
             queue_policy=policy_enum,
         )
         self._async_writer = AsyncWriter(config)
@@ -730,6 +741,73 @@ class Logger:
             yield self
         finally:
             self._async_writer = writer_backup
+
+    def flush(self, timeout: float = 5.0) -> Self:
+        """Force-flush all pending async messages to disk.
+
+        Signals the background writer thread to immediately write its
+        current batch and waits for completion. No-op if async is off.
+
+        Args:
+            timeout: Maximum seconds to wait for flush completion.
+
+        Returns:
+            Self for chaining.
+        """
+        if self._async_writer is not None:
+            self._async_writer.flush(timeout)
+        return self
+
+    def enable_adaptive(
+        self,
+        *,
+        min_batch: int = 10,
+        max_batch: int = 1000,
+        min_flush: float = 0.001,
+        max_flush: float = 1.0,
+        ema_alpha: float = 0.1,
+        low_rate: float = 100.0,
+        high_rate: float = 10_000.0,
+    ) -> Self:
+        """Enable adaptive flush that auto-tunes batch size and interval.
+
+        Uses Exponential Moving Average (EMA) of message rate to adjust
+        parameters dynamically between configured bounds.
+
+        Args:
+            min_batch: Batch size at low message rate.
+            max_batch: Batch size at high message rate.
+            min_flush: Flush interval at low rate (seconds).
+            max_flush: Flush interval at high rate (seconds).
+            ema_alpha: EMA smoothing factor (0.05-0.2 typical).
+            low_rate: Messages/sec threshold for low rate.
+            high_rate: Messages/sec threshold for high rate.
+
+        Returns:
+            Self for chaining.
+        """
+        if self._async_writer is not None:
+            config = AdaptiveFlushConfig(
+                ema_alpha=ema_alpha,
+                min_batch_size=min_batch,
+                max_batch_size=max_batch,
+                min_flush_interval=min_flush,
+                max_flush_interval=max_flush,
+                low_rate_threshold=low_rate,
+                high_rate_threshold=high_rate,
+            )
+            self._async_writer.enable_adaptive(config)
+        return self
+
+    def disable_adaptive(self) -> Self:
+        """Disable adaptive flush, reverting to static configuration.
+
+        Returns:
+            Self for chaining.
+        """
+        if self._async_writer is not None:
+            self._async_writer.disable_adaptive()
+        return self
 
     # === Color Methods (for CLI viewer) ===
     def set_foreground(self, color: str) -> Self:
